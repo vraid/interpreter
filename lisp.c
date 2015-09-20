@@ -4,7 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef enum {type_boolean, type_number} object_type;
+typedef enum {type_boolean, type_number, type_empty_list} object_type;
 
 typedef struct object {
 	object_type type;
@@ -20,6 +20,7 @@ typedef struct object {
 
 object* false;
 object* true;
+object* empty_list;
 
 char is_boolean(object* obj) {
 	return obj->type == type_boolean;
@@ -31,6 +32,10 @@ char is_false(object* obj) {
 
 char is_true(object* obj) {
 	return obj == true;
+}
+
+char is_empty_list(object* obj) {
+	return obj == empty_list;
 }
 
 object* allocate_object(void) {
@@ -52,6 +57,9 @@ void init(void) {
 	true = allocate_object();
 	true->type = type_boolean;
 	true->data.boolean.value = 1;
+	
+	empty_list = allocate_object();
+	empty_list->type = type_empty_list;
 }
 
 object* make_number(long value) {
@@ -127,6 +135,24 @@ object* read(FILE* in) {
 				fprintf(stderr, "unknown type\n");
 		}
 	}
+	else if (c == '\'') {
+		c = getc(in);
+		if (c == '(') {
+			trim_whitespace(in);
+			c = getc(in);
+			if (c == ')') {
+				return empty_list;
+			}
+			else {
+				fprintf(stderr, "unexpected character '%c'\n", c);
+				exit(1);
+			}
+		}
+		else {
+			fprintf(stderr, "unexpected character '%c'\n", c);
+			exit(1);
+		}
+	}
 	else {
 		fprintf(stderr, "bad input, unexpected '%c'\n", c);
 		exit(1);
@@ -154,6 +180,9 @@ void write(object* obj) {
 			break;
 		case type_number:
 			printf("%ld", obj->data.number.value);
+			break;
+		case type_empty_list:
+			printf("'()");
 			break;
 		default:
 			fprintf(stderr, "unknown type\n");
