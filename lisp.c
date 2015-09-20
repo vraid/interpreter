@@ -4,16 +4,34 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef enum {type_number} object_type;
+typedef enum {type_boolean, type_number} object_type;
 
 typedef struct object {
 	object_type type;
 	union {
 		struct {
+			char value;
+		} boolean;
+		struct {
 			long value;
 		} number;
 	} data;
 } object;
+
+object* false;
+object* true;
+
+char is_boolean(object* obj) {
+	return obj->type == type_boolean;
+}
+
+char is_false(object* obj) {
+	return obj == false;
+}
+
+char is_true(object* obj) {
+	return obj == true;
+}
 
 object* allocate_object(void) {
 	object* obj;
@@ -24,6 +42,16 @@ object* allocate_object(void) {
 		exit(1);
 	}
 	return obj;
+}
+
+void init(void) {
+	false = allocate_object();
+	false->type = type_boolean;
+	false->data.boolean.value = 0;
+	
+	true = allocate_object();
+	true->type = type_boolean;
+	true->data.boolean.value = 1;
 }
 
 object* make_number(long value) {
@@ -88,6 +116,17 @@ object* read(FILE* in) {
 			exit(1);
 		}
 	}
+	else if (c == '#') {
+		c = getc(in);
+		switch(c) {
+			case 't':
+				return true;
+			case 'f':
+				return false;
+			default:
+				fprintf(stderr, "unknown type\n");
+		}
+	}
 	else {
 		fprintf(stderr, "bad input, unexpected '%c'\n", c);
 		exit(1);
@@ -102,6 +141,17 @@ object* eval(object* exp) {
 
 void write(object* obj) {
 	switch(obj->type) {
+		case type_boolean:
+			if (is_false(obj)) {
+				printf("#f");
+			}
+			else if (is_true(obj)) {
+				printf("#t");
+			}
+			else {
+				fprintf(stderr, "erroneous boolean");
+			}
+			break;
 		case type_number:
 			printf("%ld", obj->data.number.value);
 			break;
@@ -114,7 +164,9 @@ void write(object* obj) {
 int main(void) {
 
 	printf("running lisp interpreter. use ctrl-c to exit");
-
+	
+	init();
+	
 	while(1) {
 		printf("> ");
 		write(eval(read(stdin)));
