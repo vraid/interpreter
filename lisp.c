@@ -1,10 +1,14 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-typedef enum {type_boolean, type_number, type_empty_list} object_type;
+typedef enum {
+	type_boolean,
+	type_symbol,
+	type_number,
+	type_list_cell} object_type;
+
 
 typedef struct object {
 	object_type type;
@@ -13,8 +17,15 @@ typedef struct object {
 			char value;
 		} boolean;
 		struct {
+			char* name;
+		} symbol;
+		struct {
 			long value;
 		} number;
+		struct {
+			struct object* first;
+			struct object* rest;
+		} list_cell;
 	} data;
 } object;
 
@@ -49,30 +60,67 @@ object* allocate_object(void) {
 	return obj;
 }
 
+object* allocate_object_type(object_type type) {
+	object* obj;
+	
+	obj = allocate_object();
+	obj->type = type;
+	return obj;
+}
+
+object* allocate_object_boolean(char value) {
+	object* obj;
+	
+	obj = allocate_object_type(type_boolean);
+	obj->data.boolean.value = value;
+	return obj;
+}
+
 void init(void) {
-	false = allocate_object();
-	false->type = type_boolean;
-	false->data.boolean.value = 0;
+	false = allocate_object_boolean(0);
 	
-	true = allocate_object();
-	true->type = type_boolean;
-	true->data.boolean.value = 1;
+	true = allocate_object_boolean(1);
 	
-	empty_list = allocate_object();
-	empty_list->type = type_empty_list;
+	empty_list = allocate_object_type(type_list_cell);
+}
+
+char is_self_quoting(object* obj) {
+	switch(obj->type) {
+		case type_boolean:
+		case type_number:
+			return 1;
+		default:
+			return 0;
+	}
 }
 
 object* make_number(long value) {
 	object* obj;
 	
-	obj = allocate_object();
-	obj->type = type_number;
+	obj = allocate_object_type(type_number);
 	obj->data.number.value = value;
+	return obj;
+}
+
+object* cons(object* first, object* rest) {
+	object* obj;
+	
+	obj = allocate_object_type(type_list_cell);
+	obj->data.list_cell.first = first;
+	obj->data.list_cell.rest = rest;
 	return obj;
 }
 
 char is_number(object* obj) {
 	return obj->type == type_number;
+}
+
+char is_list_cell(object* obj) {
+	return obj->type == type_list_cell;
+}
+
+char is_list(object* obj) {
+	return is_list_cell(obj) || is_empty_list(obj);
 }
 
 char is_delimiter(int c) {
@@ -103,28 +151,38 @@ void trim_whitespace(FILE* in) {
 	}
 }
 
-object* read(FILE* in) {
+typedef struct read_state {
+	char quoted;
+} read_state;
+
+object* read_list(FILE* in, read_state state);
+
+object* read_number(FILE* in) {
 	int c;
 	long num = 0;
+	while (isdigit(c = getc(in))) {
+		num = (num * 10) + (c - '0');
+	}
+	if (is_delimiter(c)) {
+		ungetc(c, in);
+		return make_number(num);
+	}
+	else {
+		fprintf(stderr, "number not followed by delimiter\n");
+		exit(1);
+	}
+}
 
-	trim_whitespace(in);
+object* read_atom(FILE* in, read_state state) {
+	int c;
 	
-	c = getc(in);
+	c = peek(in);
 	
 	if (isdigit(c)) {
-		while (isdigit(c)) {
-			num = (num * 10) + (c - '0');
-			c = getc(in);
-		}
-		if (is_delimiter(c)) {
-			return make_number(num);
-		}
-		else {
-			fprintf(stderr, "number not followed by delimiter\n");
-			exit(1);
-		}
+		return read_number(in);
 	}
 	else if (c == '#') {
+		getc(in);
 		c = getc(in);
 		switch(c) {
 			case 't':
@@ -135,34 +193,80 @@ object* read(FILE* in) {
 				fprintf(stderr, "unknown type\n");
 		}
 	}
-	else if (c == '\'') {
-		c = getc(in);
-		if (c == '(') {
-			trim_whitespace(in);
-			c = getc(in);
-			if (c == ')') {
-				return empty_list;
-			}
-			else {
-				fprintf(stderr, "unexpected character '%c'\n", c);
-				exit(1);
-			}
-		}
-		else {
-			fprintf(stderr, "unexpected character '%c'\n", c);
-			exit(1);
-		}
+	fprintf(stderr, "read illegal state\n");
+	exit(1);
+}
+
+object* read_value(FILE* in, read_state state) {
+	int c;
+
+	trim_whitespace(in);
+	
+	c = peek(in);
+	
+	if (c == '\'') {
+		getc(in);
+		c = peek(in);
+		state.quoted = 1;
+		return read_value(in, state);
+	}
+	else if (c == '(') {
+		getc(in);
+		return read_list(in, state);
 	}
 	else {
-		fprintf(stderr, "bad input, unexpected '%c'\n", c);
-		exit(1);
+		return read_atom(in, state);
 	}
 	fprintf(stderr, "read illegal state\n");
 	exit(1);
 }
 
+object* read_list(FILE* in, read_state state) {
+	int c;
+	
+	trim_whitespace(in);
+	
+	c = peek(in);
+	
+	if (c == ')') {
+		getc(in);
+		return empty_list;
+	}
+	else {
+		object* first = read_value(in, state);
+		return cons(first, read_list(in, state));
+	}
+}
+
+object* read(FILE* in) {
+	read_state state;
+	state.quoted = 0;
+	
+	return read_value(in, state);
+}
+
 object* eval(object* exp) {
 	return exp;
+}
+
+void write(object* obj);
+
+void write_list_cell(char first, object* obj) {
+	if (is_empty_list(obj)) {
+		printf(")");
+	}
+	else {
+		if (!first) {
+			printf(" ");
+		}
+		write(obj->data.list_cell.first);
+		write_list_cell(0, obj->data.list_cell.rest);
+	}
+}
+
+void write_list(object* obj) {
+	printf("(");
+	write_list_cell(1, obj);
 }
 
 void write(object* obj) {
@@ -181,8 +285,8 @@ void write(object* obj) {
 		case type_number:
 			printf("%ld", obj->data.number.value);
 			break;
-		case type_empty_list:
-			printf("'()");
+		case type_list_cell:
+			write_list(obj);
 			break;
 		default:
 			fprintf(stderr, "unknown type\n");
