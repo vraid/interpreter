@@ -114,6 +114,12 @@ object* quote(object* obj) {
 	}
 }
 
+object* make_symbol(char* name) {
+	object* obj = allocate_object_type(type_symbol);
+	obj->data.symbol.name = name;
+	return obj;
+}
+
 object* make_number(long value) {
 	object* obj = allocate_object_type(type_number);
 	obj->data.number.value = value;
@@ -171,9 +177,33 @@ void trim_whitespace(FILE* in) {
 	}
 }
 
+char* duplicate_string(char* str) {
+	size_t length = strlen(str) + 1;
+	char* d = malloc(length);
+	if (d == NULL) {
+		fprintf(stderr, "out of memory");
+		return NULL;
+	}
+	memcpy(d, str, length);
+	return d;
+}
+
 typedef struct read_state {
 	char quoted;
 } read_state;
+
+char* read_identifier(FILE* in) {
+	char buffer[1000];
+	int i = 0;
+	int c;
+	while (!is_delimiter(c = peek(in))) {
+		buffer[i] = c;
+		getc(in);
+		i++;
+	}
+	buffer[i] = '\0';
+	return duplicate_string(buffer);
+}
 
 object* read_list(FILE* in, read_state state);
 
@@ -197,11 +227,7 @@ object* read_atom(FILE* in, read_state state) {
 	int c;
 	
 	c = peek(in);
-	
-	if (isdigit(c)) {
-		return read_number(in);
-	}
-	else if (c == '#') {
+	if (c == '#') {
 		getc(in);
 		c = getc(in);
 		switch(c) {
@@ -211,8 +237,22 @@ object* read_atom(FILE* in, read_state state) {
 				return false;
 			default:
 				fprintf(stderr, "unknown type\n");
+				exit(1);
 		}
 	}
+	else if (isdigit(c)) {
+		return read_number(in);
+	}
+	else if (!is_delimiter(c)) {
+		if (state.quoted) {
+			return make_symbol(read_identifier(in));
+		}
+		else {
+			fprintf(stderr, "unquoted identifiers not supported\n");
+			exit(1);
+		}
+	}
+	
 	fprintf(stderr, "read illegal state\n");
 	exit(1);
 }
@@ -299,6 +339,9 @@ void write(object* obj) {
 		case type_quote:
 			printf("'");
 			write(obj->data.quote.value);
+			break;
+		case type_symbol:
+			printf(obj->data.symbol.name);
 			break;
 		case type_boolean:
 			if (is_false(obj)) {
