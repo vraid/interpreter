@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 typedef enum {
+	type_quote,
 	type_boolean,
 	type_symbol,
 	type_number,
@@ -13,6 +14,9 @@ typedef enum {
 typedef struct object {
 	object_type type;
 	union {
+		struct {
+			struct object* value;
+		} quote;
 		struct {
 			char value;
 		} boolean;
@@ -86,6 +90,7 @@ void init(void) {
 
 char is_self_quoting(object* obj) {
 	switch(obj->type) {
+		case type_quote:
 		case type_boolean:
 		case type_number:
 			return 1;
@@ -94,21 +99,36 @@ char is_self_quoting(object* obj) {
 	}
 }
 
+object* make_quote(object* value) {
+	object* obj = allocate_object_type(type_quote);
+	obj->data.quote.value = value;
+	return obj;
+}
+
+object* quote(object* obj) {
+	if (is_self_quoting(obj)) {
+		return obj;
+	}
+	else {
+		return make_quote(obj);
+	}
+}
+
 object* make_number(long value) {
-	object* obj;
-	
-	obj = allocate_object_type(type_number);
+	object* obj = allocate_object_type(type_number);
 	obj->data.number.value = value;
 	return obj;
 }
 
 object* cons(object* first, object* rest) {
-	object* obj;
-	
-	obj = allocate_object_type(type_list_cell);
+	object* obj = allocate_object_type(type_list_cell);
 	obj->data.list_cell.first = first;
 	obj->data.list_cell.rest = rest;
 	return obj;
+}
+
+char is_quote(object* obj) {
+	return obj->type == type_quote;
 }
 
 char is_number(object* obj) {
@@ -207,8 +227,13 @@ object* read_value(FILE* in, read_state state) {
 	if (c == '\'') {
 		getc(in);
 		c = peek(in);
-		state.quoted = 1;
-		return read_value(in, state);
+		if (!state.quoted) {
+			state.quoted = 1;
+			return quote(read_value(in, state));
+		}
+		else {
+			return read_value(in, state);
+		}
 	}
 	else if (c == '(') {
 		getc(in);
@@ -271,6 +296,10 @@ void write_list(object* obj) {
 
 void write(object* obj) {
 	switch(obj->type) {
+		case type_quote:
+			printf("'");
+			write(obj->data.quote.value);
+			break;
 		case type_boolean:
 			if (is_false(obj)) {
 				printf("#f");
