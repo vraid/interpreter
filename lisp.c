@@ -80,12 +80,20 @@ object* allocate_object_boolean(char value) {
 	return obj;
 }
 
+object** symbols;
+int symbols_length;
+int symbol_count;
+
 void init(void) {
 	false = allocate_object_boolean(0);
 	
 	true = allocate_object_boolean(1);
 	
 	empty_list = allocate_object_type(type_list_cell);
+	
+	symbols_length = 1;
+	symbol_count = 0;
+	symbols = malloc(sizeof(object*));
 }
 
 char is_self_quoting(object* obj) {
@@ -118,6 +126,27 @@ object* make_symbol(char* name) {
 	object* obj = allocate_object_type(type_symbol);
 	obj->data.symbol.name = name;
 	return obj;
+}
+
+object* add_symbol(char* name) {
+	object* obj = make_symbol(name);
+	if (symbols_length == symbol_count) {
+		symbols_length = symbols_length * 2;
+		symbols = realloc(symbols, symbols_length * sizeof(object*));
+	}
+	symbols[symbol_count] = obj;
+	symbol_count++;
+	return obj;
+}
+
+object* find_symbol(char* name) {
+	int i;
+	for (i = 0; i < symbol_count; i++) {
+		if (strcmp(name, symbols[i]->data.symbol.name) == 0) {
+			return symbols[i];
+		}
+	}
+	return NULL;
 }
 
 object* make_number(long value) {
@@ -223,6 +252,18 @@ object* read_number(FILE* in) {
 	}
 }
 
+object* read_symbol(FILE* in) {
+	char* name = read_identifier(in);
+	object* obj = find_symbol(name);
+	if (obj == NULL) {
+		obj = add_symbol(name);
+	}
+	else {
+		free(name);
+	}
+	return obj;
+}
+
 object* read_atom(FILE* in, read_state state) {
 	int c;
 	
@@ -245,7 +286,7 @@ object* read_atom(FILE* in, read_state state) {
 	}
 	else if (!is_delimiter(c)) {
 		if (state.quoted) {
-			return make_symbol(read_identifier(in));
+			return read_symbol(in);
 		}
 		else {
 			fprintf(stderr, "unquoted identifiers not supported\n");
