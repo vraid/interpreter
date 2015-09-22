@@ -8,6 +8,8 @@ typedef enum {
 	type_symbol,
 	type_number,
 	type_list} object_type;
+	
+typedef enum {round, square, curly, bracket_type_count} bracket_type;
 
 
 typedef struct object {
@@ -23,6 +25,7 @@ typedef struct object {
 			long value;
 		} number;
 		struct {
+			bracket_type type;
 			struct object* first;
 			struct object* rest;
 		} list;
@@ -31,7 +34,9 @@ typedef struct object {
 
 object* false;
 object* true;
-object* empty_list;
+object* empty_list[bracket_type_count];
+char list_start_delimiter[bracket_type_count] = {'(', '[', '{'};
+char list_end_delimiter[bracket_type_count] = {')', ']', '}'};
 object* quote_symbol;
 
 object** symbols;
@@ -59,7 +64,7 @@ char is_list(object* obj) {
 }
 
 char is_empty_list(object* obj) {
-	return obj == empty_list;
+	return obj == empty_list[obj->data.list.type];
 }
 
 char is_nonempty_list(object* obj) {
@@ -87,6 +92,7 @@ object* allocate_object_type(object_type type) {
 
 object* cons(object* first, object* rest) {
 	object* obj = allocate_object_type(type_list);
+	obj->data.list.type = rest->data.list.type;
 	obj->data.list.first = first;
 	obj->data.list.rest = rest;
 	return obj;
@@ -127,12 +133,21 @@ object* find_symbol(char* name) {
 	return NULL;
 }
 
+object* make_empty_list(bracket_type type) {
+	object* obj = allocate_object_type(type_list);
+	obj->data.list.type = type;
+	return obj;
+}
+
 void init(void) {
 	false = allocate_object_boolean(0);
 	
 	true = allocate_object_boolean(1);
 	
-	empty_list = allocate_object_type(type_list);
+	int i;
+	for (i = 0; i < bracket_type_count; i++) {
+		empty_list[i] = make_empty_list(i);
+	}
 	
 	symbols_length = 1;
 	symbol_count = 0;
@@ -152,7 +167,7 @@ char is_self_quoting(object* obj) {
 }
 
 object* quote(object* value) {
-	return cons(quote_symbol, cons(value, empty_list));
+	return cons(quote_symbol, cons(value, empty_list[round]));
 }
 
 char is_quoted(object* obj) {
@@ -169,9 +184,43 @@ char is_number(object* obj) {
 	return obj->type == type_number;
 }
 
+char in_bracket_list(char* ls, int c) {
+	int i;
+	for (i = 0; i < bracket_type_count; i++) {
+		if (c == ls[i]) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+char is_list_start_delimiter(int c) {
+	return in_bracket_list(list_start_delimiter, c);
+}
+
+char is_list_end_delimiter(int c) {
+	return in_bracket_list(list_end_delimiter, c);
+}
+
+char is_list_delimiter(int c) {
+	return is_list_start_delimiter(c) || is_list_end_delimiter(c);
+}
+
+bracket_type list_delimiter_type(int c) {
+	switch (c) {
+		case '(':
+		case ')': return round;
+		case '[':
+		case ']': return square;
+		case '{':
+		case '}': return curly;
+		default: return bracket_type_count;
+	}
+}
+
 char is_delimiter(int c) {
 	return isspace(c) || c == EOF ||
-		c == '(' || c == ')' ||
+		is_list_delimiter(c) ||
 		c == '"' || c == ';';
 }
 
@@ -224,7 +273,7 @@ char* read_identifier(FILE* in) {
 	return duplicate_string(buffer);
 }
 
-object* read_list(FILE* in, read_state state);
+object* read_list(FILE* in, read_state state, bracket_type type);
 
 object* read_number(FILE* in) {
 	int c;
@@ -294,9 +343,9 @@ object* read_value(FILE* in, read_state state) {
 		c = peek(in);
 		return quote(read_value(in, state));
 	}
-	else if (c == '(') {
+	else if (is_list_start_delimiter(c)) {
 		getc(in);
-		return read_list(in, state);
+		return read_list(in, state, list_delimiter_type(c));
 	}
 	else {
 		return read_atom(in, state);
@@ -305,20 +354,24 @@ object* read_value(FILE* in, read_state state) {
 	exit(1);
 }
 
-object* read_list(FILE* in, read_state state) {
+object* read_list(FILE* in, read_state state, bracket_type type) {
 	int c;
 	
 	trim_whitespace(in);
 	
 	c = peek(in);
 	
-	if (c == ')') {
+	if (is_list_end_delimiter(c)) {
 		getc(in);
-		return empty_list;
+		if (!(type == list_delimiter_type(c))) {
+			fprintf(stderr, "bracket mismatch\n");
+			exit(1);
+		}
+		return empty_list[type];
 	}
 	else {
 		object* first = read_value(in, state);
-		return cons(first, read_list(in, state));
+		return cons(first, read_list(in, state, type));
 	}
 }
 
@@ -345,7 +398,7 @@ void write(object* obj);
 
 void write_list_cell(char first, object* obj) {
 	if (is_empty_list(obj)) {
-		printf(")");
+		printf("%c", list_end_delimiter[obj->data.list.type]);
 	}
 	else {
 		if (!first) {
@@ -357,7 +410,7 @@ void write_list_cell(char first, object* obj) {
 }
 
 void write_list(object* obj) {
-	printf("(");
+	printf("%c", list_start_delimiter[obj->data.list.type]);
 	write_list_cell(1, obj);
 }
 
