@@ -4,19 +4,15 @@
 #include <ctype.h>
 
 typedef enum {
-	type_quote,
 	type_boolean,
 	type_symbol,
 	type_number,
-	type_list_cell} object_type;
+	type_list} object_type;
 
 
 typedef struct object {
 	object_type type;
 	union {
-		struct {
-			struct object* value;
-		} quote;
 		struct {
 			char value;
 		} boolean;
@@ -29,13 +25,18 @@ typedef struct object {
 		struct {
 			struct object* first;
 			struct object* rest;
-		} list_cell;
+		} list;
 	} data;
 } object;
 
 object* false;
 object* true;
 object* empty_list;
+object* quote_symbol;
+
+object** symbols;
+int symbols_length;
+int symbol_count;
 
 char is_boolean(object* obj) {
 	return obj->type == type_boolean;
@@ -49,8 +50,20 @@ char is_true(object* obj) {
 	return obj == true;
 }
 
+char is_quote_symbol(object* obj) {
+	return obj == quote_symbol;
+}
+
+char is_list(object* obj) {
+	return obj->type == type_list;
+}
+
 char is_empty_list(object* obj) {
 	return obj == empty_list;
+}
+
+char is_nonempty_list(object* obj) {
+	return is_list(obj) && !is_empty_list(obj);
 }
 
 object* allocate_object(void) {
@@ -72,54 +85,19 @@ object* allocate_object_type(object_type type) {
 	return obj;
 }
 
+object* cons(object* first, object* rest) {
+	object* obj = allocate_object_type(type_list);
+	obj->data.list.first = first;
+	obj->data.list.rest = rest;
+	return obj;
+}
+
 object* allocate_object_boolean(char value) {
 	object* obj;
 	
 	obj = allocate_object_type(type_boolean);
 	obj->data.boolean.value = value;
 	return obj;
-}
-
-object** symbols;
-int symbols_length;
-int symbol_count;
-
-void init(void) {
-	false = allocate_object_boolean(0);
-	
-	true = allocate_object_boolean(1);
-	
-	empty_list = allocate_object_type(type_list_cell);
-	
-	symbols_length = 1;
-	symbol_count = 0;
-	symbols = malloc(sizeof(object*));
-}
-
-char is_self_quoting(object* obj) {
-	switch(obj->type) {
-		case type_quote:
-		case type_boolean:
-		case type_number:
-			return 1;
-		default:
-			return 0;
-	}
-}
-
-object* make_quote(object* value) {
-	object* obj = allocate_object_type(type_quote);
-	obj->data.quote.value = value;
-	return obj;
-}
-
-object* quote(object* obj) {
-	if (is_self_quoting(obj)) {
-		return obj;
-	}
-	else {
-		return make_quote(obj);
-	}
 }
 
 object* make_symbol(char* name) {
@@ -149,33 +127,46 @@ object* find_symbol(char* name) {
 	return NULL;
 }
 
+void init(void) {
+	false = allocate_object_boolean(0);
+	
+	true = allocate_object_boolean(1);
+	
+	empty_list = allocate_object_type(type_list);
+	
+	symbols_length = 1;
+	symbol_count = 0;
+	symbols = malloc(sizeof(object*));
+	
+	quote_symbol = add_symbol("quote");
+}
+
+char is_self_quoting(object* obj) {
+	switch(obj->type) {
+		case type_boolean:
+		case type_number:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+object* quote(object* value) {
+	return cons(quote_symbol, cons(value, empty_list));
+}
+
+char is_quoted(object* obj) {
+	return is_nonempty_list(obj) && is_quote_symbol(obj->data.list.first);
+}
+
 object* make_number(long value) {
 	object* obj = allocate_object_type(type_number);
 	obj->data.number.value = value;
 	return obj;
 }
 
-object* cons(object* first, object* rest) {
-	object* obj = allocate_object_type(type_list_cell);
-	obj->data.list_cell.first = first;
-	obj->data.list_cell.rest = rest;
-	return obj;
-}
-
-char is_quote(object* obj) {
-	return obj->type == type_quote;
-}
-
 char is_number(object* obj) {
 	return obj->type == type_number;
-}
-
-char is_list_cell(object* obj) {
-	return obj->type == type_list_cell;
-}
-
-char is_list(object* obj) {
-	return is_list_cell(obj) || is_empty_list(obj);
 }
 
 char is_delimiter(int c) {
@@ -218,7 +209,6 @@ char* duplicate_string(char* str) {
 }
 
 typedef struct read_state {
-	char quoted;
 } read_state;
 
 char* read_identifier(FILE* in) {
@@ -285,13 +275,7 @@ object* read_atom(FILE* in, read_state state) {
 		return read_number(in);
 	}
 	else if (!is_delimiter(c)) {
-		if (state.quoted) {
-			return read_symbol(in);
-		}
-		else {
-			fprintf(stderr, "unquoted identifiers not supported\n");
-			exit(1);
-		}
+		return read_symbol(in);
 	}
 	
 	fprintf(stderr, "read illegal state\n");
@@ -308,13 +292,7 @@ object* read_value(FILE* in, read_state state) {
 	if (c == '\'') {
 		getc(in);
 		c = peek(in);
-		if (!state.quoted) {
-			state.quoted = 1;
-			return quote(read_value(in, state));
-		}
-		else {
-			return read_value(in, state);
-		}
+		return quote(read_value(in, state));
 	}
 	else if (c == '(') {
 		getc(in);
@@ -346,9 +324,17 @@ object* read_list(FILE* in, read_state state) {
 
 object* read(FILE* in) {
 	read_state state;
-	state.quoted = 0;
 	
 	return read_value(in, state);
+}
+
+object* list_ref(int n, object* obj) {
+	if (n == 0) {
+		return obj->data.list.first;
+	}
+	else {
+		return list_ref(n - 1, obj->data.list.rest);
+	}
 }
 
 object* eval(object* exp) {
@@ -365,8 +351,8 @@ void write_list_cell(char first, object* obj) {
 		if (!first) {
 			printf(" ");
 		}
-		write(obj->data.list_cell.first);
-		write_list_cell(0, obj->data.list_cell.rest);
+		write(obj->data.list.first);
+		write_list_cell(0, obj->data.list.rest);
 	}
 }
 
@@ -377,10 +363,6 @@ void write_list(object* obj) {
 
 void write(object* obj) {
 	switch(obj->type) {
-		case type_quote:
-			printf("'");
-			write(obj->data.quote.value);
-			break;
 		case type_symbol:
 			printf(obj->data.symbol.name);
 			break;
@@ -398,8 +380,14 @@ void write(object* obj) {
 		case type_number:
 			printf("%ld", obj->data.number.value);
 			break;
-		case type_list_cell:
-			write_list(obj);
+		case type_list:
+			if (is_quoted(obj)) {
+				printf("'");
+				write(list_ref(1, obj));
+			}
+			else {
+				write_list(obj);
+			}
 			break;
 		default:
 			fprintf(stderr, "unknown type\n");
