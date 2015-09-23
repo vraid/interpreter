@@ -9,7 +9,7 @@ typedef enum {
 	type_symbol,
 	type_number,
 	type_list,
-	type_variable,
+	type_binding,
 	type_environment} object_type;
 
 typedef enum {round, square, curly, bracket_type_count} bracket_type;
@@ -34,7 +34,7 @@ typedef struct object {
 		struct {
 			struct object* name;
 			struct object* value;
-		} variable;
+		} binding;
 		struct {
 			int element_count;
 			struct object** elements;
@@ -69,6 +69,10 @@ char is_true(object* obj) {
 
 char is_no_object(object* obj) {
 	return obj == no_object;
+}
+
+char is_symbol(object* obj) {
+	return obj->type == type_symbol;
 }
 
 char is_quote_symbol(object* obj) {
@@ -183,15 +187,39 @@ void init(void) {
 	define_symbol = add_symbol("define");
 }
 
-object* variable_name(object* obj) {
-	return obj->data.variable.name;
+object* binding_name(object* obj) {
+	return obj->data.binding.name;
 }
 
-object* variable_value(object* obj) {
-	return obj->data.variable.value;
+object* binding_value(object* obj) {
+	return obj->data.binding.value;
 }
 
-object* make_environment(object** elements, int element_count) {
+object* list_ref(int n, object* ls) {
+	while (n > 0) {
+		ls = ls->data.list.rest;
+		n--;
+	}
+	return ls->data.list.first;
+}
+
+int list_length(object* ls) {
+	int n = 0;
+	while (!is_empty_list(ls)) {
+		n++;
+		ls = ls->data.list.rest;
+	}
+	return n;
+}
+
+object* make_binding(object* name, object* value) {
+	object* obj = allocate_object_type(type_binding);
+	obj->data.binding.name = name;
+	obj->data.binding.value = value;
+	return obj;
+}
+
+object* make_multiple_binding_environment(object** elements, int element_count) {
 	object** elem = malloc(element_count * sizeof(object*));
 	memcpy(elem, elements, element_count * sizeof(object*));
 	
@@ -201,12 +229,16 @@ object* make_environment(object** elements, int element_count) {
 	return obj;
 }
 
+object* make_single_binding_environment(object* binding) {
+	return make_multiple_binding_environment(&binding, 1);
+}
+
 object* find_in_environment(object* env, object* symbol) {
 	int i;
 	int count = env->data.environment.element_count;
 	object** elem = env->data.environment.elements;
 	for (i = 0; i < count; i++) {
-		if (symbol == variable_name(elem[i])) {
+		if (symbol == binding_name(elem[i])) {
 			return elem[i];
 		}
 	}
@@ -216,7 +248,7 @@ object* find_in_environment(object* env, object* symbol) {
 object* find_in_environment_list(object* ls, object* symbol) {
 	object* obj = no_object;
 	while (!is_empty_list(ls) && (obj == no_object)) {
-		obj = find_in_environment(ls->data.list.first, symbol);
+		obj = find_in_environment(list_ref(0, ls), symbol);
 		if (obj == no_object) {
 			ls = ls->data.list.rest;
 		}
@@ -238,8 +270,16 @@ object* quote(object* value) {
 	return cons(quote_symbol, cons(value, empty_list[round]));
 }
 
-char is_quoted(object* obj) {
-	return is_nonempty_list(obj) && is_quote_symbol(obj->data.list.first);
+char list_starts_with(object* ls, object* obj) {
+	return is_nonempty_list(ls) && (obj == list_ref(0, ls));
+}
+
+char is_quoted(object* exp) {
+	return list_starts_with(exp, quote_symbol);
+}
+
+char is_definition(object* exp) {
+	return list_starts_with(exp, define_symbol);
 }
 
 object* make_number(long value) {
@@ -449,17 +489,17 @@ object* read(FILE* in) {
 	return read_value(in, state);
 }
 
-object* list_ref(int n, object* obj) {
-	if (n == 0) {
-		return obj->data.list.first;
+object* eval(object* environment, object* exp) {
+	if (is_definition(exp)) {
+		object* binding = make_binding(list_ref(1, exp), list_ref(2, exp));
+		return cons(make_single_binding_environment(binding), environment);
+	}
+	else if (is_symbol(exp)) {
+		return find_in_environment_list(environment, exp);
 	}
 	else {
-		return list_ref(n - 1, obj->data.list.rest);
+		return exp;
 	}
-}
-
-object* eval(object* exp) {
-	return exp;
 }
 
 void write(object* obj);
@@ -484,6 +524,9 @@ void write_list(object* obj) {
 
 void write(object* obj) {
 	switch(obj->type) {
+		case type_none:
+			printf("undefined");
+			break;
 		case type_symbol:
 			printf(obj->data.symbol.name);
 			break;
@@ -495,11 +538,14 @@ void write(object* obj) {
 				printf("#t");
 			}
 			else {
-				fprintf(stderr, "erroneous boolean\n");
+				fprintf(stderr, "erroneous boolean");
 			}
 			break;
 		case type_number:
 			printf("%ld", obj->data.number.value);
+			break;
+		case type_binding:
+			write(obj->data.binding.value);
 			break;
 		case type_list:
 			if (is_quoted(obj)) {
@@ -511,7 +557,7 @@ void write(object* obj) {
 			}
 			break;
 		default:
-			fprintf(stderr, "unknown type\n");
+			fprintf(stderr, "unknown type");
 			exit(1);
 	}
 }
@@ -522,17 +568,19 @@ int main(void) {
 	
 	init();
 	
+	object* environment = empty_list[round];
 	object* ev;
 	
 	while(1) {
 		printf("> ");
-		ev = eval(read(stdin));
+		ev = eval(environment, read(stdin));
 		if (is_environment_list(ev)) {
+			environment = ev;
 		}
 		else {
 			write(ev);
+			printf("\n");
 		}
-		printf("\n");
 	}
 
 	return 0;
