@@ -4,13 +4,15 @@
 #include <ctype.h>
 
 typedef enum {
+	type_none,
 	type_boolean,
 	type_symbol,
 	type_number,
-	type_list} object_type;
-	
-typedef enum {round, square, curly, bracket_type_count} bracket_type;
+	type_list,
+	type_variable,
+	type_environment} object_type;
 
+typedef enum {round, square, curly, bracket_type_count} bracket_type;
 
 typedef struct object {
 	object_type type;
@@ -29,15 +31,25 @@ typedef struct object {
 			struct object* first;
 			struct object* rest;
 		} list;
+		struct {
+			struct object* name;
+			struct object* value;
+		} variable;
+		struct {
+			int element_count;
+			struct object** elements;
+		} environment;
 	} data;
 } object;
 
 object* false;
 object* true;
+object* no_object;
 object* empty_list[bracket_type_count];
+object* quote_symbol;
+object* define_symbol;
 char list_start_delimiter[bracket_type_count] = {'(', '[', '{'};
 char list_end_delimiter[bracket_type_count] = {')', ']', '}'};
-object* quote_symbol;
 
 object** symbols;
 int symbols_length;
@@ -55,6 +67,10 @@ char is_true(object* obj) {
 	return obj == true;
 }
 
+char is_no_object(object* obj) {
+	return obj == no_object;
+}
+
 char is_quote_symbol(object* obj) {
 	return obj == quote_symbol;
 }
@@ -69,6 +85,14 @@ char is_empty_list(object* obj) {
 
 char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
+}
+
+char is_environment(object* obj) {
+	return obj->type == type_environment;
+}
+
+char is_environment_list(object* obj) {
+	return is_nonempty_list(obj) && is_environment(obj->data.list.first);
 }
 
 object* allocate_object(void) {
@@ -130,7 +154,7 @@ object* find_symbol(char* name) {
 			return symbols[i];
 		}
 	}
-	return NULL;
+	return no_object;
 }
 
 object* make_empty_list(bracket_type type) {
@@ -144,6 +168,8 @@ void init(void) {
 	
 	true = allocate_object_boolean(1);
 	
+	no_object = allocate_object_type(type_none);
+	
 	int i;
 	for (i = 0; i < bracket_type_count; i++) {
 		empty_list[i] = make_empty_list(i);
@@ -154,6 +180,48 @@ void init(void) {
 	symbols = malloc(sizeof(object*));
 	
 	quote_symbol = add_symbol("quote");
+	define_symbol = add_symbol("define");
+}
+
+object* variable_name(object* obj) {
+	return obj->data.variable.name;
+}
+
+object* variable_value(object* obj) {
+	return obj->data.variable.value;
+}
+
+object* make_environment(object** elements, int element_count) {
+	object** elem = malloc(element_count * sizeof(object*));
+	memcpy(elem, elements, element_count * sizeof(object*));
+	
+	object* obj = allocate_object_type(type_environment);
+	obj->data.environment.elements = elem;
+	obj->data.environment.element_count = element_count;
+	return obj;
+}
+
+object* find_in_environment(object* env, object* symbol) {
+	int i;
+	int count = env->data.environment.element_count;
+	object** elem = env->data.environment.elements;
+	for (i = 0; i < count; i++) {
+		if (symbol == variable_name(elem[i])) {
+			return elem[i];
+		}
+	}
+	return no_object;
+}
+
+object* find_in_environment_list(object* ls, object* symbol) {
+	object* obj = no_object;
+	while (!is_empty_list(ls) && (obj == no_object)) {
+		obj = find_in_environment(ls->data.list.first, symbol);
+		if (obj == no_object) {
+			ls = ls->data.list.rest;
+		}
+	}
+	return obj;
 }
 
 char is_self_quoting(object* obj) {
@@ -294,7 +362,7 @@ object* read_number(FILE* in) {
 object* read_symbol(FILE* in) {
 	char* name = read_identifier(in);
 	object* obj = find_symbol(name);
-	if (obj == NULL) {
+	if (obj == no_object) {
 		obj = add_symbol(name);
 	}
 	else {
@@ -454,9 +522,16 @@ int main(void) {
 	
 	init();
 	
+	object* ev;
+	
 	while(1) {
 		printf("> ");
-		write(eval(read(stdin)));
+		ev = eval(read(stdin));
+		if (is_environment_list(ev)) {
+		}
+		else {
+			write(ev);
+		}
 		printf("\n");
 	}
 
