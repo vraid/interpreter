@@ -9,6 +9,7 @@ typedef enum {
 	type_symbol,
 	type_number,
 	type_list,
+	type_function,
 	type_binding,
 	type_environment} object_type;
 
@@ -32,22 +33,33 @@ typedef struct object {
 			struct object* rest;
 		} list;
 		struct {
+			struct object* parameters;
+			struct object* body;
+		} function;
+		struct {
 			struct object* name;
 			struct object* value;
 		} binding;
 		struct {
-			int element_count;
-			struct object** elements;
+			struct object* bindings;
 		} environment;
 	} data;
 } object;
 
+typedef enum {
+	quote_symbol,
+	define_symbol,
+	lambda_symbol,
+	special_symbol_count} special_symbol;
+
 object* false;
 object* true;
 object* no_object;
-object* empty_list[bracket_type_count];
-object* quote_symbol;
-object* define_symbol;
+object* no_symbol;
+object* no_binding;
+object* empty_list;
+object* empty_lists[bracket_type_count];
+object** special_symbols;
 char list_start_delimiter[bracket_type_count] = {'(', '[', '{'};
 char list_end_delimiter[bracket_type_count] = {')', ']', '}'};
 
@@ -55,8 +67,103 @@ object** symbols;
 int symbols_length;
 int symbol_count;
 
+void check_type(object_type type, object* obj) {
+	if (obj->type != type) {
+		fprintf(stderr, "faulty type\n");
+		exit(1);
+	}
+	return;
+}
+
 char is_boolean(object* obj) {
 	return obj->type == type_boolean;
+}
+
+char boolean_value(object* obj) {
+	check_type(type_boolean, obj);
+	return obj->data.boolean.value;
+}
+
+char is_symbol(object* obj) {
+	return obj->type == type_symbol;
+}
+
+char* symbol_name(object* obj) {
+	check_type(type_symbol, obj);
+	return obj->data.symbol.name;
+}
+
+char is_number(object* obj) {
+	return obj->type == type_number;
+}
+
+long number_value(object* obj) {
+	check_type(type_number, obj);
+	return obj->data.number.value;
+}
+
+char is_list(object* obj) {
+	return obj->type == type_list;
+}
+
+bracket_type list_type(object* obj) {
+	check_type(type_list, obj);
+	return obj->data.list.type;
+}
+
+object* list_first(object* ls) {
+	check_type(type_list, ls);
+	return ls->data.list.first;
+}
+
+object* list_rest(object* ls) {
+	check_type(type_list, ls);
+	return ls->data.list.rest;
+}
+
+object* list_ref(int n, object* ls) {
+	while (n > 0) {
+		ls = list_rest(ls);
+		n--;
+	}
+	return list_first(ls);
+}
+
+char is_function(object* obj) {
+	return obj->type == type_function;
+}
+
+object* function_parameters(object* obj) {
+	check_type(type_function, obj);
+	return obj->data.function.parameters;
+}
+
+object* function_body(object* obj) {
+	check_type(type_function, obj);
+	return obj->data.function.body;
+}
+
+char is_binding(object* obj) {
+	return obj->type == type_binding;
+}
+
+object* binding_name(object* obj) {
+	check_type(type_binding, obj);
+	return obj->data.binding.name;
+}
+
+object* binding_value(object* obj) {
+	check_type(type_binding, obj);
+	return obj->data.binding.value;
+}
+
+char is_environment(object* obj) {
+	return obj->type == type_environment;
+}
+
+object* environment_bindings(object* obj) {
+	check_type(type_environment, obj);
+	return obj->data.environment.bindings;
 }
 
 char is_false(object* obj) {
@@ -71,32 +178,42 @@ char is_no_object(object* obj) {
 	return obj == no_object;
 }
 
-char is_symbol(object* obj) {
-	return obj->type == type_symbol;
+char is_special_symbol(special_symbol s, object* obj) {
+	return obj == special_symbols[s];
 }
 
-char is_quote_symbol(object* obj) {
-	return obj == quote_symbol;
+char is_either_special_symbol(object* obj) {
+	int i;
+	for (i = 0; i < special_symbol_count; i++) {
+		if (is_special_symbol(i, obj)) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
-char is_list(object* obj) {
-	return obj->type == type_list;
+char is_quote(object* obj) {
+	return is_special_symbol(quote_symbol, obj);
+}
+
+char is_define(object* obj) {
+	return is_special_symbol(define_symbol, obj);
+}
+
+char is_lambda(object* obj) {
+	return is_special_symbol(lambda_symbol, obj);
 }
 
 char is_empty_list(object* obj) {
-	return obj == empty_list[obj->data.list.type];
+	return obj == empty_lists[list_type(obj)];
 }
 
 char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
 }
 
-char is_environment(object* obj) {
-	return obj->type == type_environment;
-}
-
 char is_environment_list(object* obj) {
-	return is_nonempty_list(obj) && is_environment(obj->data.list.first);
+	return is_nonempty_list(obj) && is_environment(list_first(obj));
 }
 
 object* allocate_object(void) {
@@ -111,16 +228,23 @@ object* allocate_object(void) {
 }
 
 object* allocate_object_type(object_type type) {
-	object* obj;
-	
-	obj = allocate_object();
+	object* obj = allocate_object();
 	obj->type = type;
 	return obj;
 }
 
-object* cons(object* first, object* rest) {
+object* allocate_list_type(bracket_type type) {
 	object* obj = allocate_object_type(type_list);
-	obj->data.list.type = rest->data.list.type;
+	obj->data.list.type = type;
+	return obj;
+}
+
+object* allocate_list(void) {
+	return allocate_list_type(round);
+}
+
+object* cons(object* first, object* rest) {
+	object* obj = allocate_list_type(list_type(rest));
 	obj->data.list.first = first;
 	obj->data.list.rest = rest;
 	return obj;
@@ -154,7 +278,7 @@ object* add_symbol(char* name) {
 object* find_symbol(char* name) {
 	int i;
 	for (i = 0; i < symbol_count; i++) {
-		if (strcmp(name, symbols[i]->data.symbol.name) == 0) {
+		if (strcmp(name, symbol_name(symbols[i])) == 0) {
 			return symbols[i];
 		}
 	}
@@ -162,54 +286,10 @@ object* find_symbol(char* name) {
 }
 
 object* make_empty_list(bracket_type type) {
-	object* obj = allocate_object_type(type_list);
-	obj->data.list.type = type;
+	object* obj = allocate_list_type(type);
+	obj->data.list.first = no_object;
+	obj->data.list.rest = obj;
 	return obj;
-}
-
-void init(void) {
-	false = allocate_object_boolean(0);
-	
-	true = allocate_object_boolean(1);
-	
-	no_object = allocate_object_type(type_none);
-	
-	int i;
-	for (i = 0; i < bracket_type_count; i++) {
-		empty_list[i] = make_empty_list(i);
-	}
-	
-	symbols_length = 1;
-	symbol_count = 0;
-	symbols = malloc(sizeof(object*));
-	
-	quote_symbol = add_symbol("quote");
-	define_symbol = add_symbol("define");
-}
-
-object* binding_name(object* obj) {
-	return obj->data.binding.name;
-}
-
-object* binding_value(object* obj) {
-	return obj->data.binding.value;
-}
-
-object* list_ref(int n, object* ls) {
-	while (n > 0) {
-		ls = ls->data.list.rest;
-		n--;
-	}
-	return ls->data.list.first;
-}
-
-int list_length(object* ls) {
-	int n = 0;
-	while (!is_empty_list(ls)) {
-		n++;
-		ls = ls->data.list.rest;
-	}
-	return n;
 }
 
 object* make_binding(object* name, object* value) {
@@ -219,41 +299,140 @@ object* make_binding(object* name, object* value) {
 	return obj;
 }
 
-object* make_multiple_binding_environment(object** elements, int element_count) {
-	object** elem = malloc(element_count * sizeof(object*));
-	memcpy(elem, elements, element_count * sizeof(object*));
+void init(void) {
+	false = allocate_object_boolean(0);
 	
+	true = allocate_object_boolean(1);
+	
+	no_object = allocate_object_type(type_none);
+	no_symbol = allocate_object_type(type_symbol);
+	no_symbol->data.symbol.name = malloc(sizeof(char));
+	no_symbol->data.symbol.name[0] = 0;
+	
+	no_binding = make_binding(no_symbol, no_object);
+	
+	int i;
+	for (i = 0; i <= bracket_type_count; i++) {
+		empty_lists[i] = make_empty_list(i);
+	}
+	
+	empty_list = empty_lists[round];
+	
+	symbols_length = 1;
+	symbol_count = 0;
+	symbols = malloc(sizeof(object*));
+	
+	special_symbols = malloc(special_symbol_count * sizeof(object*));
+	
+	special_symbols[quote_symbol] = add_symbol("quote");
+	special_symbols[define_symbol] = add_symbol("define");
+	special_symbols[lambda_symbol] = add_symbol("lambda");
+}
+
+int list_length(object* ls) {
+	int n = 0;
+	while (!is_empty_list(ls)) {
+		n++;
+		ls = list_rest(ls);
+	}
+	return n;
+}
+
+object* make_binding_list(object* names, object* values) {
+	if (is_empty_list(names)) {
+		return empty_list;
+	}
+	else {
+		object* ls = allocate_list();
+		object* prev;
+		object* next = ls;
+		while (!is_empty_list(names)) {
+			prev = next;
+			prev->data.list.first = make_binding(list_first(names), list_first(values));
+		
+			names = list_rest(names);
+			values = list_rest(values);
+		
+			if (is_empty_list(names)) {
+				next = empty_list;
+			}
+			else {
+				next = allocate_list();
+			}
+			prev->data.list.rest = next;
+		}
+		return ls;
+	}
+}
+
+object* make_environment(object* bindings) {
 	object* obj = allocate_object_type(type_environment);
-	obj->data.environment.elements = elem;
-	obj->data.environment.element_count = element_count;
+	obj->data.environment.bindings = bindings;
 	return obj;
 }
 
-object* make_single_binding_environment(object* binding) {
-	return make_multiple_binding_environment(&binding, 1);
+object* extend_environment(object* env, object* bindings) {
+	if (is_empty_list(bindings)) {
+		return env;
+	}
+	else {
+		return cons(make_environment(bindings), env);
+	}
 }
 
-object* find_in_environment(object* env, object* symbol) {
-	int i;
-	int count = env->data.environment.element_count;
-	object** elem = env->data.environment.elements;
-	for (i = 0; i < count; i++) {
-		if (symbol == binding_name(elem[i])) {
-			return elem[i];
+object* find_identifier_in_list(object* ls, object* symbol) {
+	while (!is_empty_list(ls)) {
+		object* binding = list_first(ls);
+		if (symbol == binding_name(binding)) {
+			return binding;
 		}
+		ls = list_rest(ls);
 	}
-	return no_object;
+	return no_binding;
 }
 
 object* find_in_environment_list(object* ls, object* symbol) {
-	object* obj = no_object;
-	while (!is_empty_list(ls) && (obj == no_object)) {
-		obj = find_in_environment(list_ref(0, ls), symbol);
-		if (obj == no_object) {
-			ls = ls->data.list.rest;
+	object* obj = no_binding;
+	while (!is_empty_list(ls) && (obj == no_binding)) {
+		obj = find_identifier_in_list(environment_bindings(list_first(ls)), symbol);
+		if (obj == no_binding) {
+			ls = list_rest(ls);
 		}
 	}
 	return obj;
+}
+
+object* values_from_environment(object* env, object* values) {
+	if (is_empty_list(values)) {
+		return values;
+	}
+	else {
+		object* ls = allocate_list();
+		object* prev;
+		object* next = ls;
+		while (!is_empty_list(values)) {
+			object* env_value;
+			object* value = list_first(values);
+			if (is_symbol(value)) {
+				env_value = binding_value(find_in_environment_list(env, value));
+			}
+			else {
+				env_value = value;
+			}
+			values = list_rest(values);
+			
+			prev = next;
+			prev->data.list.first = env_value;
+			if (is_empty_list(values)) {
+				next = empty_list;
+			}
+			else {
+				next = allocate_list();
+			}
+			prev->data.list.rest = next;
+		}
+		return ls;
+	}
 }
 
 char is_self_quoting(object* obj) {
@@ -267,29 +446,25 @@ char is_self_quoting(object* obj) {
 }
 
 object* quote(object* value) {
-	return cons(quote_symbol, cons(value, empty_list[round]));
+	return cons(special_symbols[quote_symbol], cons(value, empty_list));
 }
 
 char list_starts_with(object* ls, object* obj) {
-	return is_nonempty_list(ls) && (obj == list_ref(0, ls));
+	return is_nonempty_list(ls) && (obj == list_first(ls));
 }
 
 char is_quoted(object* exp) {
-	return list_starts_with(exp, quote_symbol);
+	return list_starts_with(exp, special_symbols[quote_symbol]);
 }
 
 char is_definition(object* exp) {
-	return list_starts_with(exp, define_symbol);
+	return list_starts_with(exp, special_symbols[define_symbol]);
 }
 
 object* make_number(long value) {
 	object* obj = allocate_object_type(type_number);
 	obj->data.number.value = value;
 	return obj;
-}
-
-char is_number(object* obj) {
-	return obj->type == type_number;
 }
 
 char in_bracket_list(char* ls, int c) {
@@ -475,7 +650,7 @@ object* read_list(FILE* in, read_state state, bracket_type type) {
 			fprintf(stderr, "bracket mismatch\n");
 			exit(1);
 		}
-		return empty_list[type];
+		return empty_lists[type];
 	}
 	else {
 		object* first = read_value(in, state);
@@ -489,36 +664,102 @@ object* read(FILE* in) {
 	return read_value(in, state);
 }
 
+object* eval(object* environment, object* exp);
+
+object* evaluate_values(object* env, object* expr) {
+	if (is_empty_list(expr)) {
+		return empty_list;
+	}
+	else {
+		object* ls = allocate_list();
+		object* prev;
+		object* next = ls;
+		while (!is_empty_list(expr)) {
+			prev = next;
+			prev->data.list.first = eval(env, list_first(expr));
+			expr = list_rest(expr);
+		
+			if (is_empty_list(expr)) {
+				next = empty_list;
+			}
+			else {
+				next = allocate_list();
+			}
+			prev->data.list.rest = next;
+		}
+		return ls;
+	}
+}
+
+object* evaluate_definition(object* environment, object* exp) {
+	object* binding = make_binding(list_ref(1, exp), eval(environment, list_ref(2, exp)));
+	return cons(make_environment(cons(binding, empty_list)), environment);
+}
+
+object* evaluate_lambda(object* environment, object* exp) {
+	object* parameters = list_ref(1, exp);
+	object* body = list_ref(2, exp);
+	object* obj = allocate_object_type(type_function);
+	obj->data.function.parameters = parameters;
+	obj->data.function.body = body;
+	return obj;
+}
+
 object* eval(object* environment, object* exp) {
-	if (is_definition(exp)) {
-		object* binding = make_binding(list_ref(1, exp), list_ref(2, exp));
-		return cons(make_single_binding_environment(binding), environment);
+	if (is_nonempty_list(exp)) {
+		object* symbol = list_first(exp);
+		if (is_define(symbol)) {
+			return evaluate_definition(environment, exp);
+		}
+		else if (is_quote(symbol)) {
+			return exp;
+		}
+		else if (is_lambda(symbol)) {
+			return evaluate_lambda(environment, exp);
+		}
+		else {
+			object* first = eval(environment, list_first(exp));
+			if (is_no_object(first)) {
+				printf("error: undefined binding\n");
+			}
+			else {
+				if (!is_function(first)) {
+					printf("error: not a function\n");
+				}
+				else {
+					object* values = evaluate_values(environment, list_rest(exp));
+					object* bindings = make_binding_list(function_parameters(first), values);
+					return eval(extend_environment(environment, bindings), function_body(first));
+				}
+			}
+		}
 	}
 	else if (is_symbol(exp)) {
-		return find_in_environment_list(environment, exp);
+		return binding_value(find_in_environment_list(environment, exp));
 	}
 	else {
 		return exp;
 	}
+	return no_object;
 }
 
 void write(object* obj);
 
 void write_list_cell(char first, object* obj) {
 	if (is_empty_list(obj)) {
-		printf("%c", list_end_delimiter[obj->data.list.type]);
+		printf("%c", list_end_delimiter[list_type(obj)]);
 	}
 	else {
 		if (!first) {
 			printf(" ");
 		}
-		write(obj->data.list.first);
-		write_list_cell(0, obj->data.list.rest);
+		write(list_first(obj));
+		write_list_cell(0, list_rest(obj));
 	}
 }
 
 void write_list(object* obj) {
-	printf("%c", list_start_delimiter[obj->data.list.type]);
+	printf("%c", list_start_delimiter[list_type(obj)]);
 	write_list_cell(1, obj);
 }
 
@@ -528,7 +769,7 @@ void write(object* obj) {
 			printf("undefined");
 			break;
 		case type_symbol:
-			printf(obj->data.symbol.name);
+			printf(symbol_name(obj));
 			break;
 		case type_boolean:
 			if (is_false(obj)) {
@@ -542,10 +783,7 @@ void write(object* obj) {
 			}
 			break;
 		case type_number:
-			printf("%ld", obj->data.number.value);
-			break;
-		case type_binding:
-			write(obj->data.binding.value);
+			printf("%ld", number_value(obj));
 			break;
 		case type_list:
 			if (is_quoted(obj)) {
@@ -556,9 +794,12 @@ void write(object* obj) {
 				write_list(obj);
 			}
 			break;
+		case type_function:
+			printf("function ");
+			write_list(function_parameters(obj));
+			break;
 		default:
 			fprintf(stderr, "unknown type");
-			exit(1);
 	}
 }
 
@@ -568,7 +809,7 @@ int main(void) {
 	
 	init();
 	
-	object* environment = empty_list[round];
+	object* environment = empty_list;
 	object* ev;
 	
 	while(1) {
