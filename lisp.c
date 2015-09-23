@@ -318,7 +318,7 @@ char* duplicate_string(char* str) {
 	size_t length = strlen(str) + 1;
 	char* d = malloc(length);
 	if (d == NULL) {
-		fprintf(stderr, "out of memory");
+		fprintf(stderr, "out of memory\n");
 		return NULL;
 	}
 	memcpy(d, str, length);
@@ -495,7 +495,7 @@ void write(object* obj) {
 				printf("#t");
 			}
 			else {
-				fprintf(stderr, "erroneous boolean");
+				fprintf(stderr, "erroneous boolean\n");
 			}
 			break;
 		case type_number:
@@ -518,7 +518,7 @@ void write(object* obj) {
 
 int main(void) {
 
-	printf("running lisp interpreter. use ctrl-c to exit");
+	printf("running lisp interpreter. use ctrl-c to exit\n");
 	
 	init();
 	
