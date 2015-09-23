@@ -34,6 +34,7 @@ typedef struct object {
 		} list;
 		struct {
 			struct object* parameters;
+			struct object* environment;
 			struct object* body;
 		} function;
 		struct {
@@ -60,6 +61,7 @@ object* no_binding;
 object* empty_list;
 object* empty_lists[bracket_type_count];
 object** special_symbols;
+object* empty_environment;
 char list_start_delimiter[bracket_type_count] = {'(', '[', '{'};
 char list_end_delimiter[bracket_type_count] = {')', ']', '}'};
 
@@ -138,6 +140,11 @@ object* function_parameters(object* obj) {
 	return obj->data.function.parameters;
 }
 
+object* function_environment(object* obj) {
+	check_type(type_function, obj);
+	return obj->data.function.environment;
+}
+
 object* function_body(object* obj) {
 	check_type(type_function, obj);
 	return obj->data.function.body;
@@ -212,10 +219,6 @@ char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
 }
 
-char is_environment_list(object* obj) {
-	return is_nonempty_list(obj) && is_environment(list_first(obj));
-}
-
 object* allocate_object(void) {
 	object* obj;
 	
@@ -248,6 +251,30 @@ object* cons(object* first, object* rest) {
 	obj->data.list.first = first;
 	obj->data.list.rest = rest;
 	return obj;
+}
+
+object* append(object* as, object* rest) {
+	if (is_empty_list(as)) {
+		return rest;
+	}
+	else {
+		object* ls = allocate_list();
+		object* prev;
+		object* next = ls;
+		while (!is_empty_list(as)) {
+			prev = next;
+			prev->data.list.first = list_first(as);
+			as = list_rest(as);
+			if (is_empty_list(as)) {
+				next = rest;
+			}
+			else {
+				next = allocate_list();
+			}
+			prev->data.list.rest = next;
+		}
+		return ls;
+	}
 }
 
 object* allocate_object_boolean(char value) {
@@ -299,6 +326,12 @@ object* make_binding(object* name, object* value) {
 	return obj;
 }
 
+object* make_environment(object* bindings) {
+	object* obj = allocate_object_type(type_environment);
+	obj->data.environment.bindings = bindings;
+	return obj;
+}
+
 void init(void) {
 	false = allocate_object_boolean(0);
 	
@@ -317,6 +350,8 @@ void init(void) {
 	}
 	
 	empty_list = empty_lists[round];
+	
+	empty_environment = make_environment(empty_list);
 	
 	symbols_length = 1;
 	symbol_count = 0;
@@ -365,22 +400,17 @@ object* make_binding_list(object* names, object* values) {
 	}
 }
 
-object* make_environment(object* bindings) {
-	object* obj = allocate_object_type(type_environment);
-	obj->data.environment.bindings = bindings;
-	return obj;
-}
-
 object* extend_environment(object* env, object* bindings) {
 	if (is_empty_list(bindings)) {
 		return env;
 	}
 	else {
-		return cons(make_environment(bindings), env);
+		return make_environment(append(bindings, environment_bindings(env)));
 	}
 }
 
-object* find_identifier_in_list(object* ls, object* symbol) {
+object* find_in_environment(object* env, object* symbol) {
+	object* ls = environment_bindings(env);
 	while (!is_empty_list(ls)) {
 		object* binding = list_first(ls);
 		if (symbol == binding_name(binding)) {
@@ -389,50 +419,6 @@ object* find_identifier_in_list(object* ls, object* symbol) {
 		ls = list_rest(ls);
 	}
 	return no_binding;
-}
-
-object* find_in_environment_list(object* ls, object* symbol) {
-	object* obj = no_binding;
-	while (!is_empty_list(ls) && (obj == no_binding)) {
-		obj = find_identifier_in_list(environment_bindings(list_first(ls)), symbol);
-		if (obj == no_binding) {
-			ls = list_rest(ls);
-		}
-	}
-	return obj;
-}
-
-object* values_from_environment(object* env, object* values) {
-	if (is_empty_list(values)) {
-		return values;
-	}
-	else {
-		object* ls = allocate_list();
-		object* prev;
-		object* next = ls;
-		while (!is_empty_list(values)) {
-			object* env_value;
-			object* value = list_first(values);
-			if (is_symbol(value)) {
-				env_value = binding_value(find_in_environment_list(env, value));
-			}
-			else {
-				env_value = value;
-			}
-			values = list_rest(values);
-			
-			prev = next;
-			prev->data.list.first = env_value;
-			if (is_empty_list(values)) {
-				next = empty_list;
-			}
-			else {
-				next = allocate_list();
-			}
-			prev->data.list.rest = next;
-		}
-		return ls;
-	}
 }
 
 char is_self_quoting(object* obj) {
@@ -693,7 +679,7 @@ object* evaluate_values(object* env, object* expr) {
 
 object* evaluate_definition(object* environment, object* exp) {
 	object* binding = make_binding(list_ref(1, exp), eval(environment, list_ref(2, exp)));
-	return cons(make_environment(cons(binding, empty_list)), environment);
+	return extend_environment(environment, cons(binding, empty_list));
 }
 
 object* evaluate_lambda(object* environment, object* exp) {
@@ -701,6 +687,7 @@ object* evaluate_lambda(object* environment, object* exp) {
 	object* body = list_ref(2, exp);
 	object* obj = allocate_object_type(type_function);
 	obj->data.function.parameters = parameters;
+	obj->data.function.environment = environment;
 	obj->data.function.body = body;
 	return obj;
 }
@@ -718,7 +705,7 @@ object* eval(object* environment, object* exp) {
 			return evaluate_lambda(environment, exp);
 		}
 		else {
-			object* first = eval(environment, list_first(exp));
+			object* first = eval(environment, symbol);
 			if (is_no_object(first)) {
 				printf("error: undefined binding\n");
 			}
@@ -729,13 +716,13 @@ object* eval(object* environment, object* exp) {
 				else {
 					object* values = evaluate_values(environment, list_rest(exp));
 					object* bindings = make_binding_list(function_parameters(first), values);
-					return eval(extend_environment(environment, bindings), function_body(first));
+					return eval(extend_environment(function_environment(first), bindings), function_body(first));
 				}
 			}
 		}
 	}
 	else if (is_symbol(exp)) {
-		return binding_value(find_in_environment_list(environment, exp));
+		return binding_value(find_in_environment(environment, exp));
 	}
 	else {
 		return exp;
@@ -809,13 +796,13 @@ int main(void) {
 	
 	init();
 	
-	object* environment = empty_list;
+	object* environment = empty_environment;
 	object* ev;
 	
 	while(1) {
 		printf("> ");
 		ev = eval(environment, read(stdin));
-		if (is_environment_list(ev)) {
+		if (is_environment(ev)) {
 			environment = ev;
 		}
 		else {
