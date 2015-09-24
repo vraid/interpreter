@@ -51,6 +51,7 @@ typedef enum {
 	quote_symbol,
 	define_symbol,
 	lambda_symbol,
+	if_symbol,
 	special_symbol_count} special_symbol;
 
 object* false;
@@ -211,6 +212,10 @@ char is_lambda(object* obj) {
 	return is_special_symbol(lambda_symbol, obj);
 }
 
+char is_if(object* obj) {
+	return is_special_symbol(if_symbol, obj);
+}
+
 char is_empty_list(object* obj) {
 	return obj == empty_lists[list_type(obj)];
 }
@@ -362,6 +367,7 @@ void init(void) {
 	special_symbols[quote_symbol] = add_symbol("quote");
 	special_symbols[define_symbol] = add_symbol("define");
 	special_symbols[lambda_symbol] = add_symbol("lambda");
+	special_symbols[if_symbol] = add_symbol("if");
 }
 
 int list_length(object* ls) {
@@ -703,6 +709,17 @@ object* eval(object* environment, object* exp) {
 		}
 		else if (is_lambda(symbol)) {
 			return evaluate_lambda(environment, exp);
+		}
+		else if (is_if(symbol)) {
+			object* condition = eval(environment, list_ref(1, exp));
+			int pos;
+			if (is_false(condition)) {
+				pos = 3;
+			}
+			else {
+				pos = 2;
+			}
+			return eval(environment, list_ref(pos, exp));
 		}
 		else {
 			object* first = eval(environment, symbol);
