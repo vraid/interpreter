@@ -51,6 +51,7 @@ typedef enum {
 	quote_symbol,
 	define_symbol,
 	lambda_symbol,
+	curry_symbol,
 	apply_symbol,
 	if_symbol,
 	list_symbol,
@@ -153,6 +154,21 @@ object* list_rest(object* ls) {
 	return ls->data.list.rest;
 }
 
+char is_empty_list(object* obj) {
+	return obj == empty_lists[list_type(obj)];
+}
+
+char is_nonempty_list(object* obj) {
+	return is_list(obj) && !is_empty_list(obj);
+}
+
+object* cons(object* first, object* rest) {
+	object* obj = allocate_list_type(list_type(rest));
+	obj->data.list.first = first;
+	obj->data.list.rest = rest;
+	return obj;
+}
+
 object* list_ref(int n, object* ls) {
 	while (n > 0) {
 		ls = list_rest(ls);
@@ -192,6 +208,39 @@ object* list_drop(int n, object* obj) {
 		n--;
 	}
 	return obj;
+}
+
+object* append(object* as, object* rest) {
+	if (is_empty_list(as)) {
+		return rest;
+	}
+	else {
+		object* ls = allocate_list();
+		object* prev;
+		object* next = ls;
+		while (!is_empty_list(as)) {
+			prev = next;
+			prev->data.list.first = list_first(as);
+			as = list_rest(as);
+			if (is_empty_list(as)) {
+				next = rest;
+			}
+			else {
+				next = allocate_list();
+			}
+			prev->data.list.rest = next;
+		}
+		return ls;
+	}
+}
+
+object* reverse(object* obj) {
+	object* ls = empty_list;
+	while (!is_empty_list(obj)) {
+		ls = cons(list_first(obj), ls);
+		obj = list_rest(obj);
+	}
+	return ls;
 }
 
 char is_function(object* obj) {
@@ -274,6 +323,10 @@ char is_lambda(object* obj) {
 	return is_special_symbol(lambda_symbol, obj);
 }
 
+char is_curry(object* obj) {
+	return is_special_symbol(curry_symbol, obj);
+}
+
 char is_apply(object* obj) {
 	return is_special_symbol(apply_symbol, obj);
 }
@@ -284,45 +337,6 @@ char is_if(object* obj) {
 
 char is_list_symbol(object* obj) {
 	return is_special_symbol(list_symbol, obj);
-}
-
-char is_empty_list(object* obj) {
-	return obj == empty_lists[list_type(obj)];
-}
-
-char is_nonempty_list(object* obj) {
-	return is_list(obj) && !is_empty_list(obj);
-}
-
-object* cons(object* first, object* rest) {
-	object* obj = allocate_list_type(list_type(rest));
-	obj->data.list.first = first;
-	obj->data.list.rest = rest;
-	return obj;
-}
-
-object* append(object* as, object* rest) {
-	if (is_empty_list(as)) {
-		return rest;
-	}
-	else {
-		object* ls = allocate_list();
-		object* prev;
-		object* next = ls;
-		while (!is_empty_list(as)) {
-			prev = next;
-			prev->data.list.first = list_first(as);
-			as = list_rest(as);
-			if (is_empty_list(as)) {
-				next = rest;
-			}
-			else {
-				next = allocate_list();
-			}
-			prev->data.list.rest = next;
-		}
-		return ls;
-	}
 }
 
 object* allocate_object_boolean(char value) {
@@ -410,6 +424,7 @@ void init(void) {
 	special_symbols[quote_symbol] = add_symbol("quote");
 	special_symbols[define_symbol] = add_symbol("define");
 	special_symbols[lambda_symbol] = add_symbol("lambda");
+	special_symbols[curry_symbol] = add_symbol("curry");
 	special_symbols[apply_symbol] = add_symbol("apply");
 	special_symbols[if_symbol] = add_symbol("if");
 	special_symbols[list_symbol] = add_symbol("list");
@@ -733,6 +748,10 @@ object* evaluate_definition(object* environment, object* exp) {
 	return extend_environment(environment, cons(binding, empty_list));
 }
 
+object* make_lambda(object* parameters, object* body) {
+	return cons(special_symbols[lambda_symbol], cons(parameters, cons(body, empty_list)));
+}
+
 object* evaluate_lambda(object* environment, object* exp) {
 	object* parameters = list_ref(1, exp);
 	object* body = list_ref(2, exp);
@@ -755,6 +774,29 @@ object* eval(object* environment, object* exp) {
 		else if (is_lambda(symbol)) {
 			return evaluate_lambda(environment, exp);
 		}
+		else if (is_curry(symbol)) {
+			object* function_name = list_ref(1, exp);
+			object* function = eval(environment, function_name);
+			if (!is_function(function)) {
+				printf("error: apply on non-function\n");
+			}
+			else {
+				object* parameters = function_parameters(function);
+				object* rev_param = reverse(parameters);
+				if (is_empty_list(rev_param)) {
+					return function;
+				}
+				else {
+					object* body = function_body(function);
+					while (!is_empty_list(rev_param)) {
+						object* argument = cons(list_first(rev_param), empty_list);
+						body = make_lambda(argument, body);
+						rev_param = list_rest(rev_param);
+					}
+					return eval(environment, body);
+				}
+			}
+		}
 		else if (is_apply(symbol)) {
 			object* function_name = list_ref(1, exp);
 			object* function = eval(environment, function_name);
@@ -763,10 +805,13 @@ object* eval(object* environment, object* exp) {
 			}
 			else {
 				int argument_count = list_length(exp) - 2;
+				object* parameters = function_parameters(function);
 				object* arguments = list_drop(2, exp);
-				object* parameters = list_drop(argument_count, function_parameters(function));
-				object* body = cons(function_name, append(arguments, parameters));
-				return evaluate_lambda(environment, cons(special_symbols[lambda_symbol], cons(parameters, cons(body, empty_list))));
+				object* inner_parameters = list_drop(argument_count, parameters);
+				object* outer_parameters = list_take(argument_count, parameters);
+				object* inner_body = make_lambda(inner_parameters, function_body(function));
+				object* outer_body = cons(make_lambda(outer_parameters, inner_body),  arguments);
+				return eval(environment, outer_body);
 			}
 		}
 		else if (is_if(symbol)) {
