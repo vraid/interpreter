@@ -51,6 +51,7 @@ typedef enum {
 	quote_symbol,
 	define_symbol,
 	lambda_symbol,
+	apply_symbol,
 	if_symbol,
 	list_symbol,
 	special_symbol_count} special_symbol;
@@ -70,6 +71,33 @@ char list_end_delimiter[bracket_type_count] = {')', ']', '}'};
 object** symbols;
 int symbols_length;
 int symbol_count;
+
+object* allocate_object(void) {
+	object* obj;
+	
+	obj = malloc(sizeof(object));
+	if (obj == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
+	return obj;
+}
+
+object* allocate_object_type(object_type type) {
+	object* obj = allocate_object();
+	obj->type = type;
+	return obj;
+}
+
+object* allocate_list_type(bracket_type type) {
+	object* obj = allocate_object_type(type_list);
+	obj->data.list.type = type;
+	return obj;
+}
+
+object* allocate_list(void) {
+	return allocate_list_type(round);
+}
 
 void check_type(object_type type, object* obj) {
 	if (obj->type != type) {
@@ -131,6 +159,39 @@ object* list_ref(int n, object* ls) {
 		n--;
 	}
 	return list_first(ls);
+}
+
+object* list_take(int n, object* obj) {
+	if (n == 0) {
+		return empty_list;
+	}
+	else {
+		object* ls = allocate_list();
+		object* prev;
+		object* next = ls;
+		while (n > 0) {
+			prev = next;
+			prev->data.list.first = list_first(obj);
+			obj = list_rest(obj);
+			n--;
+			if (n == 0) {
+				next = empty_list;
+			}
+			else {
+				next = allocate_list();
+			}
+			prev->data.list.rest = next;
+		}
+		return ls;
+	}
+}
+
+object* list_drop(int n, object* obj) {
+	while (n > 0) {
+		obj = list_rest(obj);
+		n--;
+	}
+	return obj;
 }
 
 char is_function(object* obj) {
@@ -213,6 +274,10 @@ char is_lambda(object* obj) {
 	return is_special_symbol(lambda_symbol, obj);
 }
 
+char is_apply(object* obj) {
+	return is_special_symbol(apply_symbol, obj);
+}
+
 char is_if(object* obj) {
 	return is_special_symbol(if_symbol, obj);
 }
@@ -227,33 +292,6 @@ char is_empty_list(object* obj) {
 
 char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
-}
-
-object* allocate_object(void) {
-	object* obj;
-	
-	obj = malloc(sizeof(object));
-	if (obj == NULL) {
-		fprintf(stderr, "out of memory\n");
-		exit(1);
-	}
-	return obj;
-}
-
-object* allocate_object_type(object_type type) {
-	object* obj = allocate_object();
-	obj->type = type;
-	return obj;
-}
-
-object* allocate_list_type(bracket_type type) {
-	object* obj = allocate_object_type(type_list);
-	obj->data.list.type = type;
-	return obj;
-}
-
-object* allocate_list(void) {
-	return allocate_list_type(round);
 }
 
 object* cons(object* first, object* rest) {
@@ -372,6 +410,7 @@ void init(void) {
 	special_symbols[quote_symbol] = add_symbol("quote");
 	special_symbols[define_symbol] = add_symbol("define");
 	special_symbols[lambda_symbol] = add_symbol("lambda");
+	special_symbols[apply_symbol] = add_symbol("apply");
 	special_symbols[if_symbol] = add_symbol("if");
 	special_symbols[list_symbol] = add_symbol("list");
 }
@@ -715,6 +754,20 @@ object* eval(object* environment, object* exp) {
 		}
 		else if (is_lambda(symbol)) {
 			return evaluate_lambda(environment, exp);
+		}
+		else if (is_apply(symbol)) {
+			object* function_name = list_ref(1, exp);
+			object* function = eval(environment, function_name);
+			if (!is_function(function)) {
+				printf("error: apply on non-function\n");
+			}
+			else {
+				int argument_count = list_length(exp) - 2;
+				object* arguments = list_drop(2, exp);
+				object* parameters = list_drop(argument_count, function_parameters(function));
+				object* body = cons(function_name, append(arguments, parameters));
+				return evaluate_lambda(environment, cons(special_symbols[lambda_symbol], cons(parameters, cons(body, empty_list))));
+			}
 		}
 		else if (is_if(symbol)) {
 			object* condition = eval(environment, list_ref(1, exp));
