@@ -252,7 +252,7 @@ object* evaluate_lambda(object* environment, object* exp) {
 	return make_function(environment, parameters, body);
 }
 
-object* evaluate_function(object* environment, object* function, object* values) {
+object* evaluate_function_call(object* environment, object* function, object* values) {
 	object* bindings = make_binding_list(function_parameters(function), values);
 	return eval(extend_environment(function_environment(function), bindings), function_body(function));
 }
@@ -272,7 +272,7 @@ object* evaluate_map(object* environment, object* exp) {
 		object* next = ls;
 		while (!is_empty_list(values)) {
 			prev = next;
-			prev->data.list.first = evaluate_function(environment, f, cons(values->data.list.first, empty_list()));
+			prev->data.list.first = evaluate_function_call(environment, f, cons(values->data.list.first, empty_list()));
 			values = list_rest(values);
 			if (is_empty_list(values)) {
 				next = empty_list();
@@ -284,6 +284,17 @@ object* evaluate_map(object* environment, object* exp) {
 		}
 		return ls;
 	}
+}
+
+object* evaluate_fold(object* environment, object* exp) {
+	object* f = eval(environment, list_ref(1, exp));
+	object* initial = eval(environment, list_ref(2, exp));
+	object* values = eval(environment, list_ref(3, exp));
+	while (!is_empty_list(values)) {
+		initial = evaluate_function_call(environment, f, cons(values->data.list.first, cons(initial, empty_list())));
+		values = list_rest(values);
+	}
+	return initial;
 }
 
 object* eval(object* environment, object* exp) {
@@ -302,6 +313,7 @@ object* eval(object* environment, object* exp) {
 			return evaluate_map(environment, exp);
 		}
 		else if (is_fold_symbol(symbol)) {
+			return evaluate_fold(environment, exp);
 		}
 		else if (is_filter_symbol(symbol)) {
 		}
@@ -367,7 +379,7 @@ object* eval(object* environment, object* exp) {
 			else {
 				if (is_function(first)) {
 					object* values = evaluate_values(environment, list_rest(exp));
-					return evaluate_function(environment, first, values);
+					return evaluate_function_call(environment, first, values);
 				}
 				else if (is_primitive_procedure(first)) {
 					object* values = evaluate_values(environment, list_rest(exp));
