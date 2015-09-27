@@ -14,8 +14,12 @@ void check_type(object_type type, object* obj) {
 	return;
 }
 
+char is_type(object_type type, object* obj) {
+	return obj->type == type;
+}
+
 char is_boolean(object* obj) {
-	return obj->type == type_boolean;
+	return is_type(type_boolean, obj);
 }
 
 char boolean_value(object* obj) {
@@ -24,7 +28,7 @@ char boolean_value(object* obj) {
 }
 
 char is_symbol(object* obj) {
-	return obj->type == type_symbol;
+	return is_type(type_symbol, obj);
 }
 
 char* symbol_name(object* obj) {
@@ -33,7 +37,7 @@ char* symbol_name(object* obj) {
 }
 
 char is_number(object* obj) {
-	return obj->type == type_number;
+	return is_type(type_number, obj);
 }
 
 long number_value(object* obj) {
@@ -42,7 +46,7 @@ long number_value(object* obj) {
 }
 
 char is_list(object* obj) {
-	return obj->type == type_list;
+	return is_type(type_list, obj);
 }
 
 bracket_type list_type(object* obj) {
@@ -65,7 +69,7 @@ char is_nonempty_list(object* obj) {
 }
 
 char is_function(object* obj) {
-	return obj->type == type_function;
+	return is_type(type_function, obj);
 }
 
 object* function_parameters(object* obj) {
@@ -81,6 +85,20 @@ object* function_environment(object* obj) {
 object* function_body(object* obj) {
 	check_type(type_function, obj);
 	return obj->data.function.body;
+}
+
+char is_primitive_procedure(object* obj) {
+	return obj->type == type_primitive_procedure;
+}
+
+object* primitive_procedure_parameters(object* obj) {
+	check_type(type_primitive_procedure, obj);
+	return obj->data.primitive_procedure.parameters;
+}
+
+primitive_proc primitive_procedure_proc(object* obj) {
+	check_type(type_primitive_procedure, obj);
+	return obj->data.primitive_procedure.proc;
 }
 
 char is_binding(object* obj) {
@@ -114,12 +132,6 @@ object* allocate_object_boolean(char value) {
 	return obj;
 }
 
-object* make_symbol(char* name) {
-	object* obj = allocate_object_type(type_symbol);
-	obj->data.symbol.name = name;
-	return obj;
-}
-
 object* make_empty_list(bracket_type type) {
 	object* obj = allocate_list_type(type);
 	obj->data.list.first = no_object();
@@ -145,6 +157,13 @@ object* make_function(object* environment, object* parameters, object* body) {
 	obj->data.function.environment = environment;
 	obj->data.function.parameters = parameters;
 	obj->data.function.body = body;
+	return obj;
+}
+
+object* make_primitive_procedure(object* parameters, primitive_proc proc) {
+	object* obj = allocate_object_type(type_primitive_procedure);
+	obj->data.primitive_procedure.parameters = parameters;
+	obj->data.primitive_procedure.proc = proc;
 	return obj;
 }
 

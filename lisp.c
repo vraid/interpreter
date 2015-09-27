@@ -316,7 +316,7 @@ object* eval(object* environment, object* exp) {
 			return eval(environment, list_ref(pos, exp));
 		}
 		else if (is_list_symbol(symbol)) {
-			return quote(evaluate_values(environment, list_rest(exp)));
+			return evaluate_values(environment, list_rest(exp));
 		}
 		else {
 			object* first = eval(environment, symbol);
@@ -324,13 +324,17 @@ object* eval(object* environment, object* exp) {
 				printf("error: undefined binding\n");
 			}
 			else {
-				if (!is_function(first)) {
-					printf("error: not a function\n");
-				}
-				else {
+				if (is_function(first)) {
 					object* values = evaluate_values(environment, list_rest(exp));
 					object* bindings = make_binding_list(function_parameters(first), values);
 					return eval(extend_environment(function_environment(first), bindings), function_body(first));
+				}
+				else if (is_primitive_procedure(first)) {
+					object* values = evaluate_values(environment, list_rest(exp));
+					return (*(first->data.primitive_procedure.proc))(values);
+				}
+				else {
+					printf("error: not a function\n");
 				}
 			}
 		}

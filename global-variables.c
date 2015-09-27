@@ -21,6 +21,12 @@ object* _if_symbol;
 object* _list_symbol;
 object* _empty_environment;
 
+object* make_symbol(char* name) {
+	object* obj = allocate_object_type(type_symbol);
+	obj->data.symbol.name = name;
+	return obj;
+}
+
 void init_global_variables(void) {
 	_false = allocate_object_boolean(0);
 	
