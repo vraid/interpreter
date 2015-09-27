@@ -19,6 +19,9 @@ object* _curry_symbol;
 object* _apply_symbol;
 object* _if_symbol;
 object* _list_symbol;
+object* _map_symbol;
+object* _fold_symbol;
+object* _filter_symbol;
 object* _empty_environment;
 
 object* make_symbol(char* name) {
@@ -59,6 +62,9 @@ void init_global_variables(void) {
 	_apply_symbol = add_symbol("apply");
 	_if_symbol = add_symbol("if");
 	_list_symbol = add_symbol("list");
+	_map_symbol = add_symbol("map");
+	_fold_symbol = add_symbol("fold");
+	_filter_symbol = add_symbol("filter");
 }
 
 object* find_symbol(char* name) {
@@ -140,6 +146,15 @@ char is_if_symbol(object* obj) {
 char is_list_symbol(object* obj) {
 	return obj == _list_symbol;
 }
+char is_map_symbol(object* obj) {
+	return obj == _map_symbol;
+}
+char is_fold_symbol(object* obj) {
+	return obj == _fold_symbol;
+}
+char is_filter_symbol(object* obj) {
+	return obj == _filter_symbol;
+}
 object* quote_symbol(void) {
 	return _quote_symbol;
 }
@@ -160,5 +175,14 @@ object* if_symbol(void) {
 }
 object* list_symbol(void) {
 	return _list_symbol;
+}
+object* map_symbol(void) {
+	return _map_symbol;
+}
+object* fold_symbol(void) {
+	return _fold_symbol;
+}
+object* filter_symbol(void) {
+	return _filter_symbol;
 }
 
