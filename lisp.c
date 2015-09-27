@@ -297,6 +297,31 @@ object* evaluate_fold(object* environment, object* exp) {
 	return initial;
 }
 
+object* evaluate_filter(object* environment, object* exp) {
+	object* f = eval(environment, list_ref(1, exp));
+	object* values = eval(environment, list_ref(2, exp));
+	object* ls = empty_list();
+	object* next;
+	while (!is_empty_list(values)) {
+		object* first = values->data.list.first;
+		object* b = evaluate_function_call(environment, f, cons(first, empty_list()));
+		values = list_rest(values);
+		if (!is_false(b)) {
+			if (is_empty_list(ls)) {
+				ls = allocate_list();
+				next = ls;
+			}
+			else {
+				next->data.list.rest = allocate_list();
+				next = list_rest(next);
+			}
+			next->data.list.first = first;
+		}
+		next->data.list.rest = empty_list();
+	}
+	return ls;
+}
+
 object* eval(object* environment, object* exp) {
 	if (is_nonempty_list(exp)) {
 		object* symbol = list_first(exp);
@@ -316,6 +341,7 @@ object* eval(object* environment, object* exp) {
 			return evaluate_fold(environment, exp);
 		}
 		else if (is_filter_symbol(symbol)) {
+			return evaluate_filter(environment, exp);
 		}
 		else if (is_curry_symbol(symbol)) {
 			object* function_name = list_ref(1, exp);
