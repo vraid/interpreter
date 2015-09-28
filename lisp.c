@@ -267,22 +267,13 @@ object* evaluate_map(object* environment, object* exp) {
 		return values;
 	}
 	else {
-		object* ls = allocate_list();
-		object* prev;
-		object* next = ls;
+		object* ls = empty_list();
 		while (!is_empty_list(values)) {
-			prev = next;
-			prev->data.list.first = evaluate_function_call(environment, f, cons(values->data.list.first, empty_list()));
+			
+			ls = cons(evaluate_function_call(environment, f, cons(values->data.list.first, empty_list())), ls);
 			values = list_rest(values);
-			if (is_empty_list(values)) {
-				next = empty_list();
-			}
-			else {
-				next = allocate_list();
-			}
-			prev->data.list.rest = next;
 		}
-		return ls;
+		return list_reverse(ls);
 	}
 }
 
@@ -301,25 +292,15 @@ object* evaluate_filter(object* environment, object* exp) {
 	object* f = eval(environment, list_ref(1, exp));
 	object* values = eval(environment, list_ref(2, exp));
 	object* ls = empty_list();
-	object* next;
 	while (!is_empty_list(values)) {
 		object* first = values->data.list.first;
 		object* b = evaluate_function_call(environment, f, cons(first, empty_list()));
 		values = list_rest(values);
 		if (!is_false(b)) {
-			if (is_empty_list(ls)) {
-				ls = allocate_list();
-				next = ls;
-			}
-			else {
-				next->data.list.rest = allocate_list();
-				next = list_rest(next);
-			}
-			next->data.list.first = first;
+			ls = cons(first, ls);
 		}
-		next->data.list.rest = empty_list();
 	}
-	return ls;
+	return list_reverse(ls);
 }
 
 object* eval(object* environment, object* exp) {
