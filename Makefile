@@ -1,7 +1,7 @@
 .PHONY: clean
 
-lisp: lisp.c
-	cc -Wall -ansi -o lisp lisp.c
+lisp: *.c
+	cc -Wall -Wextra -pedantic -std=gnu99 -o lisp *.c
 
 clean:
 	rm lisp
