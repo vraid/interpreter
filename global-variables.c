@@ -1,5 +1,9 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "global-variables.h"
 #include "data-structures.h"
+#include "allocation.h"
 
 object** symbols;
 int symbols_length;

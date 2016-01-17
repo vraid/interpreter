@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "allocation.h"
 
 object* allocate_object(void) {
@@ -25,4 +27,12 @@ object* allocate_list_type(bracket_type type) {
 
 object* allocate_list(void) {
 	return allocate_list_type(round);
+}
+
+object* allocate_object_boolean(char value) {
+	object* obj;
+	
+	obj = allocate_object_type(type_boolean);
+	obj->data.boolean.value = value;
+	return obj;
 }

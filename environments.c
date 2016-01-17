@@ -1,5 +1,6 @@
 #include "environments.h"
 #include "list-util.h"
+#include "global-variables.h"
 
 object* extend_environment(object* env, object* bindings) {
 	if (is_empty_list(bindings)) {

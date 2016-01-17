@@ -6,6 +6,9 @@
 #include "allocation.h"
 #include "global-variables.h"
 
+char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '('};
+char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')'};
+
 void check_type(object_type type, object* obj) {
 	if (obj->type != type) {
 		fprintf(stderr, "faulty type\n");
@@ -122,14 +125,6 @@ char is_environment(object* obj) {
 object* environment_bindings(object* obj) {
 	check_type(type_environment, obj);
 	return obj->data.environment.bindings;
-}
-
-object* allocate_object_boolean(char value) {
-	object* obj;
-	
-	obj = allocate_object_type(type_boolean);
-	obj->data.boolean.value = value;
-	return obj;
 }
 
 object* make_empty_list(bracket_type type) {

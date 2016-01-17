@@ -51,8 +51,8 @@ typedef struct object {
 	} data;
 } object;
 
-char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '('};
-char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')'};
+char list_start_delimiter[bracket_type_count];
+char list_end_delimiter[bracket_type_count];
 
 void check_type(object_type type, object* obj);
 

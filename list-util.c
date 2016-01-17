@@ -1,5 +1,6 @@
 #include "list-util.h"
 #include "global-variables.h"
+#include "allocation.h"
 
 object* cons(object* first, object* rest) {
 	object* obj = allocate_list_type(list_type(rest));

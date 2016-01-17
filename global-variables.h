@@ -1,5 +1,7 @@
 #pragma once
 
+#include "data-structures.h"
+
 void init_global_variables(void);
 
 object* find_symbol(char* name);

@@ -6,6 +6,7 @@
 #include "data-structures.h"
 #include "list-util.h"
 #include "environments.h"
+#include "global-variables.h"
 
 typedef struct arg2 {
 	object* one;
