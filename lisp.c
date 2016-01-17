@@ -9,6 +9,7 @@
 #include "environments.h"
 #include "list-util.h"
 #include "read.h"
+#include "print.h"
 
 object* eval(object* environment, object* exp);
 
@@ -60,8 +61,6 @@ object* evaluate_function_call(object* environment, object* function, object* va
 	object* bindings = make_binding_list(function_parameters(function), values);
 	return eval(extend_environment(function_environment(function), bindings), function_body(function));
 }
-
-void write(object* obj);
 
 object* evaluate_map(object* environment, object* exp) {
 	object* obj = list_ref(2, exp);
@@ -209,66 +208,6 @@ object* eval(object* environment, object* exp) {
 		return exp;
 	}
 	return no_object();
-}
-
-void write(object* obj);
-
-void write_list_cell(char first, object* obj) {
-	if (is_empty_list(obj)) {
-		printf("%c", list_end_delimiter[list_type(obj)]);
-	}
-	else {
-		if (!first) {
-			printf(" ");
-		}
-		write(list_first(obj));
-		write_list_cell(0, list_rest(obj));
-	}
-}
-
-void write_list(object* obj) {
-	printf("%c", list_start_delimiter[list_type(obj)]);
-	write_list_cell(1, obj);
-}
-
-void write(object* obj) {
-	switch(obj->type) {
-		case type_none:
-			printf("undefined");
-			break;
-		case type_symbol:
-			printf(symbol_name(obj));
-			break;
-		case type_boolean:
-			if (is_false(obj)) {
-				printf("#f");
-			}
-			else if (is_true(obj)) {
-				printf("#t");
-			}
-			else {
-				fprintf(stderr, "erroneous boolean");
-			}
-			break;
-		case type_number:
-			printf("%ld", number_value(obj));
-			break;
-		case type_list:
-			if (is_quote_symbol(list_first(obj))) {
-				printf("'");
-				write(list_ref(1, obj));
-			}
-			else {
-				write_list(obj);
-			}
-			break;
-		case type_function:
-			printf("function ");
-			write_list(function_parameters(obj));
-			break;
-		default:
-			fprintf(stderr, "unknown type");
-	}
 }
 
 int main(void) {
