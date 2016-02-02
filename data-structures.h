@@ -11,13 +11,23 @@ typedef enum {
 	type_binding,
 	type_environment} object_type;
 
+typedef enum {
+	location_stack,
+	location_heap,
+	location_static,
+	location_moved} object_location;	
+
 typedef enum {round, square, curly, shapeless, bracket_type_count} bracket_type;
 
 typedef struct object* (*primitive_proc)(struct object* parameters);
 
 typedef struct object {
+	object_location location;
 	object_type type;
 	union {
+		struct {
+			struct object* ref;
+		} forward_reference;
 		struct {
 			char value;
 		} boolean;

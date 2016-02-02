@@ -2,12 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <setjmp.h>
 #include "data-structures.h"
 #include "standard-library.h"
 #include "global-variables.h"
 #include "read.h"
 #include "eval.h"
 #include "print.h"
+
+int* stack_top;
+jmp_buf buf;
 
 int main(void) {
 
@@ -18,8 +22,13 @@ int main(void) {
 	object* environment = standard_environment();
 	object* ev;
 	
-	while(1) {
+	setjmp(buf);
+	int i = 0;
+	stack_top = &i;	
+	
+	while (1) {
 		printf("> ");
+		// eval with print continuation, setting active environment
 		ev = eval(environment, read(stdin));
 		if (is_environment(ev)) {
 			environment = ev;
@@ -29,6 +38,5 @@ int main(void) {
 			printf("\n");
 		}
 	}
-
 	return 0;
 }
