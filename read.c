@@ -52,22 +52,6 @@ int peek(FILE* in) {
 	return c;
 }
 
-void trim_whitespace(FILE* in) {
-	int c;
-	
-	while ((c = getc(in)) != EOF) {
-		if (isspace(c)) {
-			continue;
-		}
-		else if (c == ';') {
-			while (((c = getc(in)) != EOF) && (c != '\n')) {}
-			continue;
-		}
-		ungetc(c, in);
-		break;
-	}
-}
-
 char* duplicate_string(char* str) {
 	size_t length = strlen(str) + 1;
 	char* d = malloc(length);
@@ -79,32 +63,57 @@ char* duplicate_string(char* str) {
 	return d;
 }
 
-typedef struct read_state {
-} read_state;
+void reader_trim_whitespace(reader_object* reader) {
+	FILE* in = (*reader).in;
+	int c;
+	
+	while ((c = getc(in)) != EOF) {
+		(*reader).state.char_index++;
+		if (isspace(c)) {
+			continue;
+		}
+		else if (c == ';') {
+			while (((c = getc(in)) != EOF) && (c != '\n')) {}
+			continue;
+		}
+		ungetc(c, in);
+		(*reader).state.char_index--;
+		break;
+	}
+}
 
-char* read_identifier(FILE* in) {
+char reader_peek(reader_object* reader) {
+	return peek((*reader).in);
+}
+
+char reader_get(reader_object* reader) {
+	(*reader).state.char_index++;
+	return getc((*reader).in);
+}
+
+char* read_identifier(reader_object* reader) {
 	char buffer[1000];
 	int i = 0;
 	int c;
-	while (!is_delimiter(c = peek(in))) {
+	while (!is_delimiter(c = reader_peek(reader))) {
 		buffer[i] = c;
-		getc(in);
+		reader_get(reader);
 		i++;
 	}
 	buffer[i] = '\0';
 	return duplicate_string(buffer);
 }
 
-object* read_list(FILE* in, read_state state, bracket_type type);
+object* read_list(reader_object* reader, bracket_type type);
 
-object* read_number(FILE* in) {
+object* read_number(reader_object* reader) {
 	int c;
 	long num = 0;
-	while (isdigit(c = getc(in))) {
+	while (isdigit(c = reader_peek(reader))) {
+		reader_get(reader);
 		num = (num * 10) + (c - '0');
 	}
 	if (is_delimiter(c)) {
-		ungetc(c, in);
 		return make_number(num);
 	}
 	else {
@@ -113,8 +122,8 @@ object* read_number(FILE* in) {
 	}
 }
 
-object* read_symbol(FILE* in) {
-	char* name = read_identifier(in);
+object* read_symbol(reader_object* reader) {
+	char* name = read_identifier(reader);
 	object* obj = find_symbol(name);
 	if (is_no_object(obj)) {
 		obj = add_symbol(name);
@@ -125,13 +134,13 @@ object* read_symbol(FILE* in) {
 	return obj;
 }
 
-object* read_atom(FILE* in, read_state state) {
+object* read_atom(reader_object* reader) {
 	int c;
 	
-	c = peek(in);
+	c = reader_peek(reader);
 	if (c == '#') {
-		getc(in);
-		c = getc(in);
+		reader_get(reader);
+		c = reader_get(reader);
 		switch(c) {
 			case 't':
 				return true();
@@ -143,48 +152,45 @@ object* read_atom(FILE* in, read_state state) {
 		}
 	}
 	else if (isdigit(c)) {
-		return read_number(in);
+		return read_number(reader);
 	}
 	else if (!is_delimiter(c)) {
-		return read_symbol(in);
+		return read_symbol(reader);
 	}
 	
 	fprintf(stderr, "read illegal state\n");
 	exit(1);
 }
 
-object* read_value(FILE* in, read_state state) {
+object* read_value(reader_object* reader) {
 	int c;
 
-	trim_whitespace(in);
-	
-	c = peek(in);
+	reader_trim_whitespace(reader);
+	c = reader_peek(reader);
 	
 	if (c == '\'') {
-		getc(in);
-		c = peek(in);
-		return quote(read_value(in, state));
+		reader_get(reader);
+		c = reader_peek(reader);
+		return quote(read_value(reader));
 	}
 	else if (is_list_start_delimiter(c)) {
-		getc(in);
-		return read_list(in, state, list_delimiter_type(c));
+		reader_get(reader);
+		return read_list(reader, list_delimiter_type(c));
 	}
 	else {
-		return read_atom(in, state);
+		return read_atom(reader);
 	}
 	fprintf(stderr, "read illegal state\n");
 	exit(1);
 }
 
-object* read_list(FILE* in, read_state state, bracket_type type) {
+object* read_list(reader_object* reader, bracket_type type) {
 	int c;
 	
-	trim_whitespace(in);
-	
-	c = peek(in);
+	c = reader_peek(reader);
 	
 	if (is_list_end_delimiter(c)) {
-		getc(in);
+		reader_get(reader);
 		if (!(type == list_delimiter_type(c))) {
 			fprintf(stderr, "bracket mismatch\n");
 			exit(1);
@@ -192,13 +198,14 @@ object* read_list(FILE* in, read_state state, bracket_type type) {
 		return empty_list_type(type);
 	}
 	else {
-		object* first = read_value(in, state);
-		return cons(first, read_list(in, state, type));
+		object* first = read_value(reader);
+		return cons(first, read_list(reader, type));
 	}
 }
 
 object* read(FILE* in) {
-	read_state state;
+	reader_object reader;
+	reader.in = in;
 	
-	return read_value(in, state);
+	return read_value(&reader);
 }
