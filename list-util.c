@@ -3,7 +3,7 @@
 #include "allocation.h"
 
 object* cons(object* first, object* rest) {
-	object* obj = allocate_list_type(list_type(rest));
+	object* obj = new_list();
 	obj->data.list.first = first;
 	obj->data.list.rest = rest;
 	return obj;
@@ -22,7 +22,7 @@ object* list_take(int n, object* obj) {
 		return empty_list();
 	}
 	else {
-		object* ls = allocate_list();
+		object* ls = new_list();
 		object* prev;
 		object* next = ls;
 		while (n > 0) {
@@ -34,7 +34,7 @@ object* list_take(int n, object* obj) {
 				next = empty_list();
 			}
 			else {
-				next = allocate_list();
+				next = new_list();
 			}
 			prev->data.list.rest = next;
 		}
@@ -55,7 +55,7 @@ object* list_append(object* as, object* rest) {
 		return rest;
 	}
 	else {
-		object* ls = allocate_list();
+		object* ls = new_list();
 		object* prev;
 		object* next = ls;
 		while (!is_empty_list(as)) {
@@ -66,7 +66,7 @@ object* list_append(object* as, object* rest) {
 				next = rest;
 			}
 			else {
-				next = allocate_list();
+				next = new_list();
 			}
 			prev->data.list.rest = next;
 		}

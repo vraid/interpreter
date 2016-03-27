@@ -128,20 +128,20 @@ object* environment_bindings(object* obj) {
 }
 
 object* make_binding(object* name, object* value) {
-	object* obj = allocate_object_type(type_binding);
+	object* obj = allocate_object(type_binding);
 	obj->data.binding.name = name;
 	obj->data.binding.value = value;
 	return obj;
 }
 
 object* make_environment(object* bindings) {
-	object* obj = allocate_object_type(type_environment);
+	object* obj = allocate_object(type_environment);
 	obj->data.environment.bindings = bindings;
 	return obj;
 }
 
 object* make_function(object* environment, object* parameters, object* body) {
-	object* obj = allocate_object_type(type_function);
+	object* obj = allocate_object(type_function);
 	obj->data.function.environment = environment;
 	obj->data.function.parameters = parameters;
 	obj->data.function.body = body;
@@ -149,7 +149,7 @@ object* make_function(object* environment, object* parameters, object* body) {
 }
 
 object* make_primitive_procedure(object* parameters, primitive_proc proc) {
-	object* obj = allocate_object_type(type_primitive_procedure);
+	object* obj = allocate_object(type_primitive_procedure);
 	obj->data.primitive_procedure.parameters = parameters;
 	obj->data.primitive_procedure.proc = proc;
 	return obj;
@@ -169,7 +169,7 @@ object* make_binding_list(object* names, object* values) {
 		return empty_list();
 	}
 	else {
-		object* ls = allocate_list();
+		object* ls = new_list();
 		object* prev;
 		object* next = ls;
 		while (!is_empty_list(names)) {
@@ -183,7 +183,7 @@ object* make_binding_list(object* names, object* values) {
 				next = empty_list();
 			}
 			else {
-				next = allocate_list();
+				next = new_list();
 			}
 			prev->data.list.rest = next;
 		}
@@ -206,7 +206,7 @@ char list_starts_with(object* ls, object* obj) {
 }
 
 object* make_number(long value) {
-	object* obj = allocate_object_type(type_number);
+	object* obj = allocate_object(type_number);
 	obj->data.number.value = value;
 	return obj;
 }

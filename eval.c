@@ -10,7 +10,7 @@ object* evaluate_values(object* env, object* expr) {
 		return empty_list();
 	}
 	else {
-		object* ls = allocate_list();
+		object* ls = new_list();
 		object* prev;
 		object* next = ls;
 		while (!is_empty_list(expr)) {
@@ -22,7 +22,7 @@ object* evaluate_values(object* env, object* expr) {
 				next = empty_list();
 			}
 			else {
-				next = allocate_list();
+				next = new_list();
 			}
 			prev->data.list.rest = next;
 		}

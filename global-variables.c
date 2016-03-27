@@ -28,7 +28,7 @@ object _filter_symbol;
 object _empty_environment;
 
 object* make_symbol(char* name) {
-	object* obj = allocate_object_type(type_symbol);
+	object* obj = allocate_object(type_symbol);
 	obj->data.symbol.name = name;
 	return obj;
 }
@@ -60,7 +60,7 @@ object* symbol(char* name) {
 			return symbols[i];
 		}
 	}
-	object* obj = allocate_object_type(type_symbol);
+	object* obj = allocate_object(type_symbol);
 	char* str = malloc(sizeof(char) * strlen(name));
 	strcpy(str, name);
 	init_symbol(obj, str);
