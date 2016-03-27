@@ -13,9 +13,14 @@ object* allocate_object(void) {
 	return obj;
 }
 
+void init_object(object_location loc, object_type type, object* obj) {
+	obj->location = loc;	
+	obj->type = type;
+}
+
 object* allocate_object_type(object_type type) {
 	object* obj = allocate_object();
-	obj->type = type;
+	init_object(location_stack, type, obj);
 	return obj;
 }
 

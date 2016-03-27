@@ -68,7 +68,6 @@ void check_type(object_type type, object* obj);
 
 object* make_binding_list(object* names, object* values);
 object* make_number(long value);
-object* make_empty_list(bracket_type type);
 object* make_binding(object* name, object* value);
 object* make_environment(object* bindings);
 object* make_function(object* environment, object* parameters, object* body);
@@ -105,8 +104,6 @@ primitive_proc primitive_procedure_proc(object* obj);
 object* binding_name(object* obj);
 object* binding_value(object* obj);
 object* environment_bindings(object* obj);
-object* add_symbol(char* name);
-object* find_symbol(char* name);
 
 int list_length(object* ls);
 object* extend_environment(object* env, object* bindings);

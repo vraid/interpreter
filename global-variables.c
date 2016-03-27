@@ -9,24 +9,23 @@ object** symbols;
 int symbols_length;
 int symbol_count;
 
-object* _false;
-object* _true;
-object* _no_object;
-object* _no_symbol;
-object* _no_binding;
-object* _empty_list;
-object* empty_lists[bracket_type_count];
-object* _quote_symbol;
-object* _define_symbol;
-object* _lambda_symbol;
-object* _curry_symbol;
-object* _apply_symbol;
-object* _if_symbol;
-object* _list_symbol;
-object* _map_symbol;
-object* _fold_symbol;
-object* _filter_symbol;
-object* _empty_environment;
+object _false;
+object _true;
+object _no_object;
+object _no_symbol;
+object _no_binding;
+object _empty_list;
+object _quote_symbol;
+object _define_symbol;
+object _lambda_symbol;
+object _curry_symbol;
+object _apply_symbol;
+object _if_symbol;
+object _list_symbol;
+object _map_symbol;
+object _fold_symbol;
+object _filter_symbol;
+object _empty_environment;
 
 object* make_symbol(char* name) {
 	object* obj = allocate_object_type(type_symbol);
@@ -34,159 +33,168 @@ object* make_symbol(char* name) {
 	return obj;
 }
 
-void init_global_variables(void) {
-	_false = allocate_object_boolean(0);
-	
-	_true = allocate_object_boolean(1);
-	
-	_no_object = allocate_object_type(type_none);
-	_no_symbol = allocate_object_type(type_symbol);
-	_no_symbol->data.symbol.name = malloc(sizeof(char));
-	_no_symbol->data.symbol.name[0] = 0;
-	
-	_no_binding = make_binding(no_symbol(), no_object());
-	
-	int i;
-	for (i = 0; i <= bracket_type_count; i++) {
-		empty_lists[i] = make_empty_list(i);
-	}
-	
-	_empty_list = empty_lists[shapeless];
-	
-	_empty_environment = make_environment(empty_list());
-	
-	symbols_length = 1;
-	symbol_count = 0;
-	symbols = malloc(sizeof(object*));
-	
-	_quote_symbol = add_symbol("quote");
-	_define_symbol = add_symbol("define");
-	_lambda_symbol = add_symbol("lambda");
-	_curry_symbol = add_symbol("curry");
-	_apply_symbol = add_symbol("apply");
-	_if_symbol = add_symbol("if");
-	_list_symbol = add_symbol("list");
-	_map_symbol = add_symbol("map");
-	_fold_symbol = add_symbol("fold");
-	_filter_symbol = add_symbol("filter");
+void init_boolean(object* obj, char value) {
+	init_object(location_static, type_boolean, obj);
+	obj->data.boolean.value = value;
 }
 
-object* find_symbol(char* name) {
-	int i;
-	for (i = 0; i < symbol_count; i++) {
-		if (strcmp(name, symbol_name(symbols[i])) == 0) {
-			return symbols[i];
-		}
-	}
-	return no_object();
-}
-
-object* add_symbol(char* name) {
-	object* obj = make_symbol(name);
+void add_symbol(object* obj) {
 	if (symbols_length == symbol_count) {
 		symbols_length = symbols_length * 2;
 		symbols = realloc(symbols, symbols_length * sizeof(object*));
 	}
 	symbols[symbol_count] = obj;
 	symbol_count++;
+}
+
+void init_symbol(object* obj, char* name) {
+	init_object(location_static, type_symbol, obj);
+	obj->data.symbol.name = name;
+	add_symbol(obj);
+}
+
+object* symbol(char* name) {
+	int i;
+	for (i = 0; i < symbol_count; i++) {
+		if (strcmp(name, symbol_name(symbols[i])) == 0) {
+			return symbols[i];
+		}
+	}
+	object* obj = allocate_object_type(type_symbol);
+	char* str = malloc(sizeof(char) * strlen(name));
+	strcpy(str, name);
+	init_symbol(obj, str);
 	return obj;
 }
 
-object* true(void) {
-	return _true;
-}
-object* false(void) {
-	return _false;
-}
-char is_empty_list(object* obj) {
-	return obj == empty_lists[list_type(obj)];
-}
-char is_false(object* obj) {
-	return obj == _false;
-}
-char is_true(object* obj) {
-	return obj == _true;
-}
-char is_no_object(object* obj) {
-	return obj == _no_object;
-}
-object* empty_list(void) {
-	return _empty_list;
-}
-object* empty_list_type(bracket_type type) {
-	return empty_lists[type];
-}
-object* no_object(void) {
-	return _no_object;
-}
-object* no_symbol(void) {
-	return _no_symbol;
-}
-object* no_binding(void) {
-	return _no_binding;
-}
-object* empty_environment(void) {
-	return _empty_environment;
+void init_global_variables(void) {
+	init_boolean(false(), 0);
+	init_boolean(true(), 1);
+	
+	init_object(location_static, type_none, no_object());
+	init_object(location_static, type_symbol, no_symbol());
+	_no_symbol.data.symbol.name = malloc(sizeof(char));
+	_no_symbol.data.symbol.name[0] = 0;
+	
+	init_object(location_static, type_binding, no_binding());
+	_no_binding.data.binding.name = no_symbol();
+	_no_binding.data.binding.value = no_object();
+	
+	init_object(location_static, type_list, empty_list());
+	_empty_list.data.list.type = shapeless;
+	_empty_list.data.list.first = no_object();
+	_empty_list.data.list.rest = no_object();
+	
+	init_object(location_static, type_environment, &_empty_environment);
+	_empty_environment.data.environment.bindings = empty_list();
+	
+	symbols_length = 1;
+	symbol_count = 0;
+	symbols = malloc(sizeof(object*));
+	
+	init_symbol(quote_symbol(), "quote");
+	init_symbol(define_symbol(), "define");
+	init_symbol(lambda_symbol(), "lambda");
+	init_symbol(curry_symbol(), "curry");
+	init_symbol(apply_symbol(), "apply");
+	init_symbol(if_symbol(), "if");
+	init_symbol(list_symbol(), "list");
+	init_symbol(map_symbol(), "map");
+	init_symbol(fold_symbol(), "fold");
+	init_symbol(filter_symbol(), "filter");
 }
 
+object* true(void) {
+	return &_true;
+}
+object* false(void) {
+	return &_false;
+}
+char is_empty_list(object* obj) {
+	return obj == empty_list();
+}
+char is_false(object* obj) {
+	return obj == false();
+}
+char is_true(object* obj) {
+	return obj == true();
+}
+char is_no_object(object* obj) {
+	return obj == no_object();
+}
+object* empty_list(void) {
+	return &_empty_list;
+}
+object* no_object(void) {
+	return &_no_object;
+}
+object* no_symbol(void) {
+	return &_no_symbol;
+}
+object* no_binding(void) {
+	return &_no_binding;
+}
+object* empty_environment(void) {
+	return &_empty_environment;
+}
 char is_quote_symbol(object* obj) {
-	return obj == _quote_symbol;
+	return obj == quote_symbol();
 }
 char is_define_symbol(object* obj) {
-	return obj == _define_symbol;
+	return obj == define_symbol();
 }
 char is_lambda_symbol(object* obj) {
-	return obj == _lambda_symbol;
+	return obj == lambda_symbol();
 }
 char is_curry_symbol(object* obj) {
-	return obj == _curry_symbol;
+	return obj == curry_symbol();
 }
 char is_apply_symbol(object* obj) {
-	return obj == _apply_symbol;
+	return obj == apply_symbol();
 }
 char is_if_symbol(object* obj) {
-	return obj == _if_symbol;
+	return obj == if_symbol();
 }
 char is_list_symbol(object* obj) {
-	return obj == _list_symbol;
+	return obj == list_symbol();
 }
 char is_map_symbol(object* obj) {
-	return obj == _map_symbol;
+	return obj == map_symbol();
 }
 char is_fold_symbol(object* obj) {
-	return obj == _fold_symbol;
+	return obj == fold_symbol();
 }
 char is_filter_symbol(object* obj) {
-	return obj == _filter_symbol;
+	return obj == filter_symbol();
 }
 object* quote_symbol(void) {
-	return _quote_symbol;
+	return &_quote_symbol;
 }
 object* define_symbol(void) {
-	return _define_symbol;
+	return &_define_symbol;
 }
 object* lambda_symbol(void) {
-	return _lambda_symbol;
+	return &_lambda_symbol;
 }
 object* curry_symbol(void) {
-	return _curry_symbol;
+	return &_curry_symbol;
 }
 object* apply_symbol(void) {
-	return _apply_symbol;
+	return &_apply_symbol;
 }
 object* if_symbol(void) {
-	return _if_symbol;
+	return &_if_symbol;
 }
 object* list_symbol(void) {
-	return _list_symbol;
+	return &_list_symbol;
 }
 object* map_symbol(void) {
-	return _map_symbol;
+	return &_map_symbol;
 }
 object* fold_symbol(void) {
-	return _fold_symbol;
+	return &_fold_symbol;
 }
 object* filter_symbol(void) {
-	return _filter_symbol;
+	return &_filter_symbol;
 }
 

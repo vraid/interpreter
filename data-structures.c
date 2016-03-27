@@ -127,13 +127,6 @@ object* environment_bindings(object* obj) {
 	return obj->data.environment.bindings;
 }
 
-object* make_empty_list(bracket_type type) {
-	object* obj = allocate_list_type(type);
-	obj->data.list.first = no_object();
-	obj->data.list.rest = obj;
-	return obj;
-}
-
 object* make_binding(object* name, object* value) {
 	object* obj = allocate_object_type(type_binding);
 	obj->data.binding.name = name;

@@ -124,13 +124,8 @@ object* read_number(reader_object* reader) {
 
 object* read_symbol(reader_object* reader) {
 	char* name = read_identifier(reader);
-	object* obj = find_symbol(name);
-	if (is_no_object(obj)) {
-		obj = add_symbol(name);
-	}
-	else {
-		free(name);
-	}
+	object* obj = symbol(name);
+	free(name);
 	return obj;
 }
 
@@ -195,7 +190,7 @@ object* read_list(reader_object* reader, bracket_type type) {
 			fprintf(stderr, "bracket mismatch\n");
 			exit(1);
 		}
-		return empty_list_type(type);
+		return empty_list();
 	}
 	else {
 		object* first = read_value(reader);
