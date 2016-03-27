@@ -17,7 +17,7 @@ typedef enum {
 	location_static,
 	location_moved} object_location;	
 
-typedef enum {round, square, curly, shapeless, bracket_type_count} bracket_type;
+typedef enum {round, square, curly, shapeless, file_bracket, bracket_type_count} bracket_type;
 
 typedef struct object* (*primitive_proc)(struct object* parameters);
 

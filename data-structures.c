@@ -6,8 +6,8 @@
 #include "allocation.h"
 #include "global-variables.h"
 
-char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '('};
-char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')'};
+char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '(', 0};
+char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')', 0};
 
 void check_type(object_type type, object* obj) {
 	if (obj->type != type) {
