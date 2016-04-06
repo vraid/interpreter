@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 typedef enum {
 	type_none,
 	type_boolean,
@@ -10,6 +12,7 @@ typedef enum {
 	type_primitive_procedure,
 	type_binding,
 	type_environment,
+	type_file_port,
 	type_call} object_type;
 
 typedef enum {
@@ -60,6 +63,9 @@ typedef struct object {
 			struct object* bindings;
 		} environment;
 		struct {
+			FILE* file;
+		} file_port;
+		struct {
 			struct object* function;
 			struct object* arguments;
 		} call;
@@ -87,12 +93,14 @@ char is_function(object* obj);
 char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
 char is_environment(object* obj);
+char is_file_port(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
 
 char boolean_value(object* obj);
 char* symbol_name(object* obj);
 long number_value(object* obj);
+FILE* file_port_file(object* obj);
 bracket_type list_type(object* obj);
 object* list_first(object* ls);
 object* list_rest(object* ls);

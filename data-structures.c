@@ -127,6 +127,15 @@ object* environment_bindings(object* obj) {
 	return obj->data.environment.bindings;
 }
 
+char is_file_port(object* obj) {
+	return obj->type == type_file_port;
+}
+
+FILE* file_port_file(object* obj) {
+	check_type(type_file_port, obj);
+	return obj->data.file_port.file;
+}
+
 char is_call(object* obj) {
 	return obj->type == type_call;
 }

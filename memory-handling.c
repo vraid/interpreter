@@ -52,6 +52,11 @@ void traverse_environment(target_space space, object* object, object_location lo
 	(*object).data.environment.bindings = move_if_necessary(space, (*object).data.environment.bindings, location);
 }
 
+void traverse_call(target_space space, object* object, object_location location) {
+	(*object).data.call.function = move_if_necessary(space, (*object).data.call.function, location);
+	(*object).data.call.arguments = move_if_necessary(space, (*object).data.call.arguments, location);
+}
+
 void traverse_object(target_space space, object* object, object_location location) {
 	switch ((*object).type) {
 		case type_number :
@@ -69,10 +74,14 @@ void traverse_object(target_space space, object* object, object_location locatio
 		case type_environment :
 			traverse_environment(space, object, location);
 			break;
+		case type_call :
+			traverse_call(space, object, location);
+			break;
 		case type_none :
 		case type_boolean :
 		case type_symbol :
 		case type_primitive_procedure :
+		case type_file_port :
 		default:
 		break;
 	}
