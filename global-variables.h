@@ -14,7 +14,6 @@ object* false(void);
 object* empty_list(void);
 object* no_object(void);
 object* no_symbol(void);
-object* symbol(char* name);
 object* no_binding(void);
 object* empty_environment(void);
 

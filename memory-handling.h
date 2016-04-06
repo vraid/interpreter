@@ -12,5 +12,4 @@ typedef struct {
 	object* memory;
 } memory_space;
 
-//memory_space* make_memory_space(int size);
 void clear_garbage(object* to_space, object* root, int direction, object_location location);

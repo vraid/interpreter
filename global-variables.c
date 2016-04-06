@@ -4,10 +4,7 @@
 #include "global-variables.h"
 #include "data-structures.h"
 #include "allocation.h"
-
-object** symbols;
-int symbols_length;
-int symbol_count;
+#include "symbols.h"
 
 object _false;
 object _true;
@@ -27,44 +24,9 @@ object _fold_symbol;
 object _filter_symbol;
 object _empty_environment;
 
-object* make_symbol(char* name) {
-	object* obj = allocate_object(type_symbol);
-	obj->data.symbol.name = name;
-	return obj;
-}
-
 void init_boolean(object* obj, char value) {
 	init_object(location_static, type_boolean, obj);
 	obj->data.boolean.value = value;
-}
-
-void add_symbol(object* obj) {
-	if (symbols_length == symbol_count) {
-		symbols_length = symbols_length * 2;
-		symbols = realloc(symbols, symbols_length * sizeof(object*));
-	}
-	symbols[symbol_count] = obj;
-	symbol_count++;
-}
-
-void init_symbol(object* obj, char* name) {
-	init_object(location_static, type_symbol, obj);
-	obj->data.symbol.name = name;
-	add_symbol(obj);
-}
-
-object* symbol(char* name) {
-	int i;
-	for (i = 0; i < symbol_count; i++) {
-		if (strcmp(name, symbol_name(symbols[i])) == 0) {
-			return symbols[i];
-		}
-	}
-	object* obj = allocate_object(type_symbol);
-	char* str = malloc(sizeof(char) * strlen(name));
-	strcpy(str, name);
-	init_symbol(obj, str);
-	return obj;
 }
 
 void init_global_variables(void) {
@@ -88,20 +50,16 @@ void init_global_variables(void) {
 	init_object(location_static, type_environment, &_empty_environment);
 	_empty_environment.data.environment.bindings = empty_list();
 	
-	symbols_length = 1;
-	symbol_count = 0;
-	symbols = malloc(sizeof(object*));
-	
-	init_symbol(quote_symbol(), "quote");
-	init_symbol(define_symbol(), "define");
-	init_symbol(lambda_symbol(), "lambda");
-	init_symbol(curry_symbol(), "curry");
-	init_symbol(apply_symbol(), "apply");
-	init_symbol(if_symbol(), "if");
-	init_symbol(list_symbol(), "list");
-	init_symbol(map_symbol(), "map");
-	init_symbol(fold_symbol(), "fold");
-	init_symbol(filter_symbol(), "filter");
+	make_static_symbol(quote_symbol(), "quote");
+	make_static_symbol(define_symbol(), "define");
+	make_static_symbol(lambda_symbol(), "lambda");
+	make_static_symbol(curry_symbol(), "curry");
+	make_static_symbol(apply_symbol(), "apply");
+	make_static_symbol(if_symbol(), "if");
+	make_static_symbol(list_symbol(), "list");
+	make_static_symbol(map_symbol(), "map");
+	make_static_symbol(fold_symbol(), "fold");
+	make_static_symbol(filter_symbol(), "filter");
 }
 
 object* true(void) {

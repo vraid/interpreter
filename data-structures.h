@@ -9,7 +9,8 @@ typedef enum {
 	type_function,
 	type_primitive_procedure,
 	type_binding,
-	type_environment} object_type;
+	type_environment,
+	type_call} object_type;
 
 typedef enum {
 	location_stack,
@@ -58,6 +59,10 @@ typedef struct object {
 		struct {
 			struct object* bindings;
 		} environment;
+		struct {
+			struct object* function;
+			struct object* arguments;
+		} call;
 	} data;
 } object;
 
@@ -82,6 +87,7 @@ char is_function(object* obj);
 char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
 char is_environment(object* obj);
+char is_call(object* obj);
 char is_nonempty_list(object* obj);
 
 char boolean_value(object* obj);

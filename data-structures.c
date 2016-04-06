@@ -127,6 +127,10 @@ object* environment_bindings(object* obj) {
 	return obj->data.environment.bindings;
 }
 
+char is_call(object* obj) {
+	return obj->type == type_call;
+}
+
 object* make_binding(object* name, object* value) {
 	object* obj = allocate_object(type_binding);
 	obj->data.binding.name = name;

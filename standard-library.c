@@ -7,6 +7,7 @@
 #include "list-util.h"
 #include "environments.h"
 #include "global-variables.h"
+#include "symbols.h"
 
 typedef struct arg2 {
 	object* one;
@@ -96,11 +97,11 @@ object* function_multiply(object* arguments) {
 }
 
 object* bind_primitive(char* name, object* parameters, primitive_proc proc) {
-	return make_binding(symbol(name), make_function(empty_environment(), parameters, cons(make_primitive_procedure(parameters, proc), parameters)));
+	return make_binding(symbol(name, NULL), make_function(empty_environment(), parameters, cons(make_primitive_procedure(parameters, proc), parameters)));
 }
 
 object* p(char* name, object* obj) {
-	return obj = cons(symbol(name), obj);
+	return obj = cons(symbol(name, NULL), obj);
 }
 
 object* q(char* name) {

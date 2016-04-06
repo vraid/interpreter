@@ -5,6 +5,7 @@
 
 #include "read.h"
 #include "global-variables.h"
+#include "symbols.h"
 
 char in_bracket_list(char* ls, int c) {
 	int i;
@@ -124,7 +125,7 @@ object* read_number(reader_object* reader) {
 
 object* read_symbol(reader_object* reader) {
 	char* name = read_identifier(reader);
-	object* obj = symbol(name);
+	object* obj = symbol(name, NULL);
 	free(name);
 	return obj;
 }
