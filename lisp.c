@@ -18,6 +18,9 @@ object end_proc;
 object end_call;
 
 object* end(object* args, object* cont) {
+	// get rid of warnings
+	args = args;
+	cont = cont;
 	return no_object();
 }
 
