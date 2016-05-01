@@ -2,4 +2,4 @@
 
 #include "data-structures.h"
 
-object* eval(object* args, object* cont);
+void repl_entry(object* environment);

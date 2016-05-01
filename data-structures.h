@@ -8,12 +8,16 @@ typedef enum {
 	type_symbol,
 	type_number,
 	type_list,
-	type_function,
 	type_primitive_procedure,
+	type_function,
+	type_call,
+	type_continuation,
 	type_binding,
 	type_environment,
 	type_file_port,
-	type_call} object_type;
+	type_count} object_type;
+
+char* type_name[type_count];
 
 typedef enum {
 	location_stack,
@@ -23,7 +27,7 @@ typedef enum {
 
 typedef enum {round, square, curly, shapeless, file_bracket, bracket_type_count} bracket_type;
 
-typedef struct object* (*primitive_proc)(struct object* parameters);
+typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
 typedef struct object {
 	object_location location;
@@ -47,14 +51,21 @@ typedef struct object {
 			struct object* rest;
 		} list;
 		struct {
+			primitive_proc* proc;
+		} primitive_procedure;
+		struct {
 			struct object* parameters;
 			struct object* environment;
 			struct object* body;
 		} function;
 		struct {
-			struct object* parameters;
-			primitive_proc proc;
-		} primitive_procedure;
+			struct object* function;
+			struct object* arguments;
+			struct object* continuation;
+		} call;
+		struct {
+			struct object* call;
+		} continuation;
 		struct {
 			struct object* name;
 			struct object* value;
@@ -65,24 +76,15 @@ typedef struct object {
 		struct {
 			FILE* file;
 		} file_port;
-		struct {
-			struct object* function;
-			struct object* arguments;
-		} call;
 	} data;
 } object;
+
+void init_type_names(void);
 
 char list_start_delimiter[bracket_type_count];
 char list_end_delimiter[bracket_type_count];
 
 void check_type(object_type type, object* obj);
-
-object* make_binding_list(object* names, object* values);
-object* make_number(long value);
-object* make_binding(object* name, object* value);
-object* make_environment(object* bindings);
-object* make_function(object* environment, object* parameters, object* body);
-object* make_primitive_procedure(object* parameters, primitive_proc proc);
 
 char is_type(object_type type, object* obj);
 char is_boolean(object* obj);
@@ -113,11 +115,14 @@ object* reverse(object* obj);
 object* function_parameters(object* obj);
 object* function_environment(object* obj);
 object* function_body(object* obj);
-object* primitive_procedure_parameters(object* obj);
-primitive_proc primitive_procedure_proc(object* obj);
+primitive_proc* primitive_procedure_proc(object* obj);
 object* binding_name(object* obj);
 object* binding_value(object* obj);
 object* environment_bindings(object* obj);
+object* call_function(object* obj);
+object* call_arguments(object* obj);
+object* call_continuation(object* obj);
+object* continuation_call(object* obj);
 
 int list_length(object* ls);
 object* extend_environment(object* env, object* bindings);

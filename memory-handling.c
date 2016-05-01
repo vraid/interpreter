@@ -29,9 +29,6 @@ object* move_if_necessary(target_space space, object* object, object_location lo
 	}
 }
 
-void traverse_number(target_space space, object* object, object_location location) {
-}
-
 void traverse_list(target_space space, object* object, object_location location) {
 	(*object).data.list.first = move_if_necessary(space, (*object).data.list.first, location);
 	(*object).data.list.rest = move_if_necessary(space, (*object).data.list.rest, location);
@@ -59,9 +56,6 @@ void traverse_call(target_space space, object* object, object_location location)
 
 void traverse_object(target_space space, object* object, object_location location) {
 	switch ((*object).type) {
-		case type_number :
-			traverse_number(space, object, location);
-			break;
 		case type_list :
 			traverse_list(space, object, location);
 			break;
@@ -81,6 +75,7 @@ void traverse_object(target_space space, object* object, object_location locatio
 		case type_boolean :
 		case type_symbol :
 		case type_primitive_procedure :
+		case type_number :
 		case type_file_port :
 		default:
 		break;

@@ -33,7 +33,7 @@ void make_static_symbol(object* obj, char* name) {
 	add_symbol(obj);
 }
 
-object* symbol(char* name, object* cont) {
+object* symbol(char* name) {
 	// look for existing symbol first
 	for (int i = 0; i < symbol_count; i++) {
 		if (strcmp(name, symbol_name(symbols[i])) == 0) {

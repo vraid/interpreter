@@ -9,9 +9,28 @@
 char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '(', 0};
 char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')', 0};
 
+void init_type_names(void) {
+	type_name[type_none] = "no-type";
+	type_name[type_boolean] = "boolean";
+	type_name[type_symbol] = "symbol";
+	type_name[type_number] = "number";
+	type_name[type_list] = "list";
+	type_name[type_primitive_procedure] = "primitive_procedure";
+	type_name[type_function] = "function";
+	type_name[type_call] = "call";
+	type_name[type_continuation] = "continuation";
+	type_name[type_binding] = "binding";
+	type_name[type_environment] = "environment";
+	type_name[type_file_port] = "file_port";
+}
+
 void check_type(object_type type, object* obj) {
 	if (obj->type != type) {
-		fprintf(stderr, "faulty type\n");
+		fprintf(stderr, "faulty type: expected ");
+		fprintf(stderr, type_name[type]);
+		fprintf(stderr, ", got ");
+		fprintf(stderr, type_name[obj->type]);
+		fprintf(stderr, " \n");
 		exit(1);
 	}
 	return;
@@ -94,12 +113,7 @@ char is_primitive_procedure(object* obj) {
 	return obj->type == type_primitive_procedure;
 }
 
-object* primitive_procedure_parameters(object* obj) {
-	check_type(type_primitive_procedure, obj);
-	return obj->data.primitive_procedure.parameters;
-}
-
-primitive_proc primitive_procedure_proc(object* obj) {
+primitive_proc* primitive_procedure_proc(object* obj) {
 	check_type(type_primitive_procedure, obj);
 	return obj->data.primitive_procedure.proc;
 }
@@ -127,6 +141,26 @@ object* environment_bindings(object* obj) {
 	return obj->data.environment.bindings;
 }
 
+object* call_function(object* obj) {
+	check_type(type_call, obj);
+	return obj->data.call.function;
+}
+
+object* call_arguments(object* obj) {
+	check_type(type_call, obj);
+	return obj->data.call.arguments;
+}
+
+object* call_continuation(object* obj) {
+	check_type(type_call, obj);
+	return obj->data.call.continuation;
+}
+
+object* continuation_call(object* obj) {
+	check_type(type_continuation, obj);
+	return obj->data.continuation.call;
+}
+
 char is_file_port(object* obj) {
 	return obj->type == type_file_port;
 }
@@ -140,34 +174,6 @@ char is_call(object* obj) {
 	return obj->type == type_call;
 }
 
-object* make_binding(object* name, object* value) {
-	object* obj = allocate_object(type_binding);
-	obj->data.binding.name = name;
-	obj->data.binding.value = value;
-	return obj;
-}
-
-object* make_environment(object* bindings) {
-	object* obj = allocate_object(type_environment);
-	obj->data.environment.bindings = bindings;
-	return obj;
-}
-
-object* make_function(object* environment, object* parameters, object* body) {
-	object* obj = allocate_object(type_function);
-	obj->data.function.environment = environment;
-	obj->data.function.parameters = parameters;
-	obj->data.function.body = body;
-	return obj;
-}
-
-object* make_primitive_procedure(object* parameters, primitive_proc proc) {
-	object* obj = allocate_object(type_primitive_procedure);
-	obj->data.primitive_procedure.parameters = parameters;
-	obj->data.primitive_procedure.proc = proc;
-	return obj;
-}
-
 int list_length(object* ls) {
 	int n = 0;
 	while (!is_empty_list(ls)) {
@@ -175,33 +181,6 @@ int list_length(object* ls) {
 		ls = list_rest(ls);
 	}
 	return n;
-}
-
-object* make_binding_list(object* names, object* values) {
-	if (is_empty_list(names)) {
-		return empty_list();
-	}
-	else {
-		object* ls = new_list();
-		object* prev;
-		object* next = ls;
-		while (!is_empty_list(names)) {
-			prev = next;
-			prev->data.list.first = make_binding(list_first(names), list_first(values));
-		
-			names = list_rest(names);
-			values = list_rest(values);
-		
-			if (is_empty_list(names)) {
-				next = empty_list();
-			}
-			else {
-				next = new_list();
-			}
-			prev->data.list.rest = next;
-		}
-		return ls;
-	}
 }
 
 char is_self_quoting(object* obj) {

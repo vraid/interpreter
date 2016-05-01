@@ -7,34 +7,50 @@
 #include "standard-library.h"
 #include "symbols.h"
 #include "global-variables.h"
-#include "read.h"
-#include "eval.h"
+#include "call.h"
+#include "allocation.h"
+#include "object-init.h"
 #include "print.h"
+#include "repl-top.h"
 
-int* stack_top;
+object end_cont;
+object end_proc;
+object end_call;
 
-int main(void) {
+object* end(object* args, object* cont) {
+	return no_object();
+}
+
+int main(int argc, char** argv) {
 
 	printf("running lisp interpreter. use ctrl-c to exit\n");
 	
+	init_type_names();
 	init_symbols();
 	init_global_variables();
+	init_print_procedures();
+	init_primitive_procedure(&end_proc, &end);
+	init_call(&end_call, &end_proc, empty_list(), &end_cont);
+	init_cont(&end_cont, &end_call);
 	
-	object* environment = standard_environment();
-	object* ev;
+	object* environment;
 	
-	while (1) {
-		printf("> ");
-		// eval with print continuation, setting active environment
-		ev = eval(environment, read(stdin));
-		if (is_environment(ev)) {
-			environment = ev;
-		}
-		else {
-			write(ev);
-			printf("\n");
-		}
+	if (argc == 2) {
+		char* filename = argv[1];
+		filename = filename;
+		// environment = read_file;
 	}
+	else {
+		environment = standard_environment();
+	}	
+	
+	object call;
+	object ls[1];
+	init_list_1(ls, true());
+	init_call(&call, &print_proc, ls, &end_cont);
+	top_call(&call);
+	
+	repl_entry(environment);
 	
 	return 0;
 }

@@ -9,123 +9,119 @@
 #include "global-variables.h"
 #include "symbols.h"
 
+/*
+
 typedef struct arg2 {
-	object* one;
-	object* two;
+	object* first;
+	object* second;
 } arg2;
 
 arg2 args2(object* arguments) {
 	arg2 arg;
-	arg.one = list_first(arguments);
-	arg.two = list_ref(1, arguments);
+	arg.first = list_first(arguments);
+	arguments = list_rest(arguments);
+	arg.second = list_first(arguments);
 	return arg;
 }
 
 object* boolean(char b) {
-	if (b) {
-		return true();
-	}
-	else {
-		return false();
-	}
+	return b ? true() : false();
 }
 
 object* is_of_type(object_type type, object* arguments) {
 	return boolean(is_type(type, list_first(arguments)));
 }
 
-object* function_boolean(object* arguments) {
-	return is_of_type(type_boolean, arguments);
+object* function_boolean(object* arguments, object* cont) {
+	return is_of_type(type_boolean, list_first(arguments));
 }
 
-object* function_false(object* arguments) {
+object* function_false(object* arguments, object* cont) {
 	return boolean(is_false(list_first(arguments)));
 }
 
-object* function_true(object* arguments) {
+object* function_true(object* arguments, object* cont) {
 	return boolean(is_true(list_first(arguments)));
 }
 
-object* function_symbol(object* arguments) {
-	return is_of_type(type_symbol, arguments);
+object* function_symbol(object* arguments, object* cont) {
+	return is_of_type(type_symbol, list_first(arguments));
 }
 
-object* function_number(object* arguments) {
-	return is_of_type(type_number, arguments);
+object* function_number(object* arguments, object* cont) {
+	return is_of_type(type_number, list_first(arguments));
 }
 
-object* function_list(object* arguments) {
-	return is_of_type(type_list, arguments);
+object* function_list(object* arguments, object* cont) {
+	return is_of_type(type_list, list_first(arguments));
 }
 
-object* function_function(object* arguments) {
-	return is_of_type(type_function, arguments);
+object* function_function(object* arguments, object* cont) {
+	return is_of_type(type_function, list_first(arguments));
 }
 
-object* function_identical(object* arguments) {
+object* function_identical(object* arguments, object* cont) {
 	arg2 args = args2(arguments);
-	if (args.one == args.two) {
-		return true();
-	}
-	else {
-		return false();
-	}
+	return boolean(args.first == args.second);
 }
 
-object* function_cons(object* arguments) {
+object* function_cons(object* arguments, object* cont) {
 	arg2 args = args2(arguments);
-	return cons(args.one, args.two);
+	return cons(args.first, args.second);
 }
 
-object* function_add(object* arguments) {
+object* function_add(object* arguments, object* cont) {
 	arg2 args = args2(arguments);
-	return make_number(number_value(args.one) + number_value(args.two));
+	return make_number(number_value(args.first) + number_value(args.second));
 }
 
-object* function_negative(object* arguments) {
+object* function_negative(object* arguments, object* cont) {
 	return make_number(-number_value(list_first(arguments)));
 }
 
-object* function_subtract(object* arguments) {
+object* function_subtract(object* arguments, object* cont) {
 	arg2 args = args2(arguments);
-	return make_number(-number_value(args.one) + number_value(args.two));
+	return make_number(-number_value(args.first) + number_value(args.second));
 }
 
-object* function_multiply(object* arguments) {
+object* function_multiply(object* arguments, object* cont) {
 	arg2 args = args2(arguments);
-	return make_number(number_value(args.one) * number_value(args.two));
+	return make_number(number_value(args.first) * number_value(args.second));
 }
 
-object* bind_primitive(char* name, object* parameters, primitive_proc proc) {
-	return make_binding(symbol(name, NULL), make_function(empty_environment(), parameters, cons(make_primitive_procedure(parameters, proc), parameters)));
+object* function_display(object* arguments) {
+	printf("display\n");
 }
 
-object* p(char* name, object* obj) {
-	return obj = cons(symbol(name, NULL), obj);
-}
-
-object* q(char* name) {
-	return p(name, empty_list());
+object* bind_primitive(char* name, primitive_proc proc) {
+	return no_object();
+	// make_binding(symbol(name, NULL), make_function(empty_environment(), parameters, cons(make_primitive_procedure(proc), parameters)));
 }
 
 object* env(object* binding, object* environment) {
-	return make_environment(cons(binding, environment_bindings(environment)));
+	return empty_environment();
+	// make_environment(cons(binding, environment_bindings(environment)));
 }
+
+*/
 
 object* standard_environment(void) {
 	object* obj = empty_environment();
-	obj = env(bind_primitive("boolean?", q("a"), function_boolean), obj);
-	obj = env(bind_primitive("symbol?", q("a"), function_symbol), obj);
-	obj = env(bind_primitive("number?", q("a"), function_number), obj);
-	obj = env(bind_primitive("list?", q("a"), function_list), obj);
-	obj = env(bind_primitive("function?", q("a"), function_function), obj);
-	obj = env(bind_primitive("false?", q("a"), function_false), obj);
-	obj = env(bind_primitive("true?", q("a"), function_true), obj);
-	obj = env(bind_primitive("identical?", p("a", q("b")), function_identical), obj);
-	obj = env(bind_primitive("cons", p("a", q("b")), function_cons), obj);
-	obj = env(bind_primitive("negative", q("a"), function_negative), obj);
-	obj = env(bind_primitive("add", p("a", q("b")), function_add), obj);
-	obj = env(bind_primitive("subtract", p("a", q("b")), function_subtract), obj);
-	obj = env(bind_primitive("multiply", p("a", q("b")), function_multiply), obj);
+	/*
+	obj = env(bind_primitive("boolean?", function_boolean), obj);
+	obj = env(bind_primitive("symbol?", function_symbol), obj);
+	obj = env(bind_primitive("number?", function_number), obj);
+	obj = env(bind_primitive("list?", function_list), obj);
+	obj = env(bind_primitive("function?", function_function), obj);
+	obj = env(bind_primitive("false?", function_false), obj);
+	obj = env(bind_primitive("true?", function_true), obj);
+	obj = env(bind_primitive("identical?", function_identical), obj);
+	obj = env(bind_primitive("cons", function_cons), obj);
+	obj = env(bind_primitive("negative", function_negative), obj);
+	obj = env(bind_primitive("add", function_add), obj);
+	obj = env(bind_primitive("subtract", function_subtract), obj);
+	obj = env(bind_primitive("multiply", function_multiply), obj);
+	obj = env(bind_primitive("display", function_display), obj);
+	*/
 	return obj;
 }

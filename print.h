@@ -2,4 +2,6 @@
 
 #include "data-structures.h"
 
-void write(object* obj);
+object print_proc;
+
+void init_print_procedures(void);

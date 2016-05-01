@@ -1,14 +1,17 @@
 #include "environments.h"
 #include "list-util.h"
 #include "global-variables.h"
+#include "call.h"
+#include "delist.h"
 
-object* extend_environment(object* env, object* bindings) {
-	if (is_empty_list(bindings)) {
-		return env;
+object* extend_environment(object* args, object* cont) {
+	object* env;
+	object* bindings;
+	delist_2(args, &env, &bindings);
+	if (!is_empty_list(bindings)) {
+//		env = make_environment(list_append(bindings, environment_bindings(env)));
 	}
-	else {
-		return make_environment(list_append(bindings, environment_bindings(env)));
-	}
+	return call_cont(cont, env);
 }
 
 object* find_in_environment(object* env, object* symbol) {
