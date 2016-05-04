@@ -6,7 +6,7 @@
 #include "delist.h"
 #include "object-init.h"
 
-object* write(object* args, object* cont) {
+object* print_value(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
 	
@@ -48,5 +48,5 @@ object* write(object* args, object* cont) {
 }
 
 void init_print_procedures(void) {
-	init_primitive_procedure(&print_proc, &write);
+	init_primitive_procedure(&print_proc, &print_value);
 }

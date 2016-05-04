@@ -21,6 +21,7 @@ object* end(object* args, object* cont) {
 	// get rid of warnings
 	args = args;
 	cont = cont;
+	printf("end reached\n");
 	return no_object();
 }
 
@@ -32,6 +33,9 @@ int main(int argc, char** argv) {
 	init_symbols();
 	init_global_variables();
 	init_print_procedures();
+	init_repl_procedures();
+	init_standard_functions();	
+	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), &end_cont);
 	init_cont(&end_cont, &end_call);
@@ -45,15 +49,20 @@ int main(int argc, char** argv) {
 	}
 	else {
 		environment = standard_environment();
-	}	
+	}
 	
+	/*
 	object call;
 	object ls[1];
 	init_list_1(ls, true());
-	init_call(&call, &print_proc, ls, &end_cont);
+	init_call(&call, &display_newline_proc, ls, &end_cont);
 	top_call(&call);
+	*/
 	
-	repl_entry(environment);
+	object ls2[2];
+	init_list_2(ls2, no_object(), standard_environment());
+	
+	repl_read_entry(ls2, no_object());
 	
 	return 0;
 }
