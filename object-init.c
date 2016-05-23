@@ -31,9 +31,18 @@ void init_call(object* obj, object* function, object* arguments, object* continu
 	obj->data.call.continuation = continuation;
 }
 
-void init_cont(object* obj, object* call) {
+void init_cont_base(object* obj, object* call, char discard) {
 	obj->type = type_continuation;
+	obj->data.continuation.discard_argument = discard;
 	obj->data.continuation.call = call;
+}
+
+void init_cont(object* obj, object* call) {
+	init_cont_base(obj, call, 0);
+}
+
+void init_discarding_cont(object* obj, object* call) {
+	init_cont_base(obj, call, 1);
 }
 
 void init_list_cell(object* obj, object* first, object* rest) {

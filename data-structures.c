@@ -174,6 +174,13 @@ char is_call(object* obj) {
 	return obj->type == type_call;
 }
 
+char is_continuation(object* obj) {
+	return obj->type = type_continuation;
+}
+char is_discarding_continuation(object* obj) {
+	return (is_continuation(obj) && obj->data.continuation.discard_argument);
+}
+
 int list_length(object* ls) {
 	int n = 0;
 	while (!is_empty_list(ls)) {

@@ -26,7 +26,7 @@ object* perform_call(object* call) {
 		return (*(function->data.primitive_procedure.proc))(call_arguments(call), call_continuation(call));
 	}
 	else {
-		printf("faulty call\n");
+		fprintf(stderr, "faulty call\n");
 		return no_object();
 	}
 }
@@ -34,8 +34,15 @@ object* perform_call(object* call) {
 object* call_cont(object* cont, object* arg) {
 	object* call = continuation_call(cont);
 	object ls;
-	init_list_cell(&ls, arg, call_arguments(call));
-	call->data.call.arguments = &ls;
+	if (is_discarding_continuation(cont)) {
+		if (!is_no_object(arg)) {
+			fprintf(stderr, "active object passed to discarding continuation\n");
+		}
+	}
+	else {	
+		init_list_cell(&ls, arg, call_arguments(call));
+		call->data.call.arguments = &ls;
+	}
 	
 	return perform_call(call);
 }

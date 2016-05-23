@@ -64,6 +64,7 @@ typedef struct object {
 			struct object* continuation;
 		} call;
 		struct {
+			char discard_argument;
 			struct object* call;
 		} continuation;
 		struct {
@@ -98,6 +99,8 @@ char is_environment(object* obj);
 char is_file_port(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
+char is_continuation(object* obj);
+char is_discarding_continuation(object* obj);
 
 char boolean_value(object* obj);
 char* symbol_name(object* obj);
