@@ -48,7 +48,12 @@ void init_list_1(object* ls, object* first) {
 
 void init_list_2(object* ls, object* first, object* second) {
 	init_list_cell(ls, first, ls+1);
-	init_list_cell(ls+1, second, empty_list());
+	init_list_1(ls+1, second);
+}
+
+void init_list_3(object* ls, object* first, object* second, object* third) {
+	init_list_cell(ls, first, ls+1);
+	init_list_2(ls+1, second, third);
 }
 
 /*
