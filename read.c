@@ -6,10 +6,12 @@
 #include "call.h"
 #include "symbols.h"
 
-object read_value_proc;
 object add_to_list_proc;
 object read_list_value_proc;
 object read_list_proc;
+object start_list_proc;
+object finish_list_proc;
+object read_list_start_proc;
 
 char in_bracket_list(char* ls, int c) {
 	int i;
@@ -62,14 +64,14 @@ int peek(FILE* in) {
 }
 
 void consume_whitespace(FILE* in) {
-	int c;
-	while (is_whitespace(c = peek(in))) {
+	while (is_whitespace(peek(in))) {
 		getc(in);	
 	}
 }
 
+char buffer[1000];
+
 object* read_identifier(FILE* in) {
-	char buffer[1000];
 	int i = 0;
 	int c;
 	while (!is_delimiter(c = peek(in))) {
@@ -77,7 +79,7 @@ object* read_identifier(FILE* in) {
 		getc(in);
 		i++;
 	}
-	buffer[i] = '\0';
+	buffer[i] = 0;
 	return symbol(buffer);
 }
 
@@ -89,6 +91,15 @@ object* read_value(object* args, object* cont) {
 	FILE* in = file_port_file(input_port);
 	consume_whitespace(in);
 	
+	if (is_list_start_delimiter(peek(in))) {
+		getc(in);
+		object call;
+		init_call(&call, &read_list_start_proc, args, cont);
+		return perform_call(&call);
+	}
+	else {
+	}
+	
 	// read switch
 	// symbol
 	// number
@@ -97,19 +108,20 @@ object* read_value(object* args, object* cont) {
 	// string
 	
 	int c;
+	getc(in);
 	
-	return call_cont(cont, &value);
+	return call_cont(cont, no_object());
 }
 
 object* add_to_list(object* args, object* cont) {
 	object* value;
 	object* last;
-	delist_2(args, &value, &last);
+	object* input;
+	delist_3(args, &value, &last, &input);
 	
 	object next;
-	
-	last->data.list.rest = &next;
 	init_list_cell(&next, value, empty_list());
+	last->data.list.rest = &next;
 	
 	return call_cont(cont, &next);
 }
@@ -126,16 +138,75 @@ object* read_list_value(object* args, object* cont) {
 }
 
 object* read_list(object* args, object* cont) {
-	object* input;
-	object* first;
 	object* last;
-	delist_3(args, &first, &last, &input);
-	// if end list
-	// call_cont(cont, first)
-	// else
+	object* input;
+	delist_2(args, &last, &input);
+	
+	FILE* in = file_port_file(input);
+	consume_whitespace(in);
+	if (is_list_end_delimiter(peek(in))) {
+		getc(in);
+		return call_cont(cont, no_object());
+	}
+	else {
+		object call;
+		init_call(&call, &read_list_value_proc, args, cont);
+		return perform_call(&call);
+	}
+}
+
+object* start_list(object* args, object* cont) {
+	object* value;
+	object* input;
+	delist_2(args, &value, &input);
+	
+	object first;
+	init_list_cell(&first, value, empty_list());
+	
+	object ls[1];
+	init_list_1(ls, &first);
+	
+	// after the list is finished, pass it on to the cont
+	object finish_call;
+	init_call(&finish_call, &finish_list_proc, ls, cont);
+	
+	object finish_cont;
+	init_discarding_cont(&finish_cont, &finish_call);
+	
+	object ls2[3];
+	init_list_2(ls2, &first, input);
+	
+	// keep on building the list
 	object call;
-	init_call(&call, &read_list_value_proc, args, cont);
+	init_call(&call, &read_list_proc, ls2, &finish_cont);
+	
 	return perform_call(&call);
+}
+
+object* finish_list(object* args, object* cont) {
+	object* first;
+	delist_1(args, &first);
+	
+	return call_cont(cont, first);
+}
+
+object* read_list_start(object* args, object* cont) {
+	object* input;
+	delist_1(args, &input);
+	
+	FILE* in = file_port_file(input);
+	consume_whitespace(in);
+	
+	if (is_list_end_delimiter(peek(in))) {
+		getc(in);
+		return call_cont(cont, empty_list());
+	}
+	else {
+		object call;
+		init_call(&call, &start_list_proc, args, cont);
+		
+		return perform_call(&call);
+	}
 }
 
 void init_read_procedures(void) {
@@ -143,4 +214,7 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&add_to_list_proc, &add_to_list);
 	init_primitive_procedure(&read_list_value_proc, &read_list_value);
 	init_primitive_procedure(&read_list_proc, &read_list);
+	init_primitive_procedure(&start_list_proc, &start_list);
+	init_primitive_procedure(&finish_list_proc, &finish_list);
+	init_primitive_procedure(&read_list_start_proc, &read_list_start);
 }

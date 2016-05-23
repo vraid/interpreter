@@ -3,6 +3,7 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "read.h"
 #include "eval.h"
 #include "print.h"
 #include "delist.h"
@@ -13,24 +14,17 @@ object repl_eval_entry_proc;
 object repl_print_or_read_proc;
 object repl_print_entry_proc;
 
-object placeholder_read_proc;
 object placeholder_eval_proc;
 object placeholder_print_proc;
 
-object* placeholder_read(object* args, object* cont) {
-	object* input_port;
-	delist_1(args, &input_port);
-
-	printf("read\n");
-	getc(file_port_file(input_port));
-	
-	return call_cont(cont, no_object());
-}
-
 object* placeholder_eval(object* args, object* cont) {
+	object* value;
+	object* environment;
+	delist_2(args, &value, &environment);
+	
 	printf("eval\n");
 	
-	return call_cont(cont, no_object());
+	return call_cont(cont, value);
 }
 
 object* placeholder_print(object* args, object* cont) {
@@ -40,6 +34,7 @@ object* placeholder_print(object* args, object* cont) {
 }
 
 object* repl_read_entry(object* args, object* cont) {
+	printf("read\n");
 	object* value;
 	object* environment;
 	delist_2(args, &value, &environment);
@@ -60,7 +55,7 @@ object* repl_read_entry(object* args, object* cont) {
 	init_list_1(ls2, &input_port);
 	
 	object call;
-	init_call(&call, &placeholder_read_proc, ls2, &next_cont);
+	init_call(&call, &read_value_proc, ls2, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -106,6 +101,12 @@ object* repl_print_entry(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &value, &environment);
 	
+	printf(object_type_name(value));
+	printf("\n");
+	if (is_empty_list(value)) {
+		printf("print empty list\n");
+	}
+	
 	object ls[1];
 	init_list_1(ls, environment);
 	
@@ -126,7 +127,6 @@ void init_repl_procedures(void) {
 	init_primitive_procedure(&repl_print_or_read_proc, &repl_print_or_read);
 	init_primitive_procedure(&repl_print_entry_proc, &repl_print_entry);
 	
-	init_primitive_procedure(&placeholder_read_proc, &placeholder_read);
 	init_primitive_procedure(&placeholder_eval_proc, &placeholder_eval);
 	init_primitive_procedure(&placeholder_print_proc, &placeholder_print);
 }

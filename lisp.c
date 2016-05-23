@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 	init_type_names();
 	init_symbols();
 	init_global_variables();
+	init_read_procedures();
 	init_print_procedures();
 	init_repl_procedures();
 	init_standard_functions();	
