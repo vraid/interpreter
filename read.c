@@ -154,7 +154,7 @@ object* read_list(object* args, object* cont) {
 	consume_whitespace(in);
 	if (is_list_end_delimiter(peek(in))) {
 		getc(in);
-		return call_cont(cont, no_object());
+		return call_discarding_cont(cont);
 	}
 	else {
 		object call;

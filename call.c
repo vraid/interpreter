@@ -32,17 +32,25 @@ object* perform_call(object* call) {
 }
 
 object* call_cont(object* cont, object* arg) {
-	object* call = continuation_call(cont);
-	object ls;
 	if (is_discarding_continuation(cont)) {
-		if (!is_no_object(arg)) {
-			fprintf(stderr, "active object passed to discarding continuation\n");
-		}
+		fprintf(stderr, "discarding continuation called with argument\n");
+		return no_object();
 	}
-	else {	
+	else {
+		object* call = continuation_call(cont);
+		object ls;
 		init_list_cell(&ls, arg, call_arguments(call));
 		call->data.call.arguments = &ls;
+		return perform_call(call);
 	}
-	
-	return perform_call(call);
+}
+
+object* call_discarding_cont(object* cont) {
+	if (!is_discarding_continuation(cont)) {
+		fprintf(stderr, "normal continuation called without argument\n");
+		return no_object();
+	}
+	else {
+		return perform_call(continuation_call(cont));
+	}
 }
