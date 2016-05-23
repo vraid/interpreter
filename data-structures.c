@@ -24,6 +24,10 @@ void init_type_names(void) {
 	type_name[type_file_port] = "file_port";
 }
 
+char* object_type_name(object* obj) {
+	return type_name[obj->type];
+}
+
 void check_type(object_type type, object* obj) {
 	if (obj->type != type) {
 		fprintf(stderr, "faulty type: expected ");

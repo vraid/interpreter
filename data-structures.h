@@ -85,6 +85,7 @@ void init_type_names(void);
 char list_start_delimiter[bracket_type_count];
 char list_end_delimiter[bracket_type_count];
 
+char* object_type_name(object* obj);
 void check_type(object_type type, object* obj);
 
 char is_type(object_type type, object* obj);
