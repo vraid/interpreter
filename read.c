@@ -86,31 +86,25 @@ object* read_identifier(FILE* in) {
 object* read_value(object* args, object* cont) {
 	object* input_port;
 	delist_1(args, &input_port);
-	object value;
 	
 	FILE* in = file_port_file(input_port);
 	consume_whitespace(in);
 	
-	if (is_list_start_delimiter(peek(in))) {
+	if (is_list_end_delimiter(peek(in))) {
+		fprintf(stderr, "unexpected parenthesis\n");
+		getc(in);
+		return call_cont(cont, no_object());
+	}
+	else if (is_list_start_delimiter(peek(in))) {
 		getc(in);
 		object call;
 		init_call(&call, &read_list_start_proc, args, cont);
 		return perform_call(&call);
 	}
 	else {
+		object* value = read_identifier(in);
+		return call_cont(cont, value);
 	}
-	
-	// read switch
-	// symbol
-	// number
-	// list
-	// boolean
-	// string
-	
-	int c;
-	getc(in);
-	
-	return call_cont(cont, no_object());
 }
 
 object* add_to_list(object* args, object* cont) {
@@ -123,16 +117,30 @@ object* add_to_list(object* args, object* cont) {
 	init_list_cell(&next, value, empty_list());
 	last->data.list.rest = &next;
 	
-	return call_cont(cont, &next);
+	object ls[2];
+	init_list_2(ls, &next, input);
+	
+	object call;
+	init_call(&call, &read_list_proc, ls, cont);
+	
+	return perform_call(&call);
 }
 
 object* read_list_value(object* args, object* cont) {
+	object* last;
+	object* input;
+	delist_2(args, &last, &input);
+	
 	object next_call;
 	init_call(&next_call, &add_to_list_proc, args, cont);
 	object next_cont;
 	init_cont(&next_cont, &next_call);
+
+	object ls[1];
+	init_list_1(ls, input);
+	
 	object call;
-	init_call(&call, &read_value_proc, args, &next_cont);
+	init_call(&call, &read_value_proc, ls, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -202,8 +210,14 @@ object* read_list_start(object* args, object* cont) {
 		return call_cont(cont, empty_list());
 	}
 	else {
+		object next_call;
+		init_call(&next_call, &start_list_proc, args, cont);
+		
+		object next_cont;
+		init_cont(&next_cont, &next_call);
+		
 		object call;
-		init_call(&call, &start_list_proc, args, cont);
+		init_call(&call, &read_value_proc, args, &next_cont);
 		
 		return perform_call(&call);
 	}

@@ -101,12 +101,6 @@ object* repl_print_entry(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &value, &environment);
 	
-	printf(object_type_name(value));
-	printf("\n");
-	if (is_empty_list(value)) {
-		printf("print empty list\n");
-	}
-	
 	object ls[1];
 	init_list_1(ls, environment);
 	
@@ -126,7 +120,6 @@ void init_repl_procedures(void) {
 	init_primitive_procedure(&repl_eval_entry_proc, &repl_eval_entry);
 	init_primitive_procedure(&repl_print_or_read_proc, &repl_print_or_read);
 	init_primitive_procedure(&repl_print_entry_proc, &repl_print_entry);
-	
 	init_primitive_procedure(&placeholder_eval_proc, &placeholder_eval);
 	init_primitive_procedure(&placeholder_print_proc, &placeholder_print);
 }
