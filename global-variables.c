@@ -26,7 +26,7 @@ object* _filter_symbol;
 
 void init_boolean(object* obj, char value) {
 	init_object(location_static, type_boolean, obj);
-	(*obj).data.boolean.value = value;
+	obj->data.boolean.value = value;
 }
 
 void init_global_variables(void) {
