@@ -4,6 +4,8 @@
 
 void check_rest_empty(object* ls) {
 	if (!is_empty_list(list_rest(ls))) {
+		fprintf(stderr, "list rest at  %p\n", (void*)list_rest(ls));
+		fprintf(stderr, "empty list at %p\n", (void*)empty_list());
 		fprintf(stderr, "list too long\n");
 	}
 }

@@ -2,50 +2,51 @@
 #include <string.h>
 #include "symbols.h"
 #include "data-structures.h"
-#include "allocation.h"
+#include "global-variables.h"
+#include "object-init.h"
+#include "call.h"
 
-object** symbols;
-int symbols_length;
-int symbol_count;
+#define static_symbol_max 1024
 
-void init_symbols(void) {
-	symbols_length = 1024;
-	symbol_count = 0;
-	symbols = malloc(symbols_length * sizeof(object*));
-}
+object static_symbols[static_symbol_max];
+object static_symbol_cells[static_symbol_max];
+int static_symbol_count;
 
-void add_symbol(object* obj) {
-	if (symbols_length == symbol_count) {
-		symbols_length = symbols_length * 2;
-		symbols = realloc(symbols, symbols_length * sizeof(object*));
-	}
-	symbols[symbol_count] = obj;
-	symbol_count++;
-}
-
-void init_symbol(object* obj, char* name) {
-	init_object(location_static, type_symbol, obj);
-	obj->data.symbol.name = name;
-}
-
-void make_static_symbol(object* obj, char* name) {
+object* make_static_symbol(char* name) {
+	object* obj = &static_symbols[static_symbol_count];
 	init_symbol(obj, name);
-	add_symbol(obj);
+	(*obj).location = location_static;
+	object* ls = &static_symbol_cells[static_symbol_count];
+	init_list_cell(ls, obj, symbol_list);
+	(*ls).location = location_static;
+	symbol_list = ls;
+	static_symbol_count++;
+	return obj;
 }
 
-object* symbol(char* name) {
+object* symbol(char* name, object* cont) {
 	// look for existing symbol first
-	for (int i = 0; i < symbol_count; i++) {
-		if (strcmp(name, symbol_name(symbols[i])) == 0) {
-			return symbols[i];
+	object* ls = symbol_list;
+	while (ls != empty_list()) {
+		object* symbol = list_first(ls);
+		if (strcmp(name, symbol_name(symbol)) == 0) {
+			return call_cont(cont, symbol);
 		}
+		ls = list_rest(ls);
 	}
 	// symbol not found, adding it
-	object* obj = malloc(sizeof(object));
+	object obj;
 	char* str = malloc(sizeof(char) * strlen(name));
 	strcpy(str, name);
-	init_symbol(obj, str);
-	add_symbol(obj);
+	init_symbol(&obj, str);
+	object cell;
+	init_list_cell(&cell, &obj, symbol_list);
+	symbol_list = &cell;
 	
-	return obj;
+	return call_cont(cont, &obj);
+}
+
+void init_symbols(void) {
+	symbol_list = empty_list();
+	static_symbol_count = 0;
 }

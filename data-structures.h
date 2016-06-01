@@ -20,10 +20,14 @@ typedef enum {
 char* type_name[type_count];
 
 typedef enum {
+	location_none,
 	location_stack,
 	location_heap,
 	location_static,
-	location_moved} object_location;	
+	location_moved,
+	location_count} object_location;
+
+char* location_name[location_count];
 
 typedef enum {round, square, curly, shapeless, file_bracket, bracket_type_count} bracket_type;
 
@@ -80,7 +84,7 @@ typedef struct object {
 	} data;
 } object;
 
-void init_type_names(void);
+void init_data_structure_names(void);
 
 char list_start_delimiter[bracket_type_count];
 char list_end_delimiter[bracket_type_count];

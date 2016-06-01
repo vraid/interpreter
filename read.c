@@ -71,7 +71,7 @@ void consume_whitespace(FILE* in) {
 
 char buffer[1000];
 
-object* read_identifier(FILE* in) {
+char* read_identifier(FILE* in) {
 	int i = 0;
 	int c;
 	while (!is_delimiter(c = peek(in))) {
@@ -80,7 +80,7 @@ object* read_identifier(FILE* in) {
 		i++;
 	}
 	buffer[i] = 0;
-	return symbol(buffer);
+	return buffer;
 }
 
 object* read_value(object* args, object* cont) {
@@ -102,8 +102,7 @@ object* read_value(object* args, object* cont) {
 		return perform_call(&call);
 	}
 	else {
-		object* value = read_identifier(in);
-		return call_cont(cont, value);
+		return symbol(read_identifier(in), cont);
 	}
 }
 

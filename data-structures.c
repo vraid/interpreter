@@ -3,39 +3,49 @@
 #include <string.h>
 #include <ctype.h>
 #include "data-structures.h"
-#include "allocation.h"
 #include "global-variables.h"
 
 char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '(', 0};
 char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')', 0};
 
 void init_type_names(void) {
-	type_name[type_none] = "no-type";
+	type_name[type_none] = "no type";
 	type_name[type_boolean] = "boolean";
 	type_name[type_symbol] = "symbol";
 	type_name[type_number] = "number";
 	type_name[type_list] = "list";
-	type_name[type_primitive_procedure] = "primitive_procedure";
+	type_name[type_primitive_procedure] = "primitive procedure";
 	type_name[type_function] = "function";
 	type_name[type_call] = "call";
 	type_name[type_continuation] = "continuation";
 	type_name[type_binding] = "binding";
 	type_name[type_environment] = "environment";
-	type_name[type_file_port] = "file_port";
+	type_name[type_file_port] = "file port";
+}
+
+void init_location_names(void) {
+	location_name[location_none] = "no location";
+	location_name[location_stack] = "stack";
+	location_name[location_heap] = "heap";
+	location_name[location_static] = "static";
+	location_name[location_moved] = "moved";
+}
+
+void init_data_structure_names(void) {
+	init_type_names();
+	init_location_names();
 }
 
 char* object_type_name(object* obj) {
-	return type_name[obj->type];
+	return type_name[(*obj).type];
 }
 
 void check_type(object_type type, object* obj) {
-	if (obj->type != type) {
-		fprintf(stderr, "faulty type: expected ");
-		fprintf(stderr, type_name[type]);
-		fprintf(stderr, ", got ");
-		fprintf(stderr, type_name[obj->type]);
-		fprintf(stderr, " \n");
-		exit(1);
+	if ((*obj).type >= type_count) {
+		fprintf(stderr, "type out of range at %p, expected %s\n", (void*)obj, type_name[type]);
+	}
+	if ((*obj).type != type) {
+		fprintf(stderr, "faulty type: expected %s, got %s\n", type_name[type], type_name[(*obj).type]);
 	}
 	return;
 }
@@ -206,10 +216,4 @@ char is_self_quoting(object* obj) {
 
 char list_starts_with(object* ls, object* obj) {
 	return is_nonempty_list(ls) && (obj == list_first(ls));
-}
-
-object* make_number(long value) {
-	object* obj = allocate_object(type_number);
-	obj->data.number.value = value;
-	return obj;
 }

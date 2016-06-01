@@ -2,6 +2,8 @@
 
 #include "data-structures.h"
 
+void init_object(object_location loc, object_type t, object* obj);
+void init_symbol(object* obj, char* name);
 void init_primitive_procedure(object* obj, primitive_proc* proc);
 void init_call(object* obj, object* function, object* arguments, object* continuation);
 void init_cont(object* obj, object* call);

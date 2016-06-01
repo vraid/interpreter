@@ -2,14 +2,8 @@
 
 #include "data-structures.h"
 
-typedef enum {
-	forwards,
-	backwards} direction;
+#define max_stack_data 1024*1024
 
-typedef struct {
-	int size;
-	direction memory_direction;
-	object* memory;
-} memory_space;
+void perform_gc(object** root);
 
-void clear_garbage(object* to_space, object* root, int direction, object_location location);
+void init_memory_spaces();

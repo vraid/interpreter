@@ -1,5 +1,4 @@
 #include "environments.h"
-#include "list-util.h"
 #include "global-variables.h"
 #include "call.h"
 #include "delist.h"

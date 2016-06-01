@@ -1,7 +1,8 @@
+CC = clang
+
+CFLAGS  = -g -Wall -Wextra -pedantic
+
+all: *.c ; $(CC) $(CFLAGS) -o lisp.out *.c
+
 .PHONY: clean
-
-lisp: *.c
-	cc -Wall -Wextra -pedantic -std=gnu99 -o lisp.out *.c
-
-clean:
-	rm lisp.out
+clean: rm -f *.o lisp.out

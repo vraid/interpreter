@@ -1,6 +1,7 @@
 #include "list-util.h"
 #include "global-variables.h"
-#include "allocation.h"
+
+/*
 
 object* cons(object* first, object* rest) {
 	object* obj = new_list();
@@ -82,3 +83,4 @@ object* list_reverse(object* obj) {
 	}
 	return ls;
 }
+*/

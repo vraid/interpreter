@@ -2,8 +2,8 @@
 
 #include "data-structures.h"
 
+object* symbol_list;
+
 void init_symbols(void);
-void init_symbol(object* obj, char* name);
-void add_symbol(object* obj);
-void make_static_symbol(object* obj, char* name);
-object* symbol(char* name);
+object* make_static_symbol(char* name);
+object* symbol(char* name, object* cont);

@@ -5,7 +5,6 @@
 #include "standard-library.h"
 #include "data-structures.h"
 #include "object-init.h"
-#include "list-util.h"
 #include "delist.h"
 #include "call.h"
 #include "print.h"

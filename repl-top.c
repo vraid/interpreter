@@ -1,5 +1,4 @@
 #include "repl-top.h"
-#include "allocation.h"
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -9,7 +8,6 @@
 #include "delist.h"
 #include "call.h"
 
-object repl_read_entry_proc;
 object repl_eval_entry_proc;
 object repl_print_or_read_proc;
 object repl_print_entry_proc;
@@ -34,7 +32,6 @@ object* placeholder_print(object* args, object* cont) {
 }
 
 object* repl_read_entry(object* args, object* cont) {
-	printf("read\n");
 	object* value;
 	object* environment;
 	delist_2(args, &value, &environment);
@@ -48,7 +45,7 @@ object* repl_read_entry(object* args, object* cont) {
 	init_cont(&next_cont, &eval_call);
 	
 	object input_port;
-	input_port.type = type_file_port;
+	init_object(location_stack, type_file_port, &input_port);
 	input_port.data.file_port.file = stdin;
 	
 	object ls2[1];
@@ -72,7 +69,6 @@ object* repl_eval_entry(object* args, object* cont) {
 	init_call(&print_call, &repl_print_or_read_proc, ls, cont);
 	object next_cont;
 	init_cont(&next_cont, &print_call);
-	
 	object call;
 	init_call(&call, &placeholder_eval_proc, args, &next_cont);
 	
