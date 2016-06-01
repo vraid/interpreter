@@ -74,32 +74,3 @@ void init_list_3(object* ls, object* first, object* second, object* third) {
 	init_list_cell(ls, first, ls+1);
 	init_list_2(ls+1, second, third);
 }
-
-/*
-object* make_binding_list(object* names, object* values) {
-	if (is_empty_list(names)) {
-		return empty_list();
-	}
-	else {
-		object* ls = new_list();
-		object* prev;
-		object* next = ls;
-		while (!is_empty_list(names)) {
-			prev = next;
-			prev->data.list.first = make_binding(list_first(names), list_first(values));
-		
-			names = list_rest(names);
-			values = list_rest(values);
-		
-			if (is_empty_list(names)) {
-				next = empty_list();
-			}
-			else {
-				next = new_list();
-			}
-			prev->data.list.rest = next;
-		}
-		return ls;
-	}
-}
-*/
