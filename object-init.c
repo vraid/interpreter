@@ -14,7 +14,7 @@ void init_string(object* obj, char* value) {
 	obj->data.string.length = 1 + strlen(value);
 }
 
-void init_symbol(object* obj, char* name) {
+void init_symbol(object* obj, object* name) {
 	init_object(location_stack, type_symbol, obj);
 	obj->data.symbol.name = name;
 }

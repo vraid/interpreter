@@ -82,7 +82,7 @@ char is_symbol(object* obj) {
 	return is_type(type_symbol, obj);
 }
 
-char* symbol_name(object* obj) {
+object* symbol_name(object* obj) {
 	check_type(type_symbol, obj);
 	return obj->data.symbol.name;
 }

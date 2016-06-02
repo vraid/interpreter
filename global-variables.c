@@ -37,8 +37,7 @@ void init_global_variables(void) {
 	
 	init_object(location_static, type_none, no_object());
 	init_object(location_static, type_symbol, no_symbol());
-	_no_symbol.data.symbol.name = malloc(sizeof(char));
-	_no_symbol.data.symbol.name[0] = 0;
+	_no_symbol.data.symbol.name = empty_string();
 	
 	init_object(location_static, type_binding, no_binding());
 	_no_binding.data.binding.name = no_symbol();

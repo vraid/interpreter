@@ -17,7 +17,7 @@ object* print_value(object* args, object* cont) {
 			printf("undefined");
 			break;
 		case type_symbol:
-			printf("%s", symbol_name(obj));
+			printf("%s", string_value(symbol_name(obj)));
 			break;
 		case type_boolean:
 			if (is_false(obj)) {

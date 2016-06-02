@@ -13,8 +13,11 @@ object static_symbol_cells[static_symbol_max];
 int static_symbol_count;
 
 object* make_static_symbol(char* name) {
+	object* string = malloc(sizeof(object));
+	init_string(string, name);
+	string->location = location_static;
 	object* obj = &static_symbols[static_symbol_count];
-	init_symbol(obj, name);
+	init_symbol(obj, string);
 	obj->location = location_static;
 	object* ls = &static_symbol_cells[static_symbol_count];
 	init_list_cell(ls, obj, symbol_list);
@@ -29,16 +32,18 @@ object* symbol(char* name, object* cont) {
 	object* ls = symbol_list;
 	while (ls != empty_list()) {
 		object* symbol = list_first(ls);
-		if (strcmp(name, symbol_name(symbol)) == 0) {
+		if (strcmp(name, string_value(symbol_name(symbol))) == 0) {
 			return call_cont(cont, symbol);
 		}
 		ls = list_rest(ls);
 	}
 	// symbol not found, adding it
-	object obj;
-	char* str = malloc(sizeof(char) * (1 + strlen(name)));
+	object string;
+	char* str = alloca(sizeof(char) * (1 + strlen(name)));
 	strcpy(str, name);
-	init_symbol(&obj, str);
+	init_string(&string, str);
+	object obj;
+	init_symbol(&obj, &string);
 	object cell;
 	init_list_cell(&cell, &obj, symbol_list);
 	symbol_list = &cell;

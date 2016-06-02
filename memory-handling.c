@@ -41,6 +41,7 @@ void move_object(object* to, object* from, int direction) {
 		char* next_target = (char*)(to + direction);
 		memcpy(next_target, string_value(to), string_length(to));
 		to->data.string.value = next_target;
+		printf("string value: %s\n", next_target);
 	}
 }
 
@@ -54,6 +55,10 @@ void move_if_necessary(target_space space, object** obj, object_location locatio
 	if ((**obj).location == location_moved) {
 		(*obj) = (**obj).data.forward_reference.ref;
 	}
+}
+
+void traverse_symbol(target_space space, object* object, object_location location) {
+	move_if_necessary(space, &object->data.symbol.name, location);
 }
 
 void traverse_list(target_space space, object* object, object_location location) {
@@ -88,6 +93,9 @@ void traverse_continuation(target_space space, object* object, object_location l
 
 void traverse_object(target_space space, object* object, object_location location) {
 	switch (object->type) {
+		case type_symbol :
+			traverse_symbol(space, object, location);
+			break;
 		case type_list :
 			traverse_list(space, object, location);
 			break;
@@ -108,7 +116,7 @@ void traverse_object(target_space space, object* object, object_location locatio
 			break;
 		case type_none :
 		case type_boolean :
-		case type_symbol :
+		case type_string :
 		case type_primitive_procedure :
 		case type_number :
 		case type_file_port :

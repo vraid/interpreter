@@ -49,7 +49,7 @@ typedef struct object {
 			char* value;
 		} string;
 		struct {
-			char* name;
+			struct object* name;
 		} symbol;
 		struct {
 			long value;
@@ -116,7 +116,7 @@ char is_discarding_continuation(object* obj);
 char boolean_value(object* obj);
 int string_length(object* obj);
 char* string_value(object* obj);
-char* symbol_name(object* obj);
+object* symbol_name(object* obj);
 long number_value(object* obj);
 FILE* file_port_file(object* obj);
 bracket_type list_type(object* obj);
