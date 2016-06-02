@@ -15,10 +15,10 @@ int static_symbol_count;
 object* make_static_symbol(char* name) {
 	object* obj = &static_symbols[static_symbol_count];
 	init_symbol(obj, name);
-	(*obj).location = location_static;
+	obj->location = location_static;
 	object* ls = &static_symbol_cells[static_symbol_count];
 	init_list_cell(ls, obj, symbol_list);
-	(*ls).location = location_static;
+	ls->location = location_static;
 	symbol_list = ls;
 	static_symbol_count++;
 	return obj;

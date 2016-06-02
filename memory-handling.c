@@ -28,9 +28,9 @@ size_t object_size(object* obj) {
 
 void move_object(object* to, object* from) {
 	(*to) = (*from);
-	(*to).location = location_heap;
-	(*from).location = location_moved;
-	(*from).data.forward_reference.ref = to;
+	to->location = location_heap;
+	from->location = location_moved;
+	from->data.forward_reference.ref = to;
 }
 
 void move_if_necessary(target_space space, object** obj, object_location location) {
@@ -46,37 +46,37 @@ void move_if_necessary(target_space space, object** obj, object_location locatio
 }
 
 void traverse_list(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &(*object).data.list.first, location);
-	move_if_necessary(space, &(*object).data.list.rest, location);
+	move_if_necessary(space, &object->data.list.first, location);
+	move_if_necessary(space, &object->data.list.rest, location);
 }
 
 void traverse_binding(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &(*object).data.binding.name, location);
-	move_if_necessary(space, &(*object).data.binding.value, location);
+	move_if_necessary(space, &object->data.binding.name, location);
+	move_if_necessary(space, &object->data.binding.value, location);
 }
 
 void traverse_function(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &(*object).data.function.parameters, location);
-	move_if_necessary(space, &(*object).data.function.environment, location);
-	move_if_necessary(space, &(*object).data.function.body, location);
+	move_if_necessary(space, &object->data.function.parameters, location);
+	move_if_necessary(space, &object->data.function.environment, location);
+	move_if_necessary(space, &object->data.function.body, location);
 }
 
 void traverse_environment(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &(*object).data.environment.bindings, location);
+	move_if_necessary(space, &object->data.environment.bindings, location);
 }
 
 void traverse_call(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &(*object).data.call.function, location);
-	move_if_necessary(space, &(*object).data.call.arguments, location);
-	move_if_necessary(space, &(*object).data.call.continuation, location);
+	move_if_necessary(space, &object->data.call.function, location);
+	move_if_necessary(space, &object->data.call.arguments, location);
+	move_if_necessary(space, &object->data.call.continuation, location);
 }
 
 void traverse_continuation(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &(*object).data.continuation.call, location);
+	move_if_necessary(space, &object->data.continuation.call, location);
 }
 
 void traverse_object(target_space space, object* object, object_location location) {
-	switch ((*object).type) {
+	switch (object->type) {
 		case type_list :
 			traverse_list(space, object, location);
 			break;
@@ -124,44 +124,44 @@ void clear_garbage(char** to_space, object** root, int direction, object_locatio
 }
 
 int used_heap_data(memory_space* space) {
-	int offset = (*space).next_free - (*space).memory;
-	if ((*space).direction == 1) {
+	int offset = space->next_free - space->memory;
+	if (space->direction == 1) {
 		return offset;
 	}
 	else {
-		return (*space).size - offset;
+		return space->size - offset;
 	}
 }
 
 char heap_full(memory_space* space) {
 	int max_size;
-	if ((*space).fill_and_resize) {
-		max_size = (*space).size;
+	if (space->fill_and_resize) {
+		max_size = space->size;
 	}
 	else {
-		max_size = (*space).half_size;
+		max_size = space->half_size;
 	}
 	return used_heap_data(space) + max_stack_data > max_size;
 }
 
 char resize_at_next_major_gc(memory_space* space) {
-	return used_heap_data(space) > (*space).quarter_size;
+	return used_heap_data(space) > space->quarter_size;
 }
 
 void reset_memory_space(memory_space* space) {
-	(*space).next_free = (*space).memory + ((*space).half_size * ((*space).direction + 1));
-	(*space).direction *= -1;
+	space->next_free = space->memory + (space->half_size * (space->direction + 1));
+	space->direction *= -1;
 }
 
 void init_memory_space(memory_space* space, int quarter_size) {
-	(*space).quarter_size = quarter_size;
-	(*space).half_size = 2 * quarter_size;
-	(*space).size = 4 * quarter_size;
-	(*space).direction = 1;
-	(*space).fill_and_resize = 0;
-	(*space).memory = malloc((*space).size);
-	(*space).next_free = (*space).memory;
-	if ((*space).memory == 0) {
+	space->quarter_size = quarter_size;
+	space->half_size = 2 * quarter_size;
+	space->size = 4 * quarter_size;
+	space->direction = 1;
+	space->fill_and_resize = 0;
+	space->memory = malloc(space->size);
+	space->next_free = space->memory;
+	if (space->memory == 0) {
 		printf("out of memory\n");
 		exit(0);
 	}

@@ -45,7 +45,7 @@ void check_type(object_type type, object* obj) {
 		fprintf(stderr, "type out of range at %p, expected %s\n", (void*)obj, type_name[type]);
 	}
 	if (obj->type != type) {
-		fprintf(stderr, "faulty type: expected %s, got %s\n", type_name[type], type_name[(*obj).type]);
+		fprintf(stderr, "faulty type: expected %s, got %s\n", type_name[type], type_name[obj->type]);
 	}
 	return;
 }
