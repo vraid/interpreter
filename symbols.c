@@ -36,7 +36,7 @@ object* symbol(char* name, object* cont) {
 	}
 	// symbol not found, adding it
 	object obj;
-	char* str = malloc(sizeof(char) * strlen(name));
+	char* str = malloc(sizeof(char) * (1 + strlen(name)));
 	strcpy(str, name);
 	init_symbol(&obj, str);
 	object cell;
