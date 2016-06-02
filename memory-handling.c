@@ -91,6 +91,10 @@ void traverse_continuation(target_space space, object* object, object_location l
 	move_if_necessary(space, &object->data.continuation.call, location);
 }
 
+void traverse_internal_error(target_space space, object* object, object_location location) {
+	move_if_necessary(space, &object->data.internal_error.message, location);
+}
+
 void traverse_object(target_space space, object* object, object_location location) {
 	switch (object->type) {
 		case type_symbol :
@@ -113,6 +117,9 @@ void traverse_object(target_space space, object* object, object_location locatio
 			break;
 		case type_continuation :
 			traverse_continuation(space, object, location);
+			break;
+		case type_internal_error :
+			traverse_internal_error(space, object, location);
 			break;
 		case type_none :
 		case type_boolean :

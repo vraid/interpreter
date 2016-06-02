@@ -22,6 +22,7 @@ void init_type_names(void) {
 	type_name[type_binding] = "binding";
 	type_name[type_environment] = "environment";
 	type_name[type_file_port] = "file port";
+	type_name[type_internal_error] = "internal error";
 }
 
 void init_location_names(void) {
@@ -208,6 +209,15 @@ char is_continuation(object* obj) {
 }
 char is_discarding_continuation(object* obj) {
 	return (is_continuation(obj) && obj->data.continuation.discard_argument);
+}
+
+char is_internal_error(object* obj) {
+	return obj->type == type_internal_error;
+}
+
+object* internal_error_message(object* obj) {
+	check_type(type_internal_error, obj);
+	return obj->data.internal_error.message;
 }
 
 int list_length(object* ls) {

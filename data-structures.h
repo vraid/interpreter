@@ -16,6 +16,7 @@ typedef enum {
 	type_binding,
 	type_environment,
 	type_file_port,
+	type_internal_error,
 	type_count} object_type;
 
 char* type_name[type_count];
@@ -86,6 +87,9 @@ typedef struct object {
 		struct {
 			FILE* file;
 		} file_port;
+		struct {
+			struct object* message;
+		} internal_error;
 	} data;
 } object;
 
@@ -112,6 +116,7 @@ char is_call(object* obj);
 char is_nonempty_list(object* obj);
 char is_continuation(object* obj);
 char is_discarding_continuation(object* obj);
+char is_internal_error(object* obj);
 
 char boolean_value(object* obj);
 int string_length(object* obj);
@@ -139,6 +144,7 @@ object* call_function(object* obj);
 object* call_arguments(object* obj);
 object* call_continuation(object* obj);
 object* continuation_call(object* obj);
+object* internal_error_message(object* obj);
 
 int list_length(object* ls);
 object* extend_environment(object* env, object* bindings);

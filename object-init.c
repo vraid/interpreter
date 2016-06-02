@@ -63,6 +63,11 @@ void init_discarding_cont(object* obj, object* call) {
 	init_cont_base(obj, call, 1);
 }
 
+void init_internal_error(object* obj, object* message) {
+	init_object(location_stack, type_internal_error, obj);
+	obj->data.internal_error.message = message;
+}
+
 void init_list_cell(object* obj, object* first, object* rest) {
 	init_object(location_stack, type_list, obj);
 	obj->data.list.first = first;
