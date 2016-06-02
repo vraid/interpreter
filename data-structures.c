@@ -204,7 +204,7 @@ char is_call(object* obj) {
 }
 
 char is_continuation(object* obj) {
-	return obj->type = type_continuation;
+	return obj->type == type_continuation;
 }
 char is_discarding_continuation(object* obj) {
 	return (is_continuation(obj) && obj->data.continuation.discard_argument);
