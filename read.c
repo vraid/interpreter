@@ -69,18 +69,22 @@ void consume_whitespace(FILE* in) {
 	}
 }
 
-char buffer[1000];
+#define input_buffer_size 1024
+char input_buffer[input_buffer_size];
 
 char* read_identifier(FILE* in) {
 	int i = 0;
 	int c;
 	while (!is_delimiter(c = peek(in))) {
-		buffer[i] = c;
+		input_buffer[i] = c;
 		getc(in);
 		i++;
+		if (i >= input_buffer_size) {
+			fprintf(stderr, "identifier too long, max %i characters\n", input_buffer_size);
+		}
 	}
-	buffer[i] = 0;
-	return buffer;
+	input_buffer[i] = 0;
+	return input_buffer;
 }
 
 object* read_value(object* args, object* cont) {

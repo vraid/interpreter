@@ -7,18 +7,18 @@
 
 object* saved_call;
 char* stack_top;
-jmp_buf buffer;
+jmp_buf jump_buffer;
 
 void save_call(object* call) {
 	saved_call = call;
 }
 
 object* top_call(object* call) {
+	save_call(call);
+	setjmp(jump_buffer);
 	char p;
 	stack_top = &p;
 	printf("stack top is %p\n", stack_top);
-	save_call(call);
-	setjmp(buffer);
 	return perform_call(saved_call);	
 }
 
@@ -31,7 +31,7 @@ object* perform_call(object* call) {
 	if (stack_full()) {
 		save_call(call);
 		perform_gc(&saved_call);
-		longjmp(buffer, 0);
+		longjmp(jump_buffer, 0);
 	}
 	object* function = call_function(call);
 	if (is_function(function)) {
