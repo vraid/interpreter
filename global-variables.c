@@ -6,12 +6,14 @@
 #include "symbols.h"
 #include "object-init.h"
 
+char nullchar;
 object _false;
 object _true;
 object _no_object;
 object _no_symbol;
 object _no_binding;
 object _empty_list;
+object _empty_string;
 object _empty_environment;
 object* _quote_symbol;
 object* _define_symbol;
@@ -46,6 +48,11 @@ void init_global_variables(void) {
 	_empty_list.data.list.type = shapeless;
 	_empty_list.data.list.first = no_object();
 	_empty_list.data.list.rest = no_object();
+	
+	nullchar = 0;
+	init_object(location_static, type_string, empty_string());
+	_empty_string.data.string.value = &nullchar;
+	_empty_string.data.string.length = 1;
 	
 	init_object(location_static, type_environment, &_empty_environment);
 	_empty_environment.data.environment.bindings = empty_list();
@@ -82,6 +89,9 @@ char is_no_object(object* obj) {
 }
 object* empty_list(void) {
 	return &_empty_list;
+}
+object* empty_string(void) {
+	return &_empty_string;
 }
 object* no_object(void) {
 	return &_no_object;

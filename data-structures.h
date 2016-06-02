@@ -5,6 +5,7 @@
 typedef enum {
 	type_none,
 	type_boolean,
+	type_string,
 	type_symbol,
 	type_number,
 	type_list,
@@ -43,6 +44,10 @@ typedef struct object {
 		struct {
 			char value;
 		} boolean;
+		struct {
+			int length;
+			char* value;
+		} string;
 		struct {
 			char* name;
 		} symbol;
@@ -94,6 +99,7 @@ void check_type(object_type type, object* obj);
 
 char is_type(object_type type, object* obj);
 char is_boolean(object* obj);
+char is_string(object* obj);
 char is_symbol(object* obj);
 char is_number(object* obj);
 char is_list(object* obj);
@@ -108,6 +114,8 @@ char is_continuation(object* obj);
 char is_discarding_continuation(object* obj);
 
 char boolean_value(object* obj);
+int string_length(object* obj);
+char* string_value(object* obj);
 char* symbol_name(object* obj);
 long number_value(object* obj);
 FILE* file_port_file(object* obj);

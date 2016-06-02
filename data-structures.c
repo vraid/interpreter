@@ -11,6 +11,7 @@ char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')', 0};
 void init_type_names(void) {
 	type_name[type_none] = "no type";
 	type_name[type_boolean] = "boolean";
+	type_name[type_string] = "string";
 	type_name[type_symbol] = "symbol";
 	type_name[type_number] = "number";
 	type_name[type_list] = "list";
@@ -61,6 +62,20 @@ char is_boolean(object* obj) {
 char boolean_value(object* obj) {
 	check_type(type_boolean, obj);
 	return obj->data.boolean.value;
+}
+
+char is_string(object* obj) {
+	return is_type(type_string, obj);
+}
+
+int string_length(object* obj) {
+	check_type(type_string, obj);
+	return obj->data.string.length;
+}
+ 
+char* string_value(object* obj) {
+	check_type(type_string, obj);
+	return obj->data.string.value;
 }
 
 char is_symbol(object* obj) {

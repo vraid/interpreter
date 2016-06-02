@@ -12,6 +12,7 @@ char is_no_object(object* obj);
 object* true(void);
 object* false(void);
 object* empty_list(void);
+object* empty_string(void);
 object* no_object(void);
 object* no_symbol(void);
 object* no_binding(void);

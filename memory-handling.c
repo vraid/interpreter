@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "memory-handling.h"
 #include "data-structures.h"
@@ -23,19 +24,29 @@ typedef struct {
 memory_space main_memory_space;
 
 size_t object_size(object* obj) {
-	return sizeof(object);
+	if (is_string(obj)) {
+		return sizeof(object) + sizeof(char) * string_length(obj);
+	}
+	else {
+		return sizeof(object);
+	}
 }
 
-void move_object(object* to, object* from) {
+void move_object(object* to, object* from, int direction) {
 	(*to) = (*from);
 	to->location = location_heap;
 	from->location = location_moved;
 	from->data.forward_reference.ref = to;
+	if (is_string(to)) {
+		char* next_target = (char*)(to + direction);
+		memcpy(next_target, string_value(to), string_length(to));
+		to->data.string.value = next_target;
+	}
 }
 
 void move_if_necessary(target_space space, object** obj, object_location location) {
 	if ((**obj).location <= location) {
-		move_object((object*)*(space.target), *obj);
+		move_object((object*)*(space.target), *obj, space.direction);
 		*(space.target) += space.direction * object_size((**obj).data.forward_reference.ref);
 	}
 	
