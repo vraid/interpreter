@@ -147,10 +147,5 @@ object* continuation_call(object* obj);
 object* internal_error_message(object* obj);
 
 int list_length(object* ls);
-object* extend_environment(object* env, object* bindings);
-object* find_in_environment(object* env, object* symbol);
 char is_self_quoting(object* obj);
-object* quote(object* value);
 char list_starts_with(object* ls, object* obj);
-char is_quoted(object* exp);
-char is_definition(object* exp);
