@@ -25,7 +25,7 @@ memory_space main_memory_space;
 
 size_t object_size(object* obj) {
 	if (is_string(obj)) {
-		return sizeof(object) + sizeof(char) * string_length(obj);
+		return sizeof(object) + sizeof(char) * (1 + string_length(obj));
 	}
 	else {
 		return sizeof(object);
@@ -39,7 +39,7 @@ void move_object(object* to, object* from, int direction) {
 	from->data.forward_reference.ref = to;
 	if (is_string(to)) {
 		char* next_target = (char*)(to + direction);
-		memcpy(next_target, string_value(to), string_length(to));
+		memcpy(next_target, string_value(to), 1 + string_length(to));
 		to->data.string.value = next_target;
 		printf("string value: %s\n", next_target);
 	}

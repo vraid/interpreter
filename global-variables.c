@@ -51,7 +51,7 @@ void init_global_variables(void) {
 	nullchar = 0;
 	init_object(location_static, type_string, empty_string());
 	_empty_string.data.string.value = &nullchar;
-	_empty_string.data.string.length = 1;
+	_empty_string.data.string.length = 0;
 	
 	init_object(location_static, type_environment, &_empty_environment);
 	_empty_environment.data.environment.bindings = empty_list();
