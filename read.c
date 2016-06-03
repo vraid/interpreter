@@ -95,9 +95,12 @@ object* read_value(object* args, object* cont) {
 	consume_whitespace(in);
 	
 	if (is_list_end_delimiter(peek(in))) {
-		fprintf(stderr, "unexpected parenthesis\n");
 		getc(in);
-		return call_cont(cont, no_object());
+		object string;
+		init_string(&string, "unexpected parenthesis");
+		object er;
+		init_internal_error(&er, &string);
+		return call_cont(cont, &er);
 	}
 	else if (is_list_start_delimiter(peek(in))) {
 		getc(in);
@@ -115,6 +118,10 @@ object* add_to_list(object* args, object* cont) {
 	object* last;
 	object* input;
 	delist_3(args, &value, &last, &input);
+	
+	if (is_internal_error(value)) {
+		return call_cont(cont, value);
+	}
 	
 	object next;
 	init_list_cell(&next, value, empty_list());
