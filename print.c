@@ -10,8 +10,6 @@ object* print_value(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
 	
-	printf("write\n");
-	
 	switch (obj->type) {
 		case type_none:
 			printf("undefined");
@@ -39,12 +37,13 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_function:
 			printf("function ");
-//			write_list(function_parameters(obj));
 			break;
 		default:
 			fprintf(stderr, "unknown type");
-	}
-	return call_cont(cont, no_object());
+	}	
+	printf("\n");
+	
+	return call_discarding_cont(cont);
 }
 
 void init_print_procedures(void) {

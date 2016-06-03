@@ -13,7 +13,6 @@ object repl_print_or_read_proc;
 object repl_print_entry_proc;
 
 object placeholder_eval_proc;
-object placeholder_print_proc;
 
 object* placeholder_eval(object* args, object* cont) {
 	object* value;
@@ -22,25 +21,20 @@ object* placeholder_eval(object* args, object* cont) {
 	
 	printf("eval\n");
 	
-	return call_cont(cont, value);
-}
-
-object* placeholder_print(object* args, object* cont) {
-	printf("print\n");
-	
-	return call_cont(cont, no_object());
+	if (is_internal_error(value)) {
+		return call_cont(cont, value);
+	}
+	else {
+		return call_cont(cont, value);
+	}
 }
 
 object* repl_read_entry(object* args, object* cont) {
-	object* value;
 	object* environment;
-	delist_2(args, &value, &environment);
-	
-	object ls[1];
-	init_list_1(ls, environment);
+	delist_1(args, &environment);
 	
 	object eval_call;
-	init_call(&eval_call, &repl_eval_entry_proc, ls, cont);
+	init_call(&eval_call, &repl_eval_entry_proc, args, cont);
 	object next_cont;
 	init_cont(&next_cont, &eval_call);
 	
@@ -82,8 +76,14 @@ object* repl_print_or_read(object* args, object* cont) {
 	
 	object call;
 	
-	if (is_environment(value)) {
+	if (is_internal_error(value)) {
+		printf("error: %s\n", string_value(internal_error_message(value)));
 		init_call(&call, &repl_read_entry_proc, args, cont);
+	}
+	if (is_environment(value)) {
+		object ls[1];
+		init_list_1(ls, environment);
+		init_call(&call, &repl_read_entry_proc, ls, cont);
 	}
 	else {
 		init_call(&call, &repl_print_entry_proc, args, cont);
@@ -103,10 +103,12 @@ object* repl_print_entry(object* args, object* cont) {
 	object read_call;
 	init_call(&read_call, &repl_read_entry_proc, ls, cont);
 	object next_cont;
-	init_cont(&next_cont, &read_call);
+	init_discarding_cont(&next_cont, &read_call);
 	
+	object ls2[1];
+	init_list_1(ls2, value);
 	object call;
-	init_call(&call, &placeholder_print_proc, args, &next_cont);
+	init_call(&call, &print_proc, ls2, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -117,5 +119,4 @@ void init_repl_procedures(void) {
 	init_primitive_procedure(&repl_print_or_read_proc, &repl_print_or_read);
 	init_primitive_procedure(&repl_print_entry_proc, &repl_print_entry);
 	init_primitive_procedure(&placeholder_eval_proc, &placeholder_eval);
-	init_primitive_procedure(&placeholder_print_proc, &placeholder_print);
 }

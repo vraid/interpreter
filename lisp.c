@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
 		printf("panic!\n");
 	}
 	
-	object ls[2];
-	init_list_2(ls, no_object(), standard_environment());
+	object ls[1];
+	init_list_1(ls, standard_environment());
 	
 	object call;
 	init_call(&call, &repl_read_entry_proc, ls, &end_cont);
