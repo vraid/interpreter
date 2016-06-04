@@ -18,6 +18,7 @@ object read_list_start_proc;
 
 object read_string_proc;
 object read_nonstring_proc;
+object read_hashed_proc;
 
 object quote_object_proc;
 
@@ -75,6 +76,10 @@ char is_quotation_mark(int c) {
 
 char is_quote_char(int c) {
 	return c == '\'';
+}
+
+char is_hash_char(int c) {
+	return c == '#';
 }
 
 int peek(FILE* in) {
@@ -143,6 +148,25 @@ object* read_nonstring(object* args, object* cont) {
 	return symbol(string_value(string), cont);
 }
 
+object* read_hashed(object* args, object* cont) {
+	object* string;
+	delist_1(args, &string);
+	
+	if (string_length(string) == 2) {
+		char* str = string_value(string);
+		switch (str[1]) {
+			case 't' : return call_cont(cont, true());
+			case 'f' : return call_cont(cont, false());
+		}
+	}
+	object message;
+	init_string(&message, "invalid value");
+	object e;
+	init_internal_error(&e, &message);
+	
+	return call_cont(cont, &e);
+}
+
 object* quote_object(object* args, object* cont) {
 	object* value;
 	delist_1(args, &value);
@@ -191,12 +215,17 @@ object* read_value(object* args, object* cont) {
 		char* str = get_string(q, in);
 		
 		object call;
+		object* primitive;
 		if (q) {
-			init_call(&call, &read_string_proc, empty_list(), cont);
+			primitive = &read_string_proc;
+		}
+		else if (is_hash_char(c)) {
+			primitive = &read_hashed_proc;
 		}
 		else {
-			init_call(&call, &read_nonstring_proc, empty_list(), cont);
+			primitive = &read_nonstring_proc;
 		}
+		init_call(&call, primitive, empty_list(), cont);
 		
 		object next_cont;
 		init_cont(&next_cont, &call);
@@ -335,5 +364,6 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&read_list_start_proc, &read_list_start);
 	init_primitive_procedure(&read_string_proc, &read_string);
 	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
+	init_primitive_procedure(&read_hashed_proc, &read_hashed);
 	init_primitive_procedure(&quote_object_proc, &quote_object);
 }
