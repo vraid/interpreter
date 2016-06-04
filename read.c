@@ -1,4 +1,7 @@
 #include "read.h"
+
+#include <stdlib.h>
+#include <string.h>
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -57,6 +60,14 @@ char is_delimiter(int c) {
 		c == '"';
 }
 
+char is_escape_char(int c) {
+	return c == '\\';
+}
+
+char is_quotation_mark(int c) {
+	return c == '"';
+}
+
 int peek(FILE* in) {
 	int c = getc(in);
 	ungetc(c, in);
@@ -72,19 +83,41 @@ void consume_whitespace(FILE* in) {
 #define input_buffer_size 1024
 char input_buffer[input_buffer_size];
 
-char* read_identifier(FILE* in) {
+char keep_reading(char string, int c, int escapes) {
+	if (string) {
+		return (escapes & 1) || !(is_quotation_mark(c));
+	}
+	else {
+		return !is_delimiter(c);
+	}
+}
+
+char* read_string(char string, FILE* in) {
 	int i = 0;
-	int c;
-	while (!is_delimiter(c = peek(in))) {
+	int c = getc(in);
+	int escapes = 0;
+	while (keep_reading(string, c, escapes)) {
 		input_buffer[i] = c;
-		getc(in);
 		i++;
 		if (i >= input_buffer_size) {
 			fprintf(stderr, "identifier too long, max %i characters\n", input_buffer_size);
 		}
+		escapes = is_escape_char(c) ? escapes + 1 : 0;
+		c = getc(in);
 	}
+	ungetc(c, in);
+	
 	input_buffer[i] = 0;
 	return input_buffer;
+}
+
+object* string(char* cs, FILE* in, object* cont) {
+	getc(in);
+	char* str = alloca(sizeof(char) * (1 + strlen(cs)));
+	strcpy(str, cs);
+	object s;
+	init_string(&s, str);
+	return call_cont(cont, &s);
 }
 
 object* read_value(object* args, object* cont) {
@@ -94,7 +127,11 @@ object* read_value(object* args, object* cont) {
 	FILE* in = file_port_file(input_port);
 	consume_whitespace(in);
 	
-	if (is_list_end_delimiter(peek(in))) {
+	if (is_quotation_mark(peek(in))) {
+		getc(in);
+		return string(read_string(1, in), in, cont);
+	}
+	else if (is_list_end_delimiter(peek(in))) {
 		getc(in);
 		object string;
 		init_string(&string, "unexpected parenthesis");
@@ -109,7 +146,7 @@ object* read_value(object* args, object* cont) {
 		return perform_call(&call);
 	}
 	else {
-		return symbol(read_identifier(in), cont);
+		return symbol(read_string(0, in), cont);
 	}
 }
 
