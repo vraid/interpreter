@@ -61,6 +61,10 @@ void traverse_symbol(target_space space, object* object, object_location locatio
 	move_if_necessary(space, &object->data.symbol.name, location);
 }
 
+void traverse_quote(target_space space, object* object, object_location location) {
+	move_if_necessary(space, &object->data.quote.value, location);
+}
+
 void traverse_list(target_space space, object* object, object_location location) {
 	move_if_necessary(space, &object->data.list.first, location);
 	move_if_necessary(space, &object->data.list.rest, location);
@@ -99,6 +103,9 @@ void traverse_object(target_space space, object* object, object_location locatio
 	switch (object->type) {
 		case type_symbol :
 			traverse_symbol(space, object, location);
+			break;
+		case type_quote :
+			traverse_quote(space, object, location);
 			break;
 		case type_list :
 			traverse_list(space, object, location);

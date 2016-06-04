@@ -14,6 +14,7 @@ void init_type_names(void) {
 	type_name[type_string] = "string";
 	type_name[type_symbol] = "symbol";
 	type_name[type_number] = "number";
+	type_name[type_quote] = "quote";
 	type_name[type_list] = "list";
 	type_name[type_primitive_procedure] = "primitive procedure";
 	type_name[type_function] = "function";
@@ -95,6 +96,15 @@ char is_number(object* obj) {
 long number_value(object* obj) {
 	check_type(type_number, obj);
 	return obj->data.number.value;
+}
+
+char is_quote(object* obj) {
+	return is_type(type_quote, obj);
+}
+
+object* quote_value(object* obj) {
+	check_type(type_quote, obj);
+	return obj->data.quote.value;
 }
 
 char is_list(object* obj) {

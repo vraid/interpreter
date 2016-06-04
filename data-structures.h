@@ -8,6 +8,7 @@ typedef enum {
 	type_string,
 	type_symbol,
 	type_number,
+	type_quote,
 	type_list,
 	type_primitive_procedure,
 	type_function,
@@ -55,6 +56,9 @@ typedef struct object {
 		struct {
 			long value;
 		} number;
+		struct {
+			struct object* value;
+		} quote;
 		struct {
 			bracket_type type;
 			struct object* first;
@@ -106,6 +110,7 @@ char is_boolean(object* obj);
 char is_string(object* obj);
 char is_symbol(object* obj);
 char is_number(object* obj);
+char is_quote(object* obj);
 char is_list(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
@@ -124,6 +129,7 @@ char* string_value(object* obj);
 object* symbol_name(object* obj);
 long number_value(object* obj);
 FILE* file_port_file(object* obj);
+object* quote_value(object* obj);
 bracket_type list_type(object* obj);
 object* list_first(object* ls);
 object* list_rest(object* ls);

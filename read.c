@@ -19,6 +19,8 @@ object read_list_start_proc;
 object read_string_proc;
 object read_nonstring_proc;
 
+object quote_object_proc;
+
 char in_bracket_list(char* ls, int c) {
 	int i;
 	for (i = 0; i < bracket_type_count; i++) {
@@ -69,6 +71,10 @@ char is_escape_char(int c) {
 
 char is_quotation_mark(int c) {
 	return c == '"';
+}
+
+char is_quote_char(int c) {
+	return c == '\'';
 }
 
 int peek(FILE* in) {
@@ -137,6 +143,16 @@ object* read_nonstring(object* args, object* cont) {
 	return symbol(string_value(string), cont);
 }
 
+object* quote_object(object* args, object* cont) {
+	object* value;
+	delist_1(args, &value);
+	
+	object quote;
+	init_quote(&quote, value);
+	
+	return call_cont(cont, &quote);
+}
+
 object* read_value(object* args, object* cont) {
 	object* input_port;
 	delist_1(args, &input_port);
@@ -159,6 +175,16 @@ object* read_value(object* args, object* cont) {
 		object call;
 		init_call(&call, &read_list_start_proc, args, cont);
 		return perform_call(&call);
+	}
+	else if (is_quote_char(c)) {
+		getc(in);
+		object call;
+		init_call(&call, &quote_object_proc, empty_list(), cont);
+		object next_cont;
+		init_cont(&next_cont, &call);
+		object read_call;
+		init_call(&read_call, &read_value_proc, args, &next_cont);
+		return perform_call(&read_call);
 	}
 	else {
 		char q = is_quotation_mark(c);
@@ -309,4 +335,5 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&read_list_start_proc, &read_list_start);
 	init_primitive_procedure(&read_string_proc, &read_string);
 	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
+	init_primitive_procedure(&quote_object_proc, &quote_object);
 }
