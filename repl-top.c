@@ -105,10 +105,15 @@ object* repl_print_entry(object* args, object* cont) {
 	object next_cont;
 	init_discarding_cont(&next_cont, &read_call);
 	
+	object newline_call;
+	init_call(&newline_call, &print_newline_proc, empty_list(), &next_cont);
+	object newline_cont;
+	init_discarding_cont(&newline_cont, &newline_call);
+	
 	object ls2[1];
 	init_list_1(ls2, value);
 	object call;
-	init_call(&call, &print_proc, ls2, &next_cont);
+	init_call(&call, &print_proc, ls2, &newline_cont);
 	
 	return perform_call(&call);
 }
