@@ -16,6 +16,9 @@ object start_list_proc;
 object finish_list_proc;
 object read_list_start_proc;
 
+object read_string_proc;
+object read_nonstring_proc;
+
 char in_bracket_list(char* ls, int c) {
 	int i;
 	for (i = 0; i < bracket_type_count; i++) {
@@ -92,7 +95,8 @@ char keep_reading(char string, int c, int escapes) {
 	}
 }
 
-char* read_string(char string, FILE* in) {
+char* get_string(char string, FILE* in) {
+	if (string) getc(in);
 	int i = 0;
 	int c = getc(in);
 	int escapes = 0;
@@ -105,19 +109,32 @@ char* read_string(char string, FILE* in) {
 		escapes = is_escape_char(c) ? escapes + 1 : 0;
 		c = getc(in);
 	}
-	ungetc(c, in);
+	if (!string) ungetc(c, in);
 	
 	input_buffer[i] = 0;
 	return input_buffer;
 }
 
-object* string(char* cs, FILE* in, object* cont) {
-	getc(in);
+object* string(char* cs, object* cont) {
 	char* str = alloca(sizeof(char) * (1 + strlen(cs)));
 	strcpy(str, cs);
 	object s;
 	init_string(&s, str);
 	return call_cont(cont, &s);
+}
+
+object* read_string(object* args, object* cont) {
+	object* string;
+	delist_1(args, &string);
+	
+	return call_cont(cont, string);
+}
+
+object* read_nonstring(object* args, object* cont) {
+	object* string;
+	delist_1(args, &string);
+	
+	return symbol(string_value(string), cont);
 }
 
 object* read_value(object* args, object* cont) {
@@ -127,11 +144,9 @@ object* read_value(object* args, object* cont) {
 	FILE* in = file_port_file(input_port);
 	consume_whitespace(in);
 	
-	if (is_quotation_mark(peek(in))) {
-		getc(in);
-		return string(read_string(1, in), in, cont);
-	}
-	else if (is_list_end_delimiter(peek(in))) {
+	char c = peek(in);
+	
+	if (is_list_end_delimiter(c)) {
 		getc(in);
 		object string;
 		init_string(&string, "unexpected parenthesis");
@@ -139,14 +154,28 @@ object* read_value(object* args, object* cont) {
 		init_internal_error(&er, &string);
 		return call_cont(cont, &er);
 	}
-	else if (is_list_start_delimiter(peek(in))) {
+	else if (is_list_start_delimiter(c)) {
 		getc(in);
 		object call;
 		init_call(&call, &read_list_start_proc, args, cont);
 		return perform_call(&call);
 	}
 	else {
-		return symbol(read_string(0, in), cont);
+		char q = is_quotation_mark(c);
+		char* str = get_string(q, in);
+		
+		object call;
+		if (q) {
+			init_call(&call, &read_string_proc, empty_list(), cont);
+		}
+		else {
+			init_call(&call, &read_nonstring_proc, empty_list(), cont);
+		}
+		
+		object next_cont;
+		init_cont(&next_cont, &call);
+		
+		return string(str, &next_cont);
 	}
 }
 
@@ -278,4 +307,6 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&start_list_proc, &start_list);
 	init_primitive_procedure(&finish_list_proc, &finish_list);
 	init_primitive_procedure(&read_list_start_proc, &read_list_start);
+	init_primitive_procedure(&read_string_proc, &read_string);
+	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
 }
