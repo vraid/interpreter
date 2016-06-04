@@ -57,76 +57,76 @@ void move_if_necessary(target_space space, object** obj, object_location locatio
 	}
 }
 
-void traverse_symbol(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.symbol.name, location);
+void traverse_symbol(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.symbol.name, location);
 }
 
-void traverse_quote(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.quote.value, location);
+void traverse_quote(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.quote.value, location);
 }
 
-void traverse_list(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.list.first, location);
-	move_if_necessary(space, &object->data.list.rest, location);
+void traverse_list(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.list.first, location);
+	move_if_necessary(space, &obj->data.list.rest, location);
 }
 
-void traverse_binding(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.binding.name, location);
-	move_if_necessary(space, &object->data.binding.value, location);
+void traverse_binding(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.binding.name, location);
+	move_if_necessary(space, &obj->data.binding.value, location);
 }
 
-void traverse_function(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.function.parameters, location);
-	move_if_necessary(space, &object->data.function.environment, location);
-	move_if_necessary(space, &object->data.function.body, location);
+void traverse_function(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.function.parameters, location);
+	move_if_necessary(space, &obj->data.function.environment, location);
+	move_if_necessary(space, &obj->data.function.body, location);
 }
 
-void traverse_environment(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.environment.bindings, location);
+void traverse_environment(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.environment.bindings, location);
 }
 
-void traverse_call(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.call.function, location);
-	move_if_necessary(space, &object->data.call.arguments, location);
-	move_if_necessary(space, &object->data.call.continuation, location);
+void traverse_call(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.call.function, location);
+	move_if_necessary(space, &obj->data.call.arguments, location);
+	move_if_necessary(space, &obj->data.call.continuation, location);
 }
 
-void traverse_continuation(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.continuation.call, location);
+void traverse_continuation(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.continuation.call, location);
 }
 
-void traverse_internal_error(target_space space, object* object, object_location location) {
-	move_if_necessary(space, &object->data.internal_error.message, location);
+void traverse_internal_error(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
 
-void traverse_object(target_space space, object* object, object_location location) {
-	switch (object->type) {
+void traverse_object(target_space space, object* obj, object_location location) {
+	switch (obj->type) {
 		case type_symbol :
-			traverse_symbol(space, object, location);
+			traverse_symbol(space, obj, location);
 			break;
 		case type_quote :
-			traverse_quote(space, object, location);
+			traverse_quote(space, obj, location);
 			break;
 		case type_list :
-			traverse_list(space, object, location);
+			traverse_list(space, obj, location);
 			break;
 		case type_function :
-			traverse_function(space, object, location);
+			traverse_function(space, obj, location);
 			break;
 		case type_binding :
-			traverse_binding(space, object, location);
+			traverse_binding(space, obj, location);
 			break;
 		case type_environment :
-			traverse_environment(space, object, location);
+			traverse_environment(space, obj, location);
 			break;
 		case type_call :
-			traverse_call(space, object, location);
+			traverse_call(space, obj, location);
 			break;
 		case type_continuation :
-			traverse_continuation(space, object, location);
+			traverse_continuation(space, obj, location);
 			break;
 		case type_internal_error :
-			traverse_internal_error(space, object, location);
+			traverse_internal_error(space, obj, location);
 			break;
 		case type_none :
 		case type_boolean :
