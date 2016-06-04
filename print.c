@@ -81,6 +81,9 @@ object* print_value(object* args, object* cont) {
 		case type_none:
 			printf("undefined");
 			break;
+		case type_string:
+			printf("\"%s\"", string_value(obj));
+			break;
 		case type_symbol:
 			printf("%s", string_value(symbol_name(obj)));
 			break;
