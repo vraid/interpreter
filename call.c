@@ -8,6 +8,8 @@
 object* saved_call;
 char* stack_top;
 jmp_buf jump_buffer;
+int call_count = 0;
+#define max_call_count 1024*1024
 
 void save_call(object* call) {
 	saved_call = call;
@@ -28,11 +30,13 @@ char stack_full(void) {
 }
 
 object* perform_call(object* call) {
-	if (stack_full()) {
+	if ((call_count >= max_call_count) || stack_full() || max_mutations_reached()) {
+		call_count = 0;
 		save_call(call);
 		perform_gc(&saved_call);
 		longjmp(jump_buffer, 0);
 	}
+	call_count++;
 	object* function = call_function(call);
 	if (is_function(function)) {
 		return call;

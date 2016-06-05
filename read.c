@@ -5,6 +5,7 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "memory-handling.h"
 #include "delist.h"
 #include "call.h"
 #include "symbols.h"
@@ -247,6 +248,7 @@ object* add_to_list(object* args, object* cont) {
 	object next;
 	init_list_cell(&next, value, empty_list());
 	last->data.list.rest = &next;
+	add_mutation(last, &next);
 	
 	object ls[2];
 	init_list_2(ls, &next, input);

@@ -6,6 +6,29 @@
 #include "global-variables.h"
 #include "symbols.h"
 
+#define max_mutations 1024
+object* mutations[max_mutations];
+int mutation_count = 0;
+
+char max_mutations_reached(void) {
+	return mutation_count == max_mutations;
+}
+
+void add_mutation(object* obj, object* reference) {
+	if (max_mutations_reached()) {
+		fprintf(stderr, "too many mutations\n");
+		exit(0);
+	}
+	if (obj->location > location_heap) {
+		fprintf(stderr, "mutation at %s\n", location_name[obj->location]);
+		exit(0);
+	}
+	else if ((obj->location == location_heap) && (reference->location == location_stack)) {
+		mutations[mutation_count] = obj;
+		mutation_count++;
+	}
+}
+
 typedef struct {
 	int direction;
 	char** target;
@@ -41,7 +64,6 @@ void move_object(object* to, object* from, int direction) {
 		char* next_target = (char*)(to + direction);
 		memcpy(next_target, string_value(to), 1 + string_length(to));
 		to->data.string.value = next_target;
-		printf("string value: %s\n", next_target);
 	}
 }
 
@@ -139,21 +161,26 @@ void traverse_object(target_space space, object* obj, object_location location) 
 	}
 }
 
-void clear_garbage(char** to_space, object** root, int direction, object_location location) {
-	char* next_free = *to_space;
+void clear_garbage(memory_space* memory, object** root, object_location location, char move_root) {
+	char* next_free = memory->next_free;
 	target_space space;
-	space.direction = direction;
+	space.direction = memory->direction;
 	space.target = &next_free;
-	char* next_traversed = *to_space;
+	char* next_traversed = next_free;
 	
-	move_if_necessary(space, root, location);
+	if (move_root) {
+		move_if_necessary(space, root, location);
+	}
+	else {
+		traverse_object(space, *root, location);
+	}
 	
 	while (next_free != next_traversed) {
 		object* obj = (object*)next_traversed;
 		traverse_object(space, obj, location);
-		next_traversed += direction * object_size(obj);
+		next_traversed += space.direction * object_size(obj);
 	}
-	*to_space = next_free;
+	memory->next_free = next_free;
 }
 
 int used_heap_data(memory_space* space) {
@@ -222,15 +249,21 @@ void perform_gc(object** root) {
 	else {
 		printf("minor gc\n");
 		location = location_stack;
+		int i;
+		for (i = 0; i < mutation_count; i++) {
+			clear_garbage(&main_memory_space, mutations+i, location, 0);
+			mutations[i] = no_object();
+		}
 	}
-	clear_garbage(&main_memory_space.next_free, &symbol_list, main_memory_space.direction, location);
-	clear_garbage(&main_memory_space.next_free, root, main_memory_space.direction, location);
+	clear_garbage(&main_memory_space, &symbol_list, location, 1);
+	clear_garbage(&main_memory_space, root, location, 1);
 	if (resize) {
 		free(old_memory);
 	}
 	if (is_major) {
 		main_memory_space.fill_and_resize =  resize_at_next_major_gc(&main_memory_space);
 	}
+	mutation_count = 0;
 }
 
 void init_memory_spaces() {
