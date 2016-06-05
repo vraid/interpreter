@@ -121,44 +121,28 @@ void traverse_internal_error(target_space space, object* obj, object_location lo
 	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
 
-void traverse_object(target_space space, object* obj, object_location location) {
+void traverse_nothing(target_space space, object* obj, object_location location) {
+}
+
+typedef void (traversal)(target_space space, object* obj, object_location location);
+
+traversal* traversal_function(object* obj) {
 	switch (obj->type) {
-		case type_symbol :
-			traverse_symbol(space, obj, location);
-			break;
-		case type_quote :
-			traverse_quote(space, obj, location);
-			break;
-		case type_list :
-			traverse_list(space, obj, location);
-			break;
-		case type_function :
-			traverse_function(space, obj, location);
-			break;
-		case type_binding :
-			traverse_binding(space, obj, location);
-			break;
-		case type_environment :
-			traverse_environment(space, obj, location);
-			break;
-		case type_call :
-			traverse_call(space, obj, location);
-			break;
-		case type_continuation :
-			traverse_continuation(space, obj, location);
-			break;
-		case type_internal_error :
-			traverse_internal_error(space, obj, location);
-			break;
-		case type_none :
-		case type_boolean :
-		case type_string :
-		case type_primitive_procedure :
-		case type_number :
-		case type_file_port :
-		default:
-		break;
+		case type_symbol : return &traverse_symbol;
+		case type_quote : return &traverse_quote;
+		case type_list : return &traverse_list;
+		case type_function : return &traverse_function;
+		case type_binding : return &traverse_binding;
+		case type_environment : return &traverse_environment;
+		case type_call : return &traverse_call;
+		case type_continuation : return &traverse_continuation;
+		case type_internal_error : return &traverse_internal_error;
+		default: return &traverse_nothing;
 	}
+}
+
+void traverse_object(target_space space, object* obj, object_location location) {
+	(*traversal_function(obj))(space, obj, location);
 }
 
 void clear_garbage(memory_space* memory, object** root, object_location location, char move_root) {
