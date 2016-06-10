@@ -314,7 +314,7 @@ object* start_list(object* args, object* cont) {
 	object finish_cont;
 	init_discarding_cont(&finish_cont, &finish_call);
 	
-	object ls2[3];
+	object ls2[2];
 	init_list_2(ls2, &first, input);
 	
 	// keep on building the list
