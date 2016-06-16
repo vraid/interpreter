@@ -65,10 +65,41 @@ object* eval_syntax(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object eval_primitive_procedure_call_proc;
+
+object* eval_primitive_procedure_call(object* args, object* cont) {
+	object* arguments;
+	object* proc;
+	object* environment;
+	delist_3(args, &arguments, &proc, &environment);
+	
+	object call;
+	init_call(&call, proc, arguments, cont);
+	
+	return perform_call(&call);
+}
+
 object eval_primitive_procedure_proc;
 
 object* eval_primitive_procedure(object* args, object* cont) {
-	return no_object();
+	object* proc;
+	object* arguments;
+	object* environment;
+	delist_3(args, &proc, &arguments, &environment);
+	
+	object proc_ls[2];
+	init_list_2(proc_ls, proc, environment);
+	object proc_call;
+	init_call(&proc_call, &eval_primitive_procedure_call_proc, proc_ls, cont);
+	object proc_cont;
+	init_cont(&proc_cont, &proc_call);
+	
+	object ls[2];
+	init_list_2(ls, arguments, environment);
+	object call;
+	init_call(&call, eval_list_elements_proc(), ls, &proc_cont);
+	
+	return perform_call(&call);
 }
 
 object* eval_function_call(object* args, object* cont) {
@@ -376,6 +407,7 @@ void init_eval_procedures(void) {
 	init_primitive_procedure(&eval_list_rest_proc, &eval_list_rest);
 	init_primitive_procedure(&eval_syntax_proc, &eval_syntax);
 	init_primitive_procedure(&eval_primitive_procedure_proc, &eval_primitive_procedure);
+	init_primitive_procedure(&eval_primitive_procedure_call_proc, &eval_primitive_procedure_call);
 	
 	init_primitive_procedure(&eval_function_proc, &eval_function);
 	init_primitive_procedure(&eval_function_body_proc, &eval_function_body);
