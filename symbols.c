@@ -10,6 +10,7 @@
 
 object static_symbols[static_symbol_max];
 object static_symbol_cells[static_symbol_max];
+object static_symbol_names[static_symbol_max];
 int static_symbol_count;
 
 object* find_symbol(char* name) {
@@ -28,7 +29,7 @@ object* make_static_symbol(char* name) {
 	object* obj = find_symbol(name);
 	
 	if (is_no_object(obj)) {
-		object* string = malloc(sizeof(object));
+		object* string = &static_symbol_names[static_symbol_count];
 		init_string(string, name);
 		string->location = location_static;
 		obj = &static_symbols[static_symbol_count];
