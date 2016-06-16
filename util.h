@@ -1,3 +1,3 @@
 #pragma once
 
-char* int_to_string(int i);
+long string_to_int(char* str);

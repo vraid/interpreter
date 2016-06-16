@@ -6,6 +6,7 @@
 #include "global-variables.h"
 #include "object-init.h"
 #include "base-util.h"
+#include "util.h"
 #include "memory-handling.h"
 #include "delist.h"
 #include "call.h"
@@ -20,6 +21,7 @@ object read_list_start_proc;
 
 object read_string_proc;
 object read_nonstring_proc;
+object read_number_proc;
 object read_hashed_proc;
 
 char in_bracket_list(char* ls, int c) {
@@ -80,6 +82,19 @@ char is_quote_char(int c) {
 
 char is_hash_char(int c) {
 	return c == '#';
+}
+
+char is_digit(int c) {
+	return (c >= '0') && (c <= '9');
+}
+
+char is_valid_number(object* string) {
+	int i;
+	char* str = string_value(string);
+	for (i = 0; i < string_length(string); i++) {
+		if (!is_digit(str[i])) return 0;
+	}
+	return 1;
 }
 
 int peek(FILE* in) {
@@ -148,6 +163,26 @@ object* read_nonstring(object* args, object* cont) {
 	return symbol(string_value(string), cont);
 }
 
+object* read_number(object* args, object* cont) {
+	object* string;
+	delist_1(args, &string);
+	
+	if (is_valid_number(string)) {
+		object number;
+		init_number(&number, string_to_int(string_value(string)));
+		
+		return call_cont(cont, &number);
+	}
+	else {
+		object message;
+		init_string(&message, "invalid number\n");
+		object e;
+		init_internal_error(&e, &message);
+		
+		return call_cont(cont, &e);
+	}
+}
+
 object* read_hashed(object* args, object* cont) {
 	object* string;
 	delist_1(args, &string);
@@ -211,6 +246,9 @@ object* read_value(object* args, object* cont) {
 		}
 		else if (is_hash_char(c)) {
 			primitive = &read_hashed_proc;
+		}
+		else if (is_digit(c)) {
+			primitive = &read_number_proc;
 		}
 		else {
 			primitive = &read_nonstring_proc;
@@ -355,5 +393,6 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&read_list_start_proc, &read_list_start);
 	init_primitive_procedure(&read_string_proc, &read_string);
 	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
+	init_primitive_procedure(&read_number_proc, &read_number);
 	init_primitive_procedure(&read_hashed_proc, &read_hashed);
 }

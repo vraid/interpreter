@@ -4,6 +4,7 @@
 
 void init_object(object_location loc, object_type t, object* obj);
 void init_string(object* obj, char* value);
+void init_number(object* obj, long value);
 void init_symbol(object* obj, object* name);
 void init_quote(object* obj, object* value);
 void init_binding(object* obj, object* name, object* value);

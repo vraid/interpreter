@@ -2,15 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char* int_to_string(int i) {
-	int k = 10;
-	int count = 1;
-	while (k >= i) {
-		k *= 10;
-		count++;
+long string_to_int(char* str) {
+	long value = 0;
+	int i = 0;
+	while (str[i] != 0) {
+		value *= 10;
+		value += (str[i] - '0');
+		i++;
 	}
-	
-	char* c = malloc(sizeof(char) * (count + 1));
-	sprintf(c, "%d", i);
-	return c;
+	return value;
 }
