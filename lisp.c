@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
 	init_eval_procedures();
 	init_repl_procedures();
 	init_environment_procedures();
-	init_base_syntax_procedures();
 	init_standard_functions();	
+	init_base_syntax_procedures();
 	init_memory_spaces();
 	
 	init_primitive_procedure(&end_proc, &end);
