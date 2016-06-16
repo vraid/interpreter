@@ -240,36 +240,22 @@ object* filter(object* args, object* cont) {
 	return no_object();
 }
 
-void init_syntax_procedure(static_syntax syntax, primitive_proc* proc) {
+void add_syntax(char* name, static_syntax syntax, primitive_proc* proc) {
 	init_syntax(&syntax_procedure[syntax], proc);
-}
-
-void add_syntax_binding(static_syntax syntax, char* name) {
 	add_static_binding(&syntax_procedure[syntax], name);
 }
 
-void init_base_syntax_procedures(void) {
-	init_syntax_procedure(syntax_define, &define);
-	init_syntax_procedure(syntax_quote, &quote);
-	init_syntax_procedure(syntax_lambda, &lambda);
-	init_syntax_procedure(syntax_curry, &curry);
-	init_syntax_procedure(syntax_apply, &apply);
-	init_syntax_procedure(syntax_if, &if_func);
-	init_syntax_procedure(syntax_list, &list);
-	init_syntax_procedure(syntax_map, &map);
-	init_syntax_procedure(syntax_fold, &fold);
-	init_syntax_procedure(syntax_filter, &filter);
-	
-	add_syntax_binding(syntax_define, "define");
-	add_syntax_binding(syntax_quote, "quote");
-	add_syntax_binding(syntax_lambda, "lambda");
-	add_syntax_binding(syntax_curry, "curry");
-	add_syntax_binding(syntax_apply, "apply");
-	add_syntax_binding(syntax_if, "if");
-	add_syntax_binding(syntax_list, "list");
-	add_syntax_binding(syntax_map, "map");
-	add_syntax_binding(syntax_fold, "fold");
-	add_syntax_binding(syntax_filter, "filter");
+void init_base_syntax_procedures(void) {	
+	add_syntax("define", syntax_define, &define);
+	add_syntax("quote", syntax_quote, &quote);
+	add_syntax("lambda", syntax_lambda, &lambda);
+	add_syntax("curry", syntax_curry, &curry);
+	add_syntax("apply", syntax_apply, &apply);
+	add_syntax("if", syntax_if, &if_func);
+	add_syntax("list", syntax_list, &list);
+	add_syntax("map", syntax_map, &map);
+	add_syntax("fold", syntax_fold, &fold);
+	add_syntax("filter", syntax_filter, &filter);
 	
 	init_primitive_procedure(&bind_value_proc, &bind_value);
 	init_primitive_procedure(&eval_if_proc, &eval_if);
