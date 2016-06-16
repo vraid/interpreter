@@ -2,9 +2,8 @@
 
 #include "data-structures.h"
 
-object* cons(object* first, object* rest);
-object* list_ref(int n, object* ls);
-object* list_take(int n, object* obj);
-object* list_drop(int n, object* obj);
-object* list_append(object* as, object* rest);
-object* list_reverse(object* obj);
+void init_list_util_procedures(void);
+
+object* add_to_list_proc(void);
+object* finish_list_proc(void);
+object* reverse_list_proc(void);

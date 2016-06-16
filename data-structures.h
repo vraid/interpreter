@@ -10,6 +10,7 @@ typedef enum {
 	type_number,
 	type_quote,
 	type_list,
+	type_syntax,
 	type_primitive_procedure,
 	type_function,
 	type_call,
@@ -66,6 +67,9 @@ typedef struct object {
 		} list;
 		struct {
 			primitive_proc* proc;
+		} syntax;
+		struct {
+			primitive_proc* proc;
 		} primitive_procedure;
 		struct {
 			struct object* parameters;
@@ -112,6 +116,7 @@ char is_symbol(object* obj);
 char is_number(object* obj);
 char is_quote(object* obj);
 char is_list(object* obj);
+char is_syntax(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
@@ -134,14 +139,10 @@ bracket_type list_type(object* obj);
 object* list_first(object* ls);
 object* list_rest(object* ls);
 object* cons(object* first, object* rest);
-object* list_ref(int n, object* ls);
-object* list_take(int n, object* obj);
-object* list_drop(int n, object* obj);
-object* append(object* as, object* rest);
-object* reverse(object* obj);
 object* function_parameters(object* obj);
 object* function_environment(object* obj);
 object* function_body(object* obj);
+primitive_proc* syntax_proc(object* obj);
 primitive_proc* primitive_procedure_proc(object* obj);
 object* binding_name(object* obj);
 object* binding_value(object* obj);

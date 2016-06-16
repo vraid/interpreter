@@ -17,7 +17,7 @@ object* static_environment(void) {
 	return &_static_environment;
 }
 
-object* add_static_binding(char* name, object* value) {
+object* add_static_binding(object* value, char* name) {
 	if (static_binding_count == static_binding_max) {
 		fprintf(stderr, "too many static bindings\n");
 		exit(0);
@@ -35,15 +35,15 @@ object* add_static_binding(char* name, object* value) {
 }
 
 object* extend_environment(object* args, object* cont) {
-	object* name;
 	object* value;
+	object* name;
 	object* env;
-	delist_3(args, &name, &value, &env);
+	delist_3(args, &value, &name, &env);
 	
 	object binding;
 	init_binding(&binding, name, value);
 	object cell;
-	init_list_cell(&cell, binding, environment_bindings(env));
+	init_list_cell(&cell, &binding, environment_bindings(env));
 	object new_env;
 	init_environment(&new_env, &cell);
 	

@@ -20,7 +20,6 @@ object* top_call(object* call) {
 	setjmp(jump_buffer);
 	char p;
 	stack_top = &p;
-	printf("stack top is %p\n", stack_top);
 	return perform_call(saved_call);	
 }
 
@@ -44,6 +43,9 @@ object* perform_call(object* call) {
 	else if (is_primitive_procedure(function)) {
 		return (*(function->data.primitive_procedure.proc))(call_arguments(call), call_continuation(call));
 	}
+	else if (is_syntax(function)) {
+		return (*(function->data.syntax.proc))(call_arguments(call), call_continuation(call));
+	}		
 	else {
 		fprintf(stderr, "faulty call\n");
 		return no_object();

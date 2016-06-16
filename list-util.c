@@ -1,86 +1,84 @@
 #include "list-util.h"
 #include "global-variables.h"
+#include "object-init.h"
+#include "call.h"
+#include "delist.h"
+#include "memory-handling.h"
 
-/*
+object _add_to_list_proc;
+object _finish_list_proc;
+object _reverse_list_proc;
 
-object* cons(object* first, object* rest) {
-	object* obj = new_list();
-	obj->data.list.first = first;
-	obj->data.list.rest = rest;
-	return obj;
+object* add_to_list_proc(void) {
+	return &_add_to_list_proc;
 }
 
-object* list_ref(int n, object* ls) {
-	while (n > 0) {
-		ls = list_rest(ls);
-		n--;
-	}
-	return list_first(ls);
+object* finish_list_proc(void) {
+	return &_finish_list_proc;
 }
 
-object* list_take(int n, object* obj) {
-	if (n == 0) {
-		return empty_list();
+object* reverse_list_proc(void) {
+	return &_reverse_list_proc;
+}
+
+object* add_to_list(object* args, object* cont) {
+	object* value;
+	object* last;
+	delist_2(args, &value, &last);
+	
+	object cell;
+	init_list_1(&cell, value);
+	last->data.list.rest = &cell;
+	add_mutation(last, &cell);
+	
+	return call_cont(cont, &cell);
+}
+
+object* finish_list(object* args, object* cont) {
+	object* first;
+	delist_1(args, &first);
+	
+	return call_cont(cont, first);
+}
+
+object reverse_proc;
+
+object* reverse(object* args, object* cont) {
+	object* next;
+	object* reversed;
+	delist_2(args, &next, &reversed);
+	
+	if (is_empty_list(next)) {
+		return call_cont(cont, reversed);
 	}
 	else {
-		object* ls = new_list();
-		object* prev;
-		object* next = ls;
-		while (n > 0) {
-			prev = next;
-			prev->data.list.first = list_first(obj);
-			obj = list_rest(obj);
-			n--;
-			if (n == 0) {
-				next = empty_list();
-			}
-			else {
-				next = new_list();
-			}
-			prev->data.list.rest = next;
-		}
-		return ls;
+		object cell;
+		init_list_cell(&cell, list_first(next), reversed);
+		
+		object ls[2];
+		init_list_2(ls, list_rest(next), &cell);
+		object call;
+		init_call(&call, &reverse_proc, ls, cont);
+		
+		return perform_call(&call);
 	}
 }
 
-object* list_drop(int n, object* obj) {
-	while (n > 0) {
-		obj = list_rest(obj);
-		n--;
-	}
-	return obj;
+object* reverse_list(object* args, object* cont) {
+	object* list;
+	delist_1(args, &list);
+	
+	object ls[2];
+	init_list_2(ls, list, empty_list());
+	object call;
+	init_call(&call, &reverse_proc, ls, cont);
+	
+	return perform_call(&call);
 }
 
-object* list_append(object* as, object* rest) {
-	if (is_empty_list(as)) {
-		return rest;
-	}
-	else {
-		object* ls = new_list();
-		object* prev;
-		object* next = ls;
-		while (!is_empty_list(as)) {
-			prev = next;
-			prev->data.list.first = list_first(as);
-			as = list_rest(as);
-			if (is_empty_list(as)) {
-				next = rest;
-			}
-			else {
-				next = new_list();
-			}
-			prev->data.list.rest = next;
-		}
-		return ls;
-	}
+void init_list_util_procedures(void) {
+	init_primitive_procedure(add_to_list_proc(), &add_to_list);
+	init_primitive_procedure(finish_list_proc(), &finish_list);
+	init_primitive_procedure(reverse_list_proc(), &reverse_list);
+	init_primitive_procedure(&reverse_proc, &reverse);
 }
-
-object* list_reverse(object* obj) {
-	object* ls = empty_list();
-	while (!is_empty_list(obj)) {
-		ls = cons(list_first(obj), ls);
-		obj = list_rest(obj);
-	}
-	return ls;
-}
-*/

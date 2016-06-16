@@ -130,6 +130,15 @@ char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
 }
 
+char is_syntax(object* obj) {
+	return is_type(type_syntax, obj);
+}
+
+primitive_proc* syntax_proc(object* obj) {
+	check_type(type_syntax, obj);
+	return obj->data.syntax.proc;
+}
+
 char is_function(object* obj) {
 	return is_type(type_function, obj);
 }

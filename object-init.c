@@ -35,16 +35,21 @@ void init_environment(object* obj, object* bindings) {
 	obj->data.environment.bindings = bindings;
 }
 
-void init_function(object* obj, object* environment, object* parameters, object* body) {
-	init_object(location_stack, type_function, obj);
-	obj->data.function.environment = environment;
-	obj->data.function.parameters = parameters;
-	obj->data.function.body = body;
+void init_syntax(object* obj, primitive_proc* proc) {
+	init_object(location_static, type_syntax, obj);
+	obj->data.syntax.proc = proc;
 }
 
 void init_primitive_procedure(object* obj, primitive_proc* proc) {
 	init_object(location_static, type_primitive_procedure, obj);
 	obj->data.primitive_procedure.proc = proc;
+}
+
+void init_function(object* obj, object* environment, object* parameters, object* body) {
+	init_object(location_stack, type_function, obj);
+	obj->data.function.environment = environment;
+	obj->data.function.parameters = parameters;
+	obj->data.function.body = body;
 }
 
 void init_call(object* obj, object* function, object* arguments, object* continuation) {

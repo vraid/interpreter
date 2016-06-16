@@ -5,23 +5,22 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "base-util.h"
 #include "memory-handling.h"
 #include "delist.h"
 #include "call.h"
 #include "symbols.h"
 
-object add_to_list_proc;
+object read_add_to_list_proc;
 object read_list_value_proc;
 object read_list_proc;
 object start_list_proc;
-object finish_list_proc;
+object read_finish_list_proc;
 object read_list_start_proc;
 
 object read_string_proc;
 object read_nonstring_proc;
 object read_hashed_proc;
-
-object quote_object_proc;
 
 char in_bracket_list(char* ls, int c) {
 	int i;
@@ -168,16 +167,6 @@ object* read_hashed(object* args, object* cont) {
 	return call_cont(cont, &e);
 }
 
-object* quote_object(object* args, object* cont) {
-	object* value;
-	delist_1(args, &value);
-	
-	object quote;
-	init_quote(&quote, value);
-	
-	return call_cont(cont, &quote);
-}
-
 object* read_value(object* args, object* cont) {
 	object* input_port;
 	delist_1(args, &input_port);
@@ -204,7 +193,7 @@ object* read_value(object* args, object* cont) {
 	else if (is_quote_char(c)) {
 		getc(in);
 		object call;
-		init_call(&call, &quote_object_proc, empty_list(), cont);
+		init_call(&call, quote_object_proc(), empty_list(), cont);
 		object next_cont;
 		init_cont(&next_cont, &call);
 		object read_call;
@@ -235,7 +224,7 @@ object* read_value(object* args, object* cont) {
 	}
 }
 
-object* add_to_list(object* args, object* cont) {
+object* read_add_to_list(object* args, object* cont) {
 	object* value;
 	object* last;
 	object* input;
@@ -265,7 +254,7 @@ object* read_list_value(object* args, object* cont) {
 	delist_2(args, &last, &input);
 	
 	object next_call;
-	init_call(&next_call, &add_to_list_proc, args, cont);
+	init_call(&next_call, &read_add_to_list_proc, args, cont);
 	object next_cont;
 	init_cont(&next_cont, &next_call);
 
@@ -309,7 +298,7 @@ object* start_list(object* args, object* cont) {
 	
 	// after the list is finished, pass it on to the cont
 	object finish_call;
-	init_call(&finish_call, &finish_list_proc, ls, cont);
+	init_call(&finish_call, &read_finish_list_proc, ls, cont);
 	
 	object finish_cont;
 	init_discarding_cont(&finish_cont, &finish_call);
@@ -324,7 +313,7 @@ object* start_list(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object* finish_list(object* args, object* cont) {
+object* read_finish_list(object* args, object* cont) {
 	object* first;
 	delist_1(args, &first);
 	
@@ -358,14 +347,13 @@ object* read_list_start(object* args, object* cont) {
 
 void init_read_procedures(void) {
 	init_primitive_procedure(&read_value_proc, &read_value);
-	init_primitive_procedure(&add_to_list_proc, &add_to_list);
+	init_primitive_procedure(&read_add_to_list_proc, &read_add_to_list);
 	init_primitive_procedure(&read_list_value_proc, &read_list_value);
 	init_primitive_procedure(&read_list_proc, &read_list);
 	init_primitive_procedure(&start_list_proc, &start_list);
-	init_primitive_procedure(&finish_list_proc, &finish_list);
+	init_primitive_procedure(&read_finish_list_proc, &read_finish_list);
 	init_primitive_procedure(&read_list_start_proc, &read_list_start);
 	init_primitive_procedure(&read_string_proc, &read_string);
 	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
 	init_primitive_procedure(&read_hashed_proc, &read_hashed);
-	init_primitive_procedure(&quote_object_proc, &quote_object);
 }

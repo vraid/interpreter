@@ -12,23 +12,6 @@ object repl_eval_entry_proc;
 object repl_print_or_read_proc;
 object repl_print_entry_proc;
 
-object placeholder_eval_proc;
-
-object* placeholder_eval(object* args, object* cont) {
-	object* value;
-	object* environment;
-	delist_2(args, &value, &environment);
-	
-	printf("eval\n");
-	
-	if (is_internal_error(value)) {
-		return call_cont(cont, value);
-	}
-	else {
-		return call_cont(cont, value);
-	}
-}
-
 object* repl_read_entry(object* args, object* cont) {
 	object* environment;
 	delist_1(args, &environment);
@@ -64,7 +47,7 @@ object* repl_eval_entry(object* args, object* cont) {
 	object next_cont;
 	init_cont(&next_cont, &print_call);
 	object call;
-	init_call(&call, &placeholder_eval_proc, args, &next_cont);
+	init_call(&call, eval_proc(), args, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -82,7 +65,7 @@ object* repl_print_or_read(object* args, object* cont) {
 	}
 	if (is_environment(value)) {
 		object ls[1];
-		init_list_1(ls, environment);
+		init_list_1(ls, value);
 		init_call(&call, &repl_read_entry_proc, ls, cont);
 	}
 	else {
@@ -123,5 +106,4 @@ void init_repl_procedures(void) {
 	init_primitive_procedure(&repl_eval_entry_proc, &repl_eval_entry);
 	init_primitive_procedure(&repl_print_or_read_proc, &repl_print_or_read);
 	init_primitive_procedure(&repl_print_entry_proc, &repl_print_entry);
-	init_primitive_procedure(&placeholder_eval_proc, &placeholder_eval);
 }

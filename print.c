@@ -126,6 +126,9 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_function:
 			printf("function ");
+			object ls;
+			init_list_1(&ls, function_parameters(obj));
+			return print_list(&ls, cont);
 			break;
 		default:
 			fprintf(stderr, "unknown type");
