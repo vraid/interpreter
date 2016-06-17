@@ -183,23 +183,58 @@ object* function_display_newline(object* args, object* cont) {
 	return function_display(args, &next_cont);
 }
 
-void init_and_bind_primitive(char* name, object* obj, primitive_proc* proc) {
+#define args_max 3
+char argnames[args_max][2];
+object argcells[args_max];
+object* args[args_max+1];
+
+#define primitive_max 1024
+object primitive_functions[primitive_max];
+object primitive_bodies[primitive_max];
+int primitive_count = 0;
+
+void init_and_bind_primitive(char* name, int arity, object* obj, primitive_proc* proc) {
+	if (primitive_count >= primitive_max) {
+		fprintf(stderr, "too many primitives\n");
+		exit(0);
+	}
+	
 	init_primitive_procedure(obj, proc);
-	add_static_binding(obj, name);
+	
+	object* function = &primitive_functions[primitive_count];
+	object* par = args[arity];
+	object* body = &primitive_bodies[primitive_count];
+	init_list_cell(body, obj, par);
+	init_function(function, empty_environment(), par, body);
+	
+	add_static_binding(function, name);
+	primitive_count++;
 }
 
 void init_standard_functions(void) {
-	init_and_bind_primitive("boolean?", &is_boolean_proc, &function_is_boolean);
-	init_and_bind_primitive("false?", &is_false_proc, &function_is_false);
-	init_and_bind_primitive("true?", &is_true_proc, &function_is_true);
-	init_and_bind_primitive("symbol?", &is_symbol_proc, &function_is_symbol);
-	init_and_bind_primitive("number?", &is_number_proc, &function_is_number);
-	init_and_bind_primitive("list?", &is_list_proc, &function_is_list);
-	init_and_bind_primitive("function?", &is_function_proc, &function_is_function);
-	init_and_bind_primitive("identical?", &is_identical_proc, &function_is_identical);
-	init_and_bind_primitive("link", &cons_proc, &function_cons);
-	init_and_bind_primitive("+", &add_proc, &function_add);
-	init_and_bind_primitive("negative", &negative_proc, &function_negative);
-	init_and_bind_primitive("-", &subtract_proc, &function_subtract);
-	init_and_bind_primitive("*", &multiply_proc, &function_multiply);
+	int i;
+	argnames[0][0] = 'a';
+	argnames[0][1] = 0;
+	init_list_cell(&argcells[0], make_static_symbol(argnames[0]), empty_list());
+	for (i = 1; i < args_max; i++) {
+		argnames[i][0] = argnames[i-1][0] + 1;
+		argnames[i][1] = 0;
+		init_list_cell(&argcells[i], make_static_symbol(argnames[i]), &argcells[i-1]);
+		args[i] = &argcells[i-1];
+	}
+	args[args_max] = &argcells[args_max]-1;
+	
+	init_and_bind_primitive("boolean?", 1, &is_boolean_proc, &function_is_boolean);
+	init_and_bind_primitive("false?", 1, &is_false_proc, &function_is_false);
+	init_and_bind_primitive("true?", 1, &is_true_proc, &function_is_true);
+	init_and_bind_primitive("symbol?", 1, &is_symbol_proc, &function_is_symbol);
+	init_and_bind_primitive("number?", 1, &is_number_proc, &function_is_number);
+	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
+	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
+	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
+	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
+	init_and_bind_primitive("+", 2, &add_proc, &function_add);
+	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
+	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
+	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
 }
