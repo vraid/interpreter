@@ -261,3 +261,10 @@ char is_self_quoting(object* obj) {
 char list_starts_with(object* ls, object* obj) {
 	return is_nonempty_list(ls) && (obj == list_first(ls));
 }
+
+object* unquote(object* obj) {
+	if (is_type(type_quote, obj)) {
+		obj = quote_value(obj);
+	}
+	return obj;
+}

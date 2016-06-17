@@ -17,13 +17,6 @@ object* boolean(char b) {
 	return b ? true() : false();
 }
 
-object* unquote(object* obj) {
-	if (is_type(type_quote, obj)) {
-		obj = quote_value(obj);
-	}
-	return obj;
-}
-
 object* is_of_type(object_type type, object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);

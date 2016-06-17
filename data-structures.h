@@ -156,3 +156,5 @@ object* internal_error_message(object* obj);
 int list_length(object* ls);
 char is_self_quoting(object* obj);
 char list_starts_with(object* ls, object* obj);
+
+object* unquote(object* obj);
