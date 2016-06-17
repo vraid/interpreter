@@ -379,8 +379,167 @@ object* fold(object* args, object* cont) {
 	return no_object();
 }
 
+object add_or_discard_filtered_proc;
+
+object* add_or_discard_filtered(object* args, object* cont) {
+	object* result;
+	object* value;
+	object* last;
+	delist_3(args, &result, &value, &last);
+	
+	if (is_false(result)) {
+		return call_cont(cont, last);
+	}
+	else {
+		object add_args[2];
+		init_list_2(add_args, value, last);
+		object add_call;
+		init_call(&add_call, add_to_list_proc(), add_args, cont);
+		
+		return perform_call(&add_call);
+	}
+}
+
+object filter_single_proc;
+
+object* filter_single(object* args, object* cont) {
+	object* last;
+	object* unfiltered;
+	object* function;
+	delist_3(args, &last, &unfiltered, &function);
+	
+	if (is_empty_list(unfiltered)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		object filter_args[2];
+		init_list_2(filter_args, list_rest(unfiltered), function);
+		object filter_call;
+		init_call(&filter_call, &filter_single_proc, filter_args, cont);
+		object filter_cont;
+		init_cont(&filter_cont, &filter_call);
+		
+		object* value = list_first(unfiltered);
+		object add_args[2];
+		init_list_2(add_args, value, last);
+		object add_call;
+		init_call(&add_call, &add_or_discard_filtered_proc, add_args, &filter_cont);
+		object add_cont;
+		init_cont(&add_cont, &add_call);
+		
+		object function_args[1];
+		init_list_1(function_args, value);
+		object eval_args[3];
+		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_call;
+		init_call(&eval_call, eval_function_proc(), eval_args, &add_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object filter_first_proc;
+
+object* filter_first(object* args, object* cont) {
+	object* result;
+	object* value;
+	object* unfiltered;
+	object* function;
+	delist_4(args, &result, &value, &unfiltered, &function);
+	
+	// continue without starting a list
+	if (is_false(result)) {
+		if (is_empty_list(unfiltered)) {
+			return call_cont(cont, empty_list());
+		}
+		else {
+			object* value = list_first(unfiltered);
+			object filter_args[3];
+			init_list_3(filter_args, value, list_rest(unfiltered), function);
+			object filter_call;
+			init_call(&filter_call, &filter_first_proc, filter_args, cont);
+			object filter_cont;
+			init_cont(&filter_cont, &filter_call);
+			
+			object function_args[1];
+			init_list_1(function_args, value);
+			object eval_args[3];
+			init_list_3(eval_args, function, function_args, empty_environment());
+			object eval_call;
+			init_call(&eval_call, eval_function_proc(), eval_args, &filter_cont);
+			
+			return perform_call(&eval_call);
+		}
+	}
+	// start making a list
+	else {
+		object filter_args[2];
+		init_list_2(filter_args, unfiltered, function);
+		object list_args[3];
+		init_list_3(list_args, value, &filter_single_proc, filter_args);
+		object list_call;
+		init_call(&list_call, make_list_proc(), list_args, cont);
+		
+		return perform_call(&list_call);
+	}
+}
+
+object filter_start_proc;
+
+object* filter_start(object* args, object* cont) {
+	object* syntax;
+	delist_1(args, &syntax);
+	
+	object* function;
+	object* elements;
+	delist_2(syntax, &function, &elements);
+	
+	elements = unquote(elements);
+	
+	if (is_empty_list(elements)) {
+		return call_cont(cont, empty_list());
+	}
+	else {
+		object* value = list_first(elements);
+		object filter_args[3];
+		init_list_3(filter_args, value, list_rest(elements), function);
+		object filter_call;
+		init_call(&filter_call, &filter_first_proc, filter_args, cont);
+		object filter_cont;
+		init_cont(&filter_cont, &filter_call);
+		
+		object function_args[1];
+		init_list_1(function_args, value);
+		object eval_args[3];
+		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_call;
+		init_call(&eval_call, eval_function_proc(), eval_args, &filter_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
 object* filter(object* args, object* cont) {
-	return no_object();
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object quote_call;
+	init_call(&quote_call, quote_object_proc(), empty_list(), cont);
+	object quote_cont;
+	init_cont(&quote_cont, &quote_call);
+	
+	object start_call;
+	init_call(&start_call, &filter_start_proc, empty_list(), &quote_cont);
+	object start_cont;
+	init_cont(&start_cont, &start_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, syntax, environment);
+	object eval_call;
+	init_call(&eval_call, eval_list_elements_proc(), eval_args, &start_cont);
+	
+	return perform_call(&eval_call);
 }
 
 void add_syntax(char* name, static_syntax syntax, primitive_proc* proc) {
@@ -410,4 +569,9 @@ void init_base_syntax_procedures(void) {
 	
 	init_primitive_procedure(&map_single_proc, &map_single);
 	init_primitive_procedure(&map_start_proc, &map_start);
+	
+	init_primitive_procedure(&filter_start_proc, &filter_start);
+	init_primitive_procedure(&filter_first_proc, &filter_first);
+	init_primitive_procedure(&filter_single_proc, &filter_single);
+	init_primitive_procedure(&add_or_discard_filtered_proc, &add_or_discard_filtered);
 }
