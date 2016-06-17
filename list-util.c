@@ -5,20 +5,53 @@
 #include "delist.h"
 #include "memory-handling.h"
 
+object _make_list_proc;
 object _add_to_list_proc;
-object _finish_list_proc;
 object _reverse_list_proc;
+
+object* make_list_proc(void) {
+	return &_make_list_proc;
+}
 
 object* add_to_list_proc(void) {
 	return &_add_to_list_proc;
 }
 
-object* finish_list_proc(void) {
-	return &_finish_list_proc;
-}
-
 object* reverse_list_proc(void) {
 	return &_reverse_list_proc;
+}
+
+object return_list_proc;
+
+object* return_list(object* args, object* cont) {
+	object* first;
+	delist_1(args, &first);
+	
+	return call_cont(cont, first);
+}
+
+object* make_list(object* args, object* cont) {
+	object* value;
+	object* proc;
+	object* proc_args;
+	delist_3(args, &value, &proc, &proc_args);
+	
+	object first;
+	init_list_1(&first, value);
+	
+	object return_args[1];
+	init_list_1(return_args, &first);
+	object return_call;
+	init_call(&return_call, &return_list_proc, return_args, cont);
+	object return_cont;
+	init_discarding_cont(&return_cont, &return_call);
+	
+	object call_args;
+	init_list_cell(&call_args, &first, proc_args);
+	object call;
+	init_call(&call, proc, &call_args, &return_cont);
+	
+	return perform_call(&call);
 }
 
 object* add_to_list(object* args, object* cont) {
@@ -32,13 +65,6 @@ object* add_to_list(object* args, object* cont) {
 	add_mutation(last, &cell);
 	
 	return call_cont(cont, &cell);
-}
-
-object* finish_list(object* args, object* cont) {
-	object* first;
-	delist_1(args, &first);
-	
-	return call_cont(cont, first);
 }
 
 object reverse_proc;
@@ -77,8 +103,9 @@ object* reverse_list(object* args, object* cont) {
 }
 
 void init_list_util_procedures(void) {
+	init_primitive_procedure(make_list_proc(), &make_list);
 	init_primitive_procedure(add_to_list_proc(), &add_to_list);
-	init_primitive_procedure(finish_list_proc(), &finish_list);
+	init_primitive_procedure(&return_list_proc, &return_list);
 	init_primitive_procedure(reverse_list_proc(), &reverse_list);
 	init_primitive_procedure(&reverse_proc, &reverse);
 }

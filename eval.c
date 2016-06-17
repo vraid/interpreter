@@ -165,24 +165,24 @@ object* eval_list_elements_rest(object* args, object* cont) {
 		return call_discarding_cont(cont);
 	}
 	else {
-		object ls[2];
-		init_list_2(ls, list_rest(unevaled), environment);
+		object build_args[2];
+		init_list_2(build_args, list_rest(unevaled), environment);
 		object build_call;
-		init_call(&build_call, &eval_list_elements_rest_proc, ls, cont);
+		init_call(&build_call, &eval_list_elements_rest_proc, build_args, cont);
 		object build_cont;
 		init_cont(&build_cont, &build_call);
 
-		object addls[1];
-		init_list_1(addls, last);
+		object add_args[1];
+		init_list_1(add_args, last);
 		object add_call;
-		init_call(&add_call, add_to_list_proc(), addls, &build_cont);
+		init_call(&add_call, add_to_list_proc(), add_args, &build_cont);
 		object add_cont;
 		init_cont(&add_cont, &add_call);
 		
-		object ls2[2];
-		init_list_2(ls2, list_first(unevaled), environment);
+		object eval_args[2];
+		init_list_2(eval_args, list_first(unevaled), environment);
 		object eval_call;
-		init_call(&eval_call, eval_proc(), ls2, &add_cont);
+		init_call(&eval_call, eval_proc(), eval_args, &add_cont);
 		return perform_call(&eval_call);
 	}
 }
@@ -190,32 +190,26 @@ object* eval_list_elements_rest(object* args, object* cont) {
 object eval_list_elements_first_proc;
 
 object* eval_list_elements_first(object* args, object* cont) {
-	object* value;
-	object* unevaled;
+	object* elements;
 	object* environment;
-	delist_3(args, &value, &unevaled, &environment);
+	delist_2(args, &elements, &environment);
 	
-	object first;
-	init_list_cell(&first, value, empty_list());
+	object rest_args[2];
+	init_list_2(rest_args, list_rest(elements), environment);
 	
-	object ls[1];
-	init_list_1(ls, &first);
+	object make_args[2];
+	init_list_2(make_args, &eval_list_elements_rest_proc, rest_args);
+	object make_call;
+	init_call(&make_call, make_list_proc(), make_args, cont);
+	object make_cont;
+	init_cont(&make_cont, &make_call);
 	
-	// after the list is finished, pass it on to quote
-	object finish_call;
-	init_call(&finish_call, finish_list_proc(), ls, cont);
+	object eval_args[2];
+	init_list_2(eval_args, list_first(elements), environment);
+	object eval_call;
+	init_call(&eval_call, eval_proc(), eval_args, &make_cont);
 	
-	object finish_cont;
-	init_discarding_cont(&finish_cont, &finish_call);
-	
-	object ls2[3];
-	init_list_3(ls2, &first, unevaled, environment);
-	
-	// keep on building the list
-	object call;
-	init_call(&call, &eval_list_elements_rest_proc, ls2, &finish_cont);
-	
-	return perform_call(&call);
+	return perform_call(&eval_call);
 }
 
 object* eval_list_elements(object* args, object* cont) {
@@ -227,18 +221,10 @@ object* eval_list_elements(object* args, object* cont) {
 		return call_cont(cont, empty_list());
 	}
 	else {
-		object ls[2];
-		init_list_2(ls, list_rest(elements), environment);
-		object build_call;
-		init_call(&build_call, &eval_list_elements_first_proc, ls, cont);
-		object build_cont;
-		init_cont(&build_cont, &build_call);
+		object call;
+		init_call(&call, &eval_list_elements_first_proc, args, cont);
 		
-		object ls2[2];
-		init_list_2(ls2, list_first(elements), environment);
-		object eval_call;
-		init_call(&eval_call, eval_proc(), ls2, &build_cont);
-		return perform_call(&eval_call);
+		return perform_call(&call);
 	}
 }
 
