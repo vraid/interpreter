@@ -107,50 +107,32 @@ object* eval_primitive_procedure(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object eval_function_body_proc;
-
-object* eval_function_body(object* args, object* cont) {
-	object* environment;
-	object* body;
-	delist_2(args, &environment, &body);
-
-	object ls[2];
-	init_list_2(ls, body, environment);
-
-	object call;
-	init_call(&call, eval_proc(), ls, cont);
-	
-	return perform_call(&call);
-}
-
 object* eval_function(object* args, object* cont) {
 	object* function;
 	object* arguments;
 	object* environment;
 	delist_3(args, &function, &arguments, &environment);
 	
-	environment = function_environment(function);
-	
-	object body_ls[1];
-	init_list_1(body_ls, function_body(function));
+	object body_args[1];
+	init_list_1(body_args, function_body(function));
 	object eval_body_call;
-	init_call(&eval_body_call, &eval_function_body_proc, body_ls, cont);
+	init_call(&eval_body_call, eval_with_environment_proc(), body_args, cont);
 	object body_cont;
 	init_cont(&body_cont, &eval_body_call);
 	
-	object bind_ls[2];
-	init_list_2(bind_ls, function_parameters(function), environment);
+	object bind_args[2];
+	init_list_2(bind_args, function_parameters(function), function_environment(function));
 	object bind_call;
-	init_call(&bind_call, bind_values_proc(), bind_ls, &body_cont);
+	init_call(&bind_call, bind_values_proc(), bind_args, &body_cont);
 	object bind_cont;
 	init_cont(&bind_cont, &bind_call);
 	
-	object args_ls[2];
-	init_list_2(args_ls, arguments, environment);
-	object eval_args_call;
-	init_call(&eval_args_call, eval_list_elements_proc(), args_ls, &bind_cont);
+	object eval_args[2];
+	init_list_2(eval_args, arguments, environment);
+	object eval_call;
+	init_call(&eval_call, eval_list_elements_proc(), eval_args, &bind_cont);
 	
-	return perform_call(&eval_args_call);
+	return perform_call(&eval_call);
 }
 
 object eval_list_elements_rest_proc;
@@ -345,7 +327,6 @@ void init_eval_procedures(void) {
 	init_primitive_procedure(&eval_primitive_procedure_call_proc, &eval_primitive_procedure_call);
 	
 	init_primitive_procedure(&eval_function_proc, &eval_function);
-	init_primitive_procedure(&eval_function_body_proc, &eval_function_body);
 	
 	init_primitive_procedure(eval_list_elements_proc(), &eval_list_elements);
 	init_primitive_procedure(&eval_list_elements_first_proc, &eval_list_elements_first);
