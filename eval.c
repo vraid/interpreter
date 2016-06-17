@@ -16,6 +16,7 @@ object eval_list_proc;
 object eval_list_rest_proc;
 object eval_function_proc;
 object _eval_list_elements_proc;
+object _eval_with_environment_proc;
 
 object _eval_proc;
 
@@ -25,6 +26,10 @@ object* eval_proc(void) {
 
 object* eval_list_elements_proc(void) {
 	return &_eval_list_elements_proc;
+}
+
+object* eval_with_environment_proc(void) {
+	return &_eval_with_environment_proc;
 }
 
 char invalid_value_string[] = "invalid value: ";
@@ -102,74 +107,6 @@ object* eval_primitive_procedure(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object* eval_function_call(object* args, object* cont) {
-	object* environment;
-	object* body;
-	delist_2(args, &environment, &body);
-	
-	object ls[2];
-	init_list_2(ls, body, environment);
-	object call;
-	init_call(&call, eval_proc(), ls, cont);
-	
-	return perform_call(&call);
-}
-
-object bind_argument_proc;
-
-object* bind_argument(object* args, object* cont) {
-	object* environment;
-	object* arguments;
-	object* parameters;
-	delist_3(args, &environment, &arguments, &parameters);
-	
-	char empty_args = is_empty_list(arguments);
-	char empty_pars = is_empty_list(parameters);
-	
-	if (empty_args && empty_pars) {
-		return call_cont(cont, environment);
-	}
-	else if (empty_args || empty_pars) {
-		object message;
-		init_string(&message, empty_args ? "arity mismatch, too few arguments" : "arity mismatch, too many arguments");
-		object e;
-		init_internal_error(&e, &message);
-		return call_cont(cont, &e);
-	}
-	else {
-		object next_ls[2];
-		init_list_2(next_ls, list_rest(arguments), list_rest(parameters));
-		object next_call;
-		init_call(&next_call, &bind_argument_proc, next_ls, cont);
-		object next_cont;
-		init_cont(&next_cont, &next_call);
-		
-		object bind_ls[3];
-		init_list_3(bind_ls, list_first(arguments), list_first(parameters), environment);
-		object bind_call;
-		init_call(&bind_call, &extend_environment_proc, bind_ls, &next_cont);
-		
-		return perform_call(&bind_call);
-	}
-}
-
-object bind_function_arguments_proc;
-
-object* bind_function_arguments(object* args, object* cont) {
-	object* arguments;
-	object* parameters;
-	object* environment;
-	delist_3(args, &arguments, &parameters, &environment);
-	
-	object ls[3];
-	init_list_3(ls, environment, arguments, parameters);
-	
-	object call;
-	init_call(&call, &bind_argument_proc, ls, cont);
-	
-	return perform_call(&call);
-}
-
 object eval_function_body_proc;
 
 object* eval_function_body(object* args, object* cont) {
@@ -192,27 +129,24 @@ object* eval_function(object* args, object* cont) {
 	object* environment;
 	delist_3(args, &function, &arguments, &environment);
 	
+	environment = function_environment(function);
+	
 	object body_ls[1];
 	init_list_1(body_ls, function_body(function));
-	
 	object eval_body_call;
 	init_call(&eval_body_call, &eval_function_body_proc, body_ls, cont);
-	
 	object body_cont;
 	init_cont(&body_cont, &eval_body_call);
 	
 	object bind_ls[2];
 	init_list_2(bind_ls, function_parameters(function), environment);
-	
 	object bind_call;
-	init_call(&bind_call, &bind_function_arguments_proc, bind_ls, &body_cont);
-	
+	init_call(&bind_call, bind_values_proc(), bind_ls, &body_cont);
 	object bind_cont;
 	init_cont(&bind_cont, &bind_call);
 	
 	object args_ls[2];
 	init_list_2(args_ls, arguments, environment);
-	
 	object eval_args_call;
 	init_call(&eval_args_call, eval_list_elements_proc(), args_ls, &bind_cont);
 	
@@ -288,7 +222,7 @@ object* eval_list_elements(object* args, object* cont) {
 	object* elements;
 	object* environment;
 	delist_2(args, &elements, &environment);
-		
+	
 	if (is_empty_list(elements)) {
 		return call_cont(cont, empty_list());
 	}
@@ -376,6 +310,19 @@ object* eval_symbol(object* args, object* cont) {
 	return call_cont(cont, value);
 }
 
+object* eval_with_environment(object* args, object* cont) {
+	object* environment;
+	object* body;
+	delist_2(args, &environment, &body);
+	
+	object ls[2];
+	init_list_2(ls, body, environment);
+	object call;
+	init_call(&call, eval_proc(), ls, cont);
+	
+	return perform_call(&call);
+}
+
 object* eval(object* args, object* cont) {
 	object* obj;
 	object* environment;
@@ -401,6 +348,8 @@ object* eval(object* args, object* cont) {
 }
 
 void init_eval_procedures(void) {
+	init_primitive_procedure(eval_proc(), &eval);
+	init_primitive_procedure(eval_with_environment_proc(), &eval_with_environment);
 	init_primitive_procedure(&eval_identity_proc, &eval_identity);
 	init_primitive_procedure(&eval_symbol_proc, &eval_symbol);
 	init_primitive_procedure(&eval_list_proc, &eval_list);
@@ -411,11 +360,8 @@ void init_eval_procedures(void) {
 	
 	init_primitive_procedure(&eval_function_proc, &eval_function);
 	init_primitive_procedure(&eval_function_body_proc, &eval_function_body);
-	init_primitive_procedure(&bind_function_arguments_proc, &bind_function_arguments);
-	init_primitive_procedure(&bind_argument_proc, &bind_argument);
 	
 	init_primitive_procedure(eval_list_elements_proc(), &eval_list_elements);
 	init_primitive_procedure(&eval_list_elements_first_proc, &eval_list_elements_first);
 	init_primitive_procedure(&eval_list_elements_rest_proc, &eval_list_elements_rest);
-	init_primitive_procedure(eval_proc(), &eval);
 }

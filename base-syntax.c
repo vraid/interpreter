@@ -140,10 +140,10 @@ object* curry(object* args, object* cont) {
 	object* function;
 	delist_1(syntax, &function);
 	
-	object evalls[1];
-	init_list_1(evalls, environment);
+	object eval_ls[1];
+	init_list_1(eval_ls, environment);
 	object eval_curry;
-	init_call(&eval_curry, eval_proc(), evalls, cont);
+	init_call(&eval_curry, eval_proc(), eval_ls, cont);
 	object eval_cont;
 	init_cont(&eval_cont, &eval_curry);
 
@@ -160,8 +160,59 @@ object* curry(object* args, object* cont) {
 	return perform_call(&eval_call);
 }
 
+object start_apply_proc;
+
+object* start_apply(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object* function = list_first(syntax);
+	object* values = list_rest(syntax);
+	
+	object* parameters = function_parameters(function);
+	
+	//pick off the parameters left for the body lambda
+	object* vs = values;
+	object* ps = parameters;
+	while (!is_empty_list(vs)) {
+		vs = list_rest(vs);
+		ps = list_rest(ps);
+	}
+	
+	object body_ls[3];
+	init_list_3(body_ls, lambda_symbol(), ps, function_body(function));
+	object eval_ls[1];
+	init_list_1(eval_ls, body_ls);
+	object eval_call;
+	init_call(&eval_call, eval_with_environment_proc(), eval_ls, cont);
+	object eval_cont;
+	init_cont(&eval_cont, &eval_call);
+	
+	object bind_ls[3];
+	init_list_3(bind_ls, values, parameters, environment);
+	object bind_call;
+	init_call(&bind_call, bind_values_proc(), bind_ls, &eval_cont);
+	
+	return perform_call(&bind_call);
+}
+
 object* apply(object* args, object* cont) {
-	return no_object();
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object apply_ls[1];
+	init_list_1(apply_ls, environment);
+	object apply_call;
+	init_call(&apply_call, &start_apply_proc, apply_ls, cont);
+	object apply_cont;
+	init_cont(&apply_cont, &apply_call);
+	
+	object eval_call;
+	init_call(&eval_call, eval_list_elements_proc(), args, &apply_cont);
+	
+	return perform_call(&eval_call);
 }
 
 object eval_if_proc;
@@ -262,4 +313,6 @@ void init_base_syntax_procedures(void) {
 	
 	init_primitive_procedure(&start_curry_proc, &start_curry);
 	init_primitive_procedure(&curry_one_proc, &curry_one);
+	
+	init_primitive_procedure(&start_apply_proc, &start_apply);
 }

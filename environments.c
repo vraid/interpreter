@@ -7,6 +7,12 @@
 #include "call.h"
 #include "delist.h"
 
+object _bind_values_proc;
+
+object* bind_values_proc(void) {
+	return &_bind_values_proc;
+}
+
 #define static_binding_max 1024
 object _static_environment;
 object static_bindings[static_binding_max];
@@ -50,6 +56,56 @@ object* extend_environment(object* args, object* cont) {
 	return call_cont(cont, &new_env);
 }
 
+object bind_single_value_proc;
+
+object* bind_single_value(object* args, object* cont) {
+	object* environment;
+	object* values;
+	object* names;
+	delist_3(args, &environment, &values, &names);
+	
+	if (is_empty_list(values)) {
+		return call_cont(cont, environment);
+	}
+	else if (is_empty_list(names)) {
+		object message;
+		init_string(&message, "arity mismatch, too many arguments");
+		object e;
+		init_internal_error(&e, &message);
+		return call_cont(cont, &e);
+	}
+	else {
+		object next_ls[2];
+		init_list_2(next_ls, list_rest(values), list_rest(names));
+		object next_call;
+		init_call(&next_call, &bind_single_value_proc, next_ls, cont);
+		object next_cont;
+		init_cont(&next_cont, &next_call);
+		
+		object bind_ls[3];
+		init_list_3(bind_ls, list_first(values), list_first(names), environment);
+		object bind_call;
+		init_call(&bind_call, &extend_environment_proc, bind_ls, &next_cont);
+		
+		return perform_call(&bind_call);
+	}
+}
+
+object* bind_values(object* args, object* cont) {
+	object* values;
+	object* names;
+	object* environment;
+	delist_3(args, &values, &names, &environment);
+	
+	object ls[3];
+	init_list_3(ls, environment, values, names);
+	
+	object call;
+	init_call(&call, &bind_single_value_proc, ls, cont);
+	
+	return perform_call(&call);
+}
+
 object* find_in_environment(object* env, object* symbol) {
 	object* ls = environment_bindings(env);
 	while (!is_empty_list(ls)) {
@@ -59,6 +115,7 @@ object* find_in_environment(object* env, object* symbol) {
 		}
 		ls = list_rest(ls);
 	}
+	printf("unbound variable: %s\n", string_value(symbol_name(symbol)));
 	return no_object();
 }
 
@@ -67,4 +124,6 @@ void init_environment_procedures(void) {
 	_static_environment.location = location_static;
 	
 	init_primitive_procedure(&extend_environment_proc, &extend_environment);
+	init_primitive_procedure(bind_values_proc(), &bind_values);
+	init_primitive_procedure(&bind_single_value_proc, &bind_single_value);
 }

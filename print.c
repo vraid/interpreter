@@ -130,6 +130,9 @@ object* print_value(object* args, object* cont) {
 			init_list_1(&ls, function_parameters(obj));
 			return print_list(&ls, cont);
 			break;
+		case type_primitive_procedure:
+			printf("function: primitive");
+			break;
 		default:
 			fprintf(stderr, "unknown type");
 	}

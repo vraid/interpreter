@@ -4,6 +4,8 @@
 
 object extend_environment_proc;
 
+object* bind_values_proc(void);
+
 object* static_environment(void);
 object* add_static_binding(object* value, char* name);
 
