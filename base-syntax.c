@@ -279,8 +279,100 @@ object* list(object* args, object* cont) {
 	return perform_call(&eval_call);
 }
 
+object map_single_proc;
+
+object* map_single(object* args, object* cont) {
+	object* last;
+	object* unmapped;
+	object* function;
+	delist_3(args, &last, &unmapped, &function);
+	
+	if (is_empty_list(unmapped)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		object map_args[2];
+		init_list_2(map_args, list_rest(unmapped), function);
+		object map_call;
+		init_call(&map_call, &map_single_proc, map_args, cont);
+		object map_cont;
+		init_cont(&map_cont, &map_call);
+		
+		object add_args[1];
+		init_list_1(add_args, last);
+		object add_call;
+		init_call(&add_call, add_to_list_proc(), add_args, &map_cont);
+		object add_cont;
+		init_cont(&add_cont, &add_call);
+		
+		object function_args[1];
+		init_list_1(function_args, list_first(unmapped));
+		object eval_args[3];
+		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_call;
+		init_call(&eval_call, eval_function_proc(), eval_args, &add_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object map_start_proc;
+
+object* map_start(object* args, object* cont) {
+	object* syntax;
+	delist_1(args, &syntax);
+	
+	object* function;
+	object* elements;
+	delist_2(syntax, &function, &elements);
+	
+	elements = unquote(elements);
+	
+	if (is_empty_list(elements)) {
+		return call_cont(cont, empty_list());
+	}
+	else {
+		object map_args[2];
+		init_list_2(map_args, list_rest(elements), function);
+		object list_args[2];
+		init_list_2(list_args, &map_single_proc, map_args);
+		object list_call;
+		init_call(&list_call, make_list_proc(), list_args, cont);
+		object list_cont;
+		init_cont(&list_cont, &list_call);
+		
+		object function_args[1];
+		init_list_1(function_args, list_first(elements));
+		object eval_args[3];
+		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_call;
+		init_call(&eval_call, eval_function_proc(), eval_args, &list_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
 object* map(object* args, object* cont) {
-	return no_object();
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object quote_call;
+	init_call(&quote_call, quote_object_proc(), empty_list(), cont);
+	object quote_cont;
+	init_cont(&quote_cont, &quote_call);
+	
+	object start_call;
+	init_call(&start_call, &map_start_proc, empty_list(), &quote_cont);
+	object start_cont;
+	init_cont(&start_cont, &start_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, syntax, environment);
+	object eval_call;
+	init_call(&eval_call, eval_list_elements_proc(), eval_args, &start_cont);
+	
+	return perform_call(&eval_call);
 }
 
 object* fold(object* args, object* cont) {
@@ -315,4 +407,7 @@ void init_base_syntax_procedures(void) {
 	init_primitive_procedure(&curry_one_proc, &curry_one);
 	
 	init_primitive_procedure(&start_apply_proc, &start_apply);
+	
+	init_primitive_procedure(&map_single_proc, &map_single);
+	init_primitive_procedure(&map_start_proc, &map_start);
 }

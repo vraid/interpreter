@@ -14,7 +14,7 @@ object eval_identity_proc;
 object eval_symbol_proc;
 object eval_list_proc;
 object eval_list_rest_proc;
-object eval_function_proc;
+object _eval_function_proc;
 object _eval_list_elements_proc;
 object _eval_with_environment_proc;
 
@@ -22,6 +22,10 @@ object _eval_proc;
 
 object* eval_proc(void) {
 	return &_eval_proc;
+}
+
+object* eval_function_proc(void) {
+	return &_eval_function_proc;
 }
 
 object* eval_list_elements_proc(void) {
@@ -226,7 +230,7 @@ object* eval_list_rest(object* args, object* cont) {
 			proc = &eval_primitive_procedure_proc;
 			break;
 		case type_function:
-			proc = &eval_function_proc;
+			proc = eval_function_proc();
 			break;
 		default:
 			fprintf(stderr, "error: application of %s\n", type_name[first->type]);
@@ -326,7 +330,7 @@ void init_eval_procedures(void) {
 	init_primitive_procedure(&eval_primitive_procedure_proc, &eval_primitive_procedure);
 	init_primitive_procedure(&eval_primitive_procedure_call_proc, &eval_primitive_procedure_call);
 	
-	init_primitive_procedure(&eval_function_proc, &eval_function);
+	init_primitive_procedure(eval_function_proc(), &eval_function);
 	
 	init_primitive_procedure(eval_list_elements_proc(), &eval_list_elements);
 	init_primitive_procedure(&eval_list_elements_first_proc, &eval_list_elements_first);
