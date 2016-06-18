@@ -58,6 +58,73 @@ object* quote(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object let_bind_proc;
+
+object* let_bind(object* args, object* cont) {
+	object* environment;
+	object* bindings;
+	delist_2(args, &environment, &bindings);
+	
+	if (is_empty_list(bindings)) {
+		return call_cont(cont, environment);
+	}
+	else {
+		object* first = list_first(bindings);
+		object* name;
+		object* value;
+		delist_2(first, &name, &value);
+		
+		if (!is_symbol(name)) {
+			return throw_error(cont, "not a valid identifier");
+		}
+		
+		object let_args[1];
+		init_list_1(let_args, list_rest(bindings));
+		object let_call;
+		init_call(&let_call, &let_bind_proc, let_args, cont);
+		object let_cont;
+		init_cont(&let_cont, &let_call);
+		
+		object bind_args[2];
+		init_list_2(bind_args, name, environment);
+		object bind_call;
+		init_call(&bind_call, &extend_environment_proc, bind_args, &let_cont);
+		object bind_cont;
+		init_cont(&bind_cont, &bind_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, value, environment);
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &bind_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object* let(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object* bindings;
+	object* body;
+	delist_2(syntax, &bindings, &body);
+	
+	object eval_args[1];
+	init_list_1(eval_args, body);
+	object eval_call;
+	init_call(&eval_call, eval_with_environment_proc(), eval_args, cont);
+	object eval_cont;
+	init_cont(&eval_cont, &eval_call);
+	
+	object let_args[2];
+	init_list_2(let_args, environment, bindings);
+	object let_call;
+	init_call(&let_call, &let_bind_proc, let_args, &eval_cont);
+	
+	return perform_call(&let_call);
+}
+
 object* lambda(object* args, object* cont) {
 	object* syntax;
 	object* environment;
@@ -610,6 +677,7 @@ void add_syntax(char* name, static_syntax syntax, primitive_proc* proc) {
 void init_base_syntax_procedures(void) {	
 	add_syntax("define", syntax_define, &define);
 	add_syntax("quote", syntax_quote, &quote);
+	add_syntax("let", syntax_let, &let);
 	add_syntax("lambda", syntax_lambda, &lambda);
 	add_syntax("curry", syntax_curry, &curry);
 	add_syntax("apply", syntax_apply, &apply);
@@ -618,6 +686,8 @@ void init_base_syntax_procedures(void) {
 	add_syntax("map", syntax_map, &map);
 	add_syntax("fold", syntax_fold, &fold);
 	add_syntax("filter", syntax_filter, &filter);
+	
+	init_primitive_procedure(&let_bind_proc, &let_bind);
 	
 	init_primitive_procedure(&bind_value_proc, &bind_value);
 	init_primitive_procedure(&eval_if_proc, &eval_if);
