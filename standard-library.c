@@ -94,15 +94,6 @@ object* function_is_identical(object* args, object* cont) {
 	return call_cont(cont, result);
 }
 
-object identity_proc;
-
-object* function_identity(object* args, object* cont) {
-	object* obj;
-	delist_1(args, &obj);
-	
-	return call_cont(cont, obj);
-}
-
 object cons_proc;
 
 object* function_cons(object* args, object* cont) {
@@ -220,13 +211,11 @@ object primitive_functions[primitive_max];
 object primitive_bodies[primitive_max];
 int primitive_count = 0;
 
-void init_and_bind_primitive(char* name, int arity, object* obj, primitive_proc* proc) {
+void bind_primitive(char* name, int arity, object* obj) {
 	if (primitive_count >= primitive_max) {
 		fprintf(stderr, "too many primitives\n");
 		exit(0);
 	}
-	
-	init_primitive_procedure(obj, proc);
 	
 	object* function = &primitive_functions[primitive_count];
 	object* par = args[arity];
@@ -236,6 +225,11 @@ void init_and_bind_primitive(char* name, int arity, object* obj, primitive_proc*
 	
 	add_static_binding(function, name);
 	primitive_count++;
+}
+
+void init_and_bind_primitive(char* name, int arity, object* obj, primitive_proc* proc) {
+	init_primitive_procedure(obj, proc);
+	bind_primitive(name, arity, obj);
 }
 
 void init_standard_functions(void) {
@@ -259,10 +253,10 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
 	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
-	init_and_bind_primitive("identity", 1, &identity_proc, &function_identity);
 	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
 	init_and_bind_primitive("+", 2, &add_proc, &function_add);
 	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
+	bind_primitive("identity", 1, identity_proc());
 }

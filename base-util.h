@@ -5,3 +5,4 @@
 void init_base_util_procedures(void);
 
 object* quote_object_proc(void);
+object* identity_proc(void);

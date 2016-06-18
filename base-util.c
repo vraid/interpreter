@@ -5,9 +5,14 @@
 #include "call.h"
 
 object _quote_object_proc;
+object _identity_proc;
 
 object* quote_object_proc(void) {
 	return &_quote_object_proc;
+}
+
+object* identity_proc(void) {
+	return &_identity_proc;
 }
 
 object* quote_object(object* args, object* cont) {
@@ -20,6 +25,14 @@ object* quote_object(object* args, object* cont) {
 	return call_cont(cont, &q);
 }
 
+object* identity(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	return call_cont(cont, obj);
+}
+
 void init_base_util_procedures(void) {
 	init_primitive_procedure(quote_object_proc(), &quote_object);
+	init_primitive_procedure(identity_proc(), &identity);
 }
