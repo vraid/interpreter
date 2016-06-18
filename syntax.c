@@ -53,9 +53,6 @@ object* check_quote_syntax(object* args, object* cont) {
 object* check_syntax(object* args, object* cont) {
 	object* syntax;
 	delist_1(args, &syntax);
-
-	object message;
-	object e;
 	
 	if (is_empty_list(syntax)) {
 		return throw_error(cont, "expression cannot be empty list");
