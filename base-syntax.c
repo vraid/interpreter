@@ -307,10 +307,10 @@ object* map_single(object* args, object* cont) {
 		
 		object function_args[1];
 		init_list_1(function_args, list_first(unmapped));
-		object eval_args[3];
-		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_args[2];
+		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_proc(), eval_args, &add_cont);
+		init_call(&eval_call, eval_function_call_proc(), eval_args, &add_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -343,10 +343,10 @@ object* map_start(object* args, object* cont) {
 		
 		object function_args[1];
 		init_list_1(function_args, list_first(elements));
-		object eval_args[3];
-		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_args[2];
+		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_proc(), eval_args, &list_cont);
+		init_call(&eval_call, eval_function_call_proc(), eval_args, &list_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -396,10 +396,10 @@ object* fold_single(object* args, object* cont) {
 		
 		object function_args[2];
 		init_list_2(function_args, value, list_first(elements));
-		object eval_args[3];
-		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_args[2];
+		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_proc(), eval_args, &fold_cont);
+		init_call(&eval_call, eval_function_call_proc(), eval_args, &fold_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -494,10 +494,10 @@ object* filter_single(object* args, object* cont) {
 		
 		object function_args[1];
 		init_list_1(function_args, value);
-		object eval_args[3];
-		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_args[2];
+		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_proc(), eval_args, &add_cont);
+		init_call(&eval_call, eval_function_call_proc(), eval_args, &add_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -528,10 +528,10 @@ object* filter_first(object* args, object* cont) {
 			
 			object function_args[1];
 			init_list_1(function_args, value);
-			object eval_args[3];
-			init_list_3(eval_args, function, function_args, empty_environment());
+			object eval_args[2];
+			init_list_2(eval_args, function_args, function);
 			object eval_call;
-			init_call(&eval_call, eval_function_proc(), eval_args, &filter_cont);
+			init_call(&eval_call, eval_function_call_proc(), eval_args, &filter_cont);
 			
 			return perform_call(&eval_call);
 		}
@@ -575,10 +575,10 @@ object* filter_start(object* args, object* cont) {
 		
 		object function_args[1];
 		init_list_1(function_args, value);
-		object eval_args[3];
-		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_args[2];
+		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_proc(), eval_args, &filter_cont);
+		init_call(&eval_call, eval_function_call_proc(), eval_args, &filter_cont);
 		
 		return perform_call(&eval_call);
 	}
