@@ -375,8 +375,73 @@ object* map(object* args, object* cont) {
 	return perform_call(&eval_call);
 }
 
+object fold_single_proc;
+
+object* fold_single(object* args, object* cont) {
+	object* value;
+	object* elements;
+	object* function;
+	delist_3(args, &value, &elements, &function);
+	
+	if (is_empty_list(elements)) {
+		return call_cont(cont, value);
+	}
+	else {
+		object fold_args[2];
+		init_list_2(fold_args, list_rest(elements), function);
+		object fold_call;
+		init_call(&fold_call, &fold_single_proc, fold_args, cont);
+		object fold_cont;
+		init_cont(&fold_cont, &fold_call);
+		
+		object function_args[2];
+		init_list_2(function_args, value, list_first(elements));
+		object eval_args[3];
+		init_list_3(eval_args, function, function_args, empty_environment());
+		object eval_call;
+		init_call(&eval_call, eval_function_proc(), eval_args, &fold_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object fold_start_proc;
+
+object* fold_start(object* args, object* cont) {
+	object* syntax;
+	delist_1(args, &syntax);
+	
+	object* function;
+	object* initial;
+	object* elements;
+	delist_3(syntax, &function, &initial, &elements);
+	
+	elements = unquote(elements);
+	
+	object fold_args[3];
+	init_list_3(fold_args, initial, elements, function);
+	object fold_call;
+	init_call(&fold_call, &fold_single_proc, fold_args, cont);
+	
+	return perform_call(&fold_call);
+}
+
 object* fold(object* args, object* cont) {
-	return no_object();
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object fold_call;
+	init_call(&fold_call, &fold_start_proc, empty_list(), cont);
+	object fold_cont;
+	init_cont(&fold_cont, &fold_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, syntax, environment);
+	object eval_call;
+	init_call(&eval_call, eval_list_elements_proc(), eval_args, &fold_cont);
+	
+	return perform_call(&eval_call);
 }
 
 object add_or_discard_filtered_proc;
@@ -574,4 +639,7 @@ void init_base_syntax_procedures(void) {
 	init_primitive_procedure(&filter_first_proc, &filter_first);
 	init_primitive_procedure(&filter_single_proc, &filter_single);
 	init_primitive_procedure(&add_or_discard_filtered_proc, &add_or_discard_filtered);
+	
+	init_primitive_procedure(&fold_start_proc, &fold_start);
+	init_primitive_procedure(&fold_single_proc, &fold_single);
 }
