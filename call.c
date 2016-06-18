@@ -52,13 +52,26 @@ object* perform_call(object* call) {
 	}
 }
 
+object* throw_error(object* cont, char* message) {
+	object string;
+	init_string(&string, message);
+	object e;
+	init_internal_error(&e, &string);
+	
+	return call_cont(cont, &e);
+}
+
 object* call_cont(object* cont, object* arg) {
-	if (is_discarding_continuation(cont)) {
+	object* call = continuation_call(cont);
+	// bypasses calls and passes errors along continuations until the next catching continuation
+	if (is_internal_error(arg) && !is_catching_continuation(cont)) {
+		return call_cont(call_continuation(call), arg);
+	}
+	else if (is_discarding_continuation(cont)) {
 		fprintf(stderr, "discarding continuation called with argument\n");
 		return no_object();
 	}
 	else {
-		object* call = continuation_call(cont);
 		object ls;
 		init_list_cell(&ls, arg, call_arguments(call));
 		object new_call;

@@ -18,15 +18,6 @@
 #include "print.h"
 #include "repl-top.h"
 
-object end_cont;
-object end_proc;
-object end_call;
-
-object* end(object* args, object* cont) {
-	printf("end reached\n");
-	return no_object();
-}
-
 int main(int argc, char** argv) {
 
 	printf("running lisp interpreter. use ctrl-c to exit\n");
@@ -45,10 +36,6 @@ int main(int argc, char** argv) {
 	init_base_syntax_procedures();
 	init_memory_spaces();
 	
-	init_primitive_procedure(&end_proc, &end);
-	init_call(&end_call, &end_proc, empty_list(), &end_cont);
-	init_cont(&end_cont, &end_call);
-	
 	object* environment = static_environment();
 	
 	if (argc == 2) {
@@ -59,12 +46,12 @@ int main(int argc, char** argv) {
 		environment = static_environment();
 	}
 	
-	object ls[1];
-	init_list_1(ls, environment);
+	object read_args[1];
+	init_list_1(read_args, environment);
 	
-	object call;
-	init_call(&call, &repl_read_entry_proc, ls, &end_cont);
-	top_call(&call);
+	object read_call;
+	init_call(&read_call, &repl_read_entry_proc, read_args, end_cont());
+	top_call(&read_call);
 	
 	return 0;
 }

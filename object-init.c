@@ -64,18 +64,22 @@ void init_call(object* obj, object* function, object* arguments, object* continu
 	obj->data.call.continuation = continuation;
 }
 
-void init_cont_base(object* obj, object* call, char discard) {
+void init_cont_base(object* obj, object* call, cont_type t) {
 	init_object(location_stack, type_continuation, obj);
-	obj->data.continuation.discard_argument = discard;
+	obj->data.continuation.conttype = t;
 	obj->data.continuation.call = call;
 }
 
 void init_cont(object* obj, object* call) {
-	init_cont_base(obj, call, 0);
+	init_cont_base(obj, call, cont_normal);
 }
 
 void init_discarding_cont(object* obj, object* call) {
-	init_cont_base(obj, call, 1);
+	init_cont_base(obj, call, cont_discarding);
+}
+
+void init_catching_cont(object* obj, object* call) {
+	init_cont_base(obj, call, cont_catching);
 }
 
 void init_internal_error(object* obj, object* message) {

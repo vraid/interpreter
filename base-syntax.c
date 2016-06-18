@@ -19,14 +19,9 @@ object* bind_value(object* args, object* cont) {
 	object* environment;
 	delist_3(args, &value, &name, &environment);
 	
-	if (is_internal_error(value)) {
-		return call_cont(cont, value);
-	}
-	else {
-		object call;
-		init_call(&call, &extend_environment_proc, args, cont);
-		return perform_call(&call);
-	}
+	object call;
+	init_call(&call, &extend_environment_proc, args, cont);
+	return perform_call(&call);
 }
 
 object* define(object* args, object* cont) {

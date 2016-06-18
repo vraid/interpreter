@@ -232,8 +232,18 @@ char is_call(object* obj) {
 char is_continuation(object* obj) {
 	return obj->type == type_continuation;
 }
+
+cont_type continuation_type(object* obj) {
+	check_type(type_continuation, obj);
+	return obj->data.continuation.conttype;
+}
+
 char is_discarding_continuation(object* obj) {
-	return (is_continuation(obj) && obj->data.continuation.discard_argument);
+	return continuation_type(obj) == cont_discarding;
+}
+
+char is_catching_continuation(object* obj) {
+	return continuation_type(obj) == cont_catching;
 }
 
 char is_internal_error(object* obj) {

@@ -17,6 +17,19 @@ object _empty_string;
 object _empty_environment;
 object* _lambda_symbol;
 
+object _end_cont;
+object end_proc;
+object end_call;
+
+object* end_cont(void) {
+	return &_end_cont;
+}
+
+object* end(object* args, object* cont) {
+	printf("end reached\n");
+	return no_object();
+}
+
 void init_boolean(object* obj, char value) {
 	init_object(location_static, type_boolean, obj);
 	obj->data.boolean.value = value;
@@ -48,6 +61,10 @@ void init_global_variables(void) {
 	_empty_environment.data.environment.bindings = empty_list();
 	
 	_lambda_symbol = make_static_symbol("lambda");
+	
+	init_primitive_procedure(&end_proc, &end);
+	init_call(&end_call, &end_proc, empty_list(), end_cont());
+	init_cont(end_cont(), &end_call);
 }
 
 object* true(void) {

@@ -4,6 +4,8 @@
 
 void init_global_variables(void);
 
+object* end_cont(void);
+
 char is_empty_list(object* obj);
 char is_false(object* obj);
 char is_true(object* obj);

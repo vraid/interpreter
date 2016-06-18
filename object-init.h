@@ -15,6 +15,7 @@ void init_function(object* obj, object* environment, object* parameters, object*
 void init_call(object* obj, object* function, object* arguments, object* continuation);
 void init_cont(object* obj, object* call);
 void init_discarding_cont(object* obj, object* call);
+void init_catching_cont(object* obj, object* call);
 void init_internal_error(object* obj, object* message);
 
 void init_list_cell(object* obj, object* first, object* rest);

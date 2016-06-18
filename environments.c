@@ -68,11 +68,7 @@ object* bind_single_value(object* args, object* cont) {
 		return call_cont(cont, environment);
 	}
 	else if (is_empty_list(names)) {
-		object message;
-		init_string(&message, "arity mismatch, too many arguments");
-		object e;
-		init_internal_error(&e, &message);
-		return call_cont(cont, &e);
+		return throw_error(cont, "arity mismatch, too many arguments");
 	}
 	else {
 		object next_ls[2];
@@ -115,7 +111,6 @@ object* find_in_environment(object* env, object* symbol) {
 		}
 		ls = list_rest(ls);
 	}
-	printf("unbound variable: %s\n", string_value(symbol_name(symbol)));
 	return no_object();
 }
 

@@ -174,12 +174,7 @@ object* read_number(object* args, object* cont) {
 		return call_cont(cont, &number);
 	}
 	else {
-		object message;
-		init_string(&message, "invalid number\n");
-		object e;
-		init_internal_error(&e, &message);
-		
-		return call_cont(cont, &e);
+		return throw_error(cont, "invalid number");
 	}
 }
 
@@ -194,12 +189,7 @@ object* read_hashed(object* args, object* cont) {
 			case 'f' : return call_cont(cont, false());
 		}
 	}
-	object message;
-	init_string(&message, "invalid value");
-	object e;
-	init_internal_error(&e, &message);
-	
-	return call_cont(cont, &e);
+	return throw_error(cont, "invalid value");
 }
 
 object* read_value(object* args, object* cont) {
@@ -213,11 +203,7 @@ object* read_value(object* args, object* cont) {
 	
 	if (is_list_end_delimiter(c)) {
 		getc(in);
-		object string;
-		init_string(&string, "unexpected parenthesis");
-		object er;
-		init_internal_error(&er, &string);
-		return call_cont(cont, &er);
+		return throw_error(cont, "unexpected parenthesis");
 	}
 	else if (is_list_start_delimiter(c)) {
 		getc(in);
@@ -267,10 +253,6 @@ object* read_add_to_list(object* args, object* cont) {
 	object* last;
 	object* input;
 	delist_3(args, &value, &last, &input);
-	
-	if (is_internal_error(value)) {
-		return call_cont(cont, value);
-	}
 	
 	object next;
 	init_list_cell(&next, value, empty_list());

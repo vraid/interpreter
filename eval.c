@@ -42,11 +42,7 @@ object* eval_invalid_value(object* string, object* cont) {
 	char* str = alloca(sizeof(char) * (1 + strlen(invalid_value_string) + string_length(string)));
 	strcpy(str, invalid_value_string);
 	strcpy(str + strlen(invalid_value_string), string_value(string));
-	object message;
-	init_string(&message, str);
-	object e;
-	init_internal_error(&e, &message);
-	return call_cont(cont, &e);
+	return throw_error(cont, str);
 }
 
 object* eval_identity(object* args, object* cont) {
@@ -248,8 +244,7 @@ object* eval_list_rest(object* args, object* cont) {
 			proc = &eval_function_proc;
 			break;
 		default:
-			fprintf(stderr, "error: application of %s\n", type_name[first->type]);
-			return no_object();
+			return throw_error(cont, "application of non-function");
 	}
 	
 	object call;
@@ -264,11 +259,7 @@ object* eval_list(object* args, object* cont) {
 	delist_2(args, &list, &environment);
 	
 	if (is_empty_list(list)) {
-		object message;
-		init_string(&message, "eval of empty list\n");
-		object e;
-		init_internal_error(&e, &message);
-		return call_cont(cont, &e);
+		return throw_error(cont, "eval of empty list");
 	}
 	else {
 		object next_ls[2];
@@ -287,6 +278,8 @@ object* eval_list(object* args, object* cont) {
 	}
 }
 
+char unbound_variable_string[] = "unbound variable: ";
+
 object* eval_symbol(object* args, object* cont) {
 	object* obj;
 	object* environment;
@@ -294,7 +287,16 @@ object* eval_symbol(object* args, object* cont) {
 	
 	object* value = find_in_environment(environment, obj);
 	
-	return call_cont(cont, value);
+	if (is_no_object(value)) {
+		object* string = symbol_name(obj);
+		char* str = alloca(sizeof(char) * (1 + strlen(unbound_variable_string) + string_length(string)));
+		strcpy(str, unbound_variable_string);
+		strcpy(str + strlen(unbound_variable_string), string_value(string));
+		return throw_error(cont, str);
+	}
+	else {
+		return call_cont(cont, value);
+	}
 }
 
 object* eval_with_environment(object* args, object* cont) {

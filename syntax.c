@@ -46,11 +46,7 @@ object* check_quote_syntax(object* args, object* cont) {
 		return call_cont(cont, syntax);
 	}
 	else {
-		object message;
-		object e;
-		init_string(&message, "wrong number of parts after quote; should be 1");
-		init_internal_error(&e, &message);
-		return call_cont(cont, &e);
+		return throw_error(cont, "wrong number of parts after quote; should be 1");
 	}
 }
 
@@ -62,9 +58,7 @@ object* check_syntax(object* args, object* cont) {
 	object e;
 	
 	if (is_empty_list(syntax)) {
-		init_string(&message, "expression cannot be empty list");
-		init_internal_error(&e, &message);
-		return call_cont(cont, &e);
+		return throw_error(cont, "expression cannot be empty list");
 	}
 	else {
 		object* first = list_first(syntax);
@@ -83,24 +77,10 @@ object* check_syntax(object* args, object* cont) {
 			return call_cont(cont, syntax);
 		}
 		else {
-			init_string(&message, "unknown syntax");
-			init_internal_error(&e, &message);
-			return call_cont(cont, &e);
+			return throw_error(cont, "unknown syntax");
 		}
 	}
 }
 
 void init_syntax_procedures(void) {
-	/*
-	add_symbol_syntax(quote_symbol(), quote_syntax_proc);
-	add_symbol_syntax(define_symbol(), define_syntax_proc);
-	add_symbol_syntax(lambda_symbol(), lambda_syntax_proc);
-	add_symbol_syntax(curry_symbol(), curry_syntax_proc);
-	add_symbol_syntax(apply_symbol(), apply_syntax_proc);
-	add_symbol_syntax(if_symbol(), if_syntax_proc);
-	add_symbol_syntax(list_symbol(), list_syntax_proc);
-	add_symbol_syntax(map_symbol(), map_syntax_proc);
-	add_symbol_syntax(fold_symbol(), fold_syntax_proc);
-	add_symbol_syntax(filter_symbol(), filter_syntax_proc);
-	*/
 }

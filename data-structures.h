@@ -35,6 +35,12 @@ char* location_name[location_count];
 
 typedef enum {round, square, curly, shapeless, file_bracket, bracket_type_count} bracket_type;
 
+typedef enum {
+	cont_normal,
+	cont_discarding, // discards argument
+	cont_catching // catches errors
+} cont_type;
+
 typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
 typedef struct object {
@@ -82,7 +88,7 @@ typedef struct object {
 			struct object* continuation;
 		} call;
 		struct {
-			char discard_argument;
+			cont_type conttype;
 			struct object* call;
 		} continuation;
 		struct {
@@ -125,7 +131,9 @@ char is_file_port(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
 char is_continuation(object* obj);
+cont_type continuation_type(object* obj);
 char is_discarding_continuation(object* obj);
+char is_catching_continuation(object* obj);
 char is_internal_error(object* obj);
 
 char boolean_value(object* obj);
