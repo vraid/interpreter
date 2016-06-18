@@ -235,7 +235,9 @@ void bind_primitive(char* name, int arity, object* obj) {
 	object* par = args[arity];
 	object* body = &primitive_bodies[primitive_count];
 	init_list_cell(body, obj, par);
+	body->location = location_static;
 	init_function(function, empty_environment(), par, body);
+	function->location = location_static;
 	
 	add_static_binding(function, name);
 	primitive_count++;
@@ -251,10 +253,12 @@ void init_standard_functions(void) {
 	argnames[0][0] = 'a';
 	argnames[0][1] = 0;
 	init_list_cell(&argcells[0], make_static_symbol(argnames[0]), empty_list());
+	argcells[0].location = location_static;
 	for (i = 1; i < args_max; i++) {
 		argnames[i][0] = argnames[i-1][0] + 1;
 		argnames[i][1] = 0;
 		init_list_cell(&argcells[i], make_static_symbol(argnames[i]), &argcells[i-1]);
+		argcells[i].location = location_static;
 		args[i] = &argcells[i-1];
 	}
 	args[args_max] = &argcells[args_max]-1;

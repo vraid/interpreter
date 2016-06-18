@@ -16,10 +16,11 @@ void save_call(object* call) {
 }
 
 object* top_call(object* call) {
-	save_call(call);
-	setjmp(jump_buffer);
 	char p;
 	stack_top = &p;
+	save_call(call);
+	printf("stack top is at %p\n", (void*)&p);
+	setjmp(jump_buffer);
 	return perform_call(saved_call);	
 }
 

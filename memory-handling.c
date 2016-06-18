@@ -209,6 +209,7 @@ void init_memory_space(memory_space* space, int quarter_size) {
 		printf("out of memory\n");
 		exit(0);
 	}
+	printf("heap is at %p\n", (void*)space->memory);
 }
 
 void perform_gc(object** root) {
@@ -216,8 +217,8 @@ void perform_gc(object** root) {
 	char resize = 0;
 	char* old_memory;
 	char is_major = heap_full(&main_memory_space);
-	printf("used heap data: %i\n", used_heap_data(&main_memory_space));
 	if (is_major) {
+		printf("used heap data pre-gc: %i\n", used_heap_data(&main_memory_space));
 		location = location_heap;
 		if (main_memory_space.fill_and_resize) {
 			printf("major resizing gc\n");
@@ -231,7 +232,6 @@ void perform_gc(object** root) {
 		}
 	}
 	else {
-		printf("minor gc\n");
 		location = location_stack;
 		int i;
 		for (i = 0; i < mutation_count; i++) {
@@ -246,6 +246,7 @@ void perform_gc(object** root) {
 	}
 	if (is_major) {
 		main_memory_space.fill_and_resize =  resize_at_next_major_gc(&main_memory_space);
+		printf("used heap data post-gc: %i\n", used_heap_data(&main_memory_space));
 	}
 	mutation_count = 0;
 }
