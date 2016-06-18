@@ -12,6 +12,7 @@ object _true;
 object _no_object;
 object _no_symbol;
 object _no_binding;
+object _placeholder_value;
 object _empty_list;
 object _empty_string;
 object _empty_environment;
@@ -46,6 +47,8 @@ void init_global_variables(void) {
 	init_object(location_static, type_binding, no_binding());
 	_no_binding.data.binding.name = no_symbol();
 	_no_binding.data.binding.value = no_object();
+	
+	init_object(location_static, type_none, placeholder_value());
 	
 	init_object(location_static, type_list, empty_list());
 	_empty_list.data.list.type = shapeless;
@@ -85,6 +88,9 @@ char is_true(object* obj) {
 char is_no_object(object* obj) {
 	return obj == no_object();
 }
+char is_placeholder_value(object* obj) {
+	return obj == placeholder_value();
+}
 object* empty_list(void) {
 	return &_empty_list;
 }
@@ -99,6 +105,9 @@ object* no_symbol(void) {
 }
 object* no_binding(void) {
 	return &_no_binding;
+}
+object* placeholder_value(void) {
+	return &_placeholder_value;
 }
 object* empty_environment(void) {
 	return &_empty_environment;

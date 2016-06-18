@@ -106,7 +106,7 @@ object* find_in_environment(object* env, object* symbol) {
 	object* ls = environment_bindings(env);
 	while (!is_empty_list(ls)) {
 		object* binding = list_first(ls);
-		if (symbol == binding_name(binding)) {
+		if ((symbol == binding_name(binding)) && !is_placeholder_value(binding_value(binding))) {
 			return binding_value(binding);
 		}
 		ls = list_rest(ls);
