@@ -180,6 +180,20 @@ object* function_multiply(object* args, object* cont) {
 	return call_cont(cont, &result);
 }
 
+object numeric_equality_proc;
+
+object* function_numeric_equality(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_number(a) && is_number(b))) {
+		return throw_error(cont, "= on non-number");
+	}
+	
+	return call_cont(cont, boolean(number_value(a) == number_value(b)));
+}
+
 object display_proc;
 
 object* function_display(object* args, object* cont) {
@@ -258,5 +272,6 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
+	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
 	bind_primitive("identity", 1, identity_proc());
 }
