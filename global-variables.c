@@ -88,6 +88,9 @@ char is_true(object* obj) {
 char is_no_object(object* obj) {
 	return obj == no_object();
 }
+char is_no_binding(object* obj) {
+	return obj == no_binding();
+}
 char is_placeholder_value(object* obj) {
 	return obj == placeholder_value();
 }

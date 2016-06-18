@@ -102,16 +102,16 @@ object* bind_values(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object* find_in_environment(object* env, object* symbol) {
+object* find_in_environment(object* env, object* symbol, char return_placeholders) {
 	object* ls = environment_bindings(env);
 	while (!is_empty_list(ls)) {
 		object* binding = list_first(ls);
-		if ((symbol == binding_name(binding)) && !is_placeholder_value(binding_value(binding))) {
-			return binding_value(binding);
+		if ((symbol == binding_name(binding)) && (return_placeholders || !is_placeholder_value(binding_value(binding)))) {
+			return binding;
 		}
 		ls = list_rest(ls);
 	}
-	return no_object();
+	return no_binding();
 }
 
 void init_environment_procedures(void) {

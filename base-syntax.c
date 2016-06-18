@@ -24,6 +24,71 @@ object* bind_value(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object update_binding_proc;
+
+object* update_binding(object* args, object* cont) {
+	object* value;
+	object* name;
+	object* environment;
+	delist_3(args, &value, &name, &environment);
+	
+	object* binding = find_in_environment(environment, name, 1);
+	
+	if (is_no_binding(binding) || !is_placeholder_value(binding_value(binding))) {
+		return throw_error(cont, "updating non-placeholder binding");
+	}
+	binding->data.binding.value = value;
+	add_mutation(binding, value);
+	
+	// the environment is not the latest one, so it is discarded
+	return call_discarding_cont(cont);
+}
+
+object bind_continued_proc;
+
+object* bind_continued(object* args, object* cont) {
+	object* environment;
+	object* body;
+	object* name;
+	delist_3(args, &environment, &body, &name);
+	
+	object return_args[1];
+	init_list_1(return_args, environment);
+	object return_call;
+	init_call(&return_call, identity_proc(), return_args, cont);
+	object return_cont;
+	init_discarding_cont(&return_cont, &return_call);
+	
+	object update_args[2];
+	init_list_2(update_args, name, environment);
+	object update_call;
+	init_call(&update_call, &update_binding_proc, update_args, &return_cont);
+	object update_cont;
+	init_cont(&update_cont, &update_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, body, environment);
+	object eval_call;
+	init_call(&eval_call, eval_proc(), eval_args, &update_cont);
+	
+	return perform_call(&eval_call);
+}
+
+object bind_placeholder_proc;
+
+object* bind_placeholder(object* args, object* cont) {
+	object* environment;
+	object* name;
+	delist_2(args, &environment, &name);
+	
+	object bind_args[3];
+	init_list_3(bind_args, placeholder_value(), name, environment);
+	object bind_call;
+	init_call(&bind_call, &extend_environment_proc, bind_args, cont);
+	
+	return perform_call(&bind_call);
+}
+
 object* define(object* args, object* cont) {
 	object* syntax;
 	object* environment;
@@ -33,18 +98,21 @@ object* define(object* args, object* cont) {
 	object* body;
 	delist_2(syntax, &name, &body);
 	
-	object ls[2];
-	init_list_2(ls, name, environment);
+	object continued_args[2];
+	init_list_2(continued_args, body, name);
+	object bind_continued_call;
+	init_call(&bind_continued_call, &bind_continued_proc, continued_args, cont);
+	object continued_cont;
+	init_cont(&continued_cont, &bind_continued_call);
+	
+	object bind_args[2];
+	init_list_2(bind_args, environment, name);
 	object bind_call;
-	init_call(&bind_call, &bind_value_proc, ls, cont);
+	init_call(&bind_call, &bind_placeholder_proc, bind_args, &continued_cont);
 	object bind_cont;
 	init_cont(&bind_cont, &bind_call);
 	
-	object ls2[2];
-	init_list_2(ls2, body, environment);
-	object call;
-	init_call(&call, eval_proc(), ls2, &bind_cont);
-	return perform_call(&call);
+	return perform_call(&bind_call);
 }
 
 object* quote(object* args, object* cont) {
@@ -691,6 +759,10 @@ void init_base_syntax_procedures(void) {
 	
 	init_primitive_procedure(&bind_value_proc, &bind_value);
 	init_primitive_procedure(&eval_if_proc, &eval_if);
+	
+	init_primitive_procedure(&bind_placeholder_proc, &bind_placeholder);
+	init_primitive_procedure(&bind_continued_proc, &bind_continued);
+	init_primitive_procedure(&update_binding_proc, &update_binding);
 	
 	init_primitive_procedure(&start_curry_proc, &start_curry);
 	init_primitive_procedure(&curry_one_proc, &curry_one);

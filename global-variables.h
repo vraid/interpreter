@@ -10,6 +10,7 @@ char is_empty_list(object* obj);
 char is_false(object* obj);
 char is_true(object* obj);
 char is_no_object(object* obj);
+char is_no_binding(object* obj);
 char is_placeholder_value(object* obj);
 
 object* true(void);

@@ -285,9 +285,9 @@ object* eval_symbol(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &obj, &environment);
 	
-	object* value = find_in_environment(environment, obj);
+	object* binding = find_in_environment(environment, obj, 0);
 	
-	if (is_no_object(value)) {
+	if (is_no_binding(binding)) {
 		object* string = symbol_name(obj);
 		char* str = alloca(sizeof(char) * (1 + strlen(unbound_variable_string) + string_length(string)));
 		strcpy(str, unbound_variable_string);
@@ -295,7 +295,7 @@ object* eval_symbol(object* args, object* cont) {
 		return throw_error(cont, str);
 	}
 	else {
-		return call_cont(cont, value);
+		return call_cont(cont, binding_value(binding));
 	}
 }
 
