@@ -118,11 +118,17 @@ bracket_type list_type(object* obj) {
 
 object* list_first(object* ls) {
 	check_type(type_list, ls);
+	if (is_empty_list(ls)) {
+		fprintf(stderr, "first on empty list\n");
+	}
 	return ls->data.list.first;
 }
 
 object* list_rest(object* ls) {
 	check_type(type_list, ls);
+	if (is_empty_list(ls)) {
+		fprintf(stderr, "rest on empty list\n");
+	}
 	return ls->data.list.rest;
 }
 
