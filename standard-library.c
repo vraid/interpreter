@@ -110,6 +110,11 @@ object* function_cons(object* args, object* cont) {
 	object* rest;
 	delist_2(args, &first, &rest);
 	rest = unquote(rest);
+	
+	if (!is_list(rest)) {
+		return throw_error(cont, "cons on non-list");
+	}
+	
 	object list_cell;
 	init_list_cell(&list_cell, first, rest);
 	
@@ -127,6 +132,11 @@ object* function_add(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
+	
+	if (!(is_number(a) && is_number(b))) {
+		return throw_error(cont, "+ on non-number");
+	}
+	
 	object result;
 	init_number(&result, number_value(a) + number_value(b));
 	return call_cont(cont, &result);
@@ -137,6 +147,11 @@ object negative_proc;
 object* function_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
+		
+	if (!is_number(a)) {
+		return throw_error(cont, "negative on non-number");
+	}
+	
 	object result;
 	init_number(&result, -number_value(a));
 	return call_cont(cont, &result);
@@ -148,6 +163,11 @@ object* function_subtract(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
+	
+	if (!(is_number(a) && is_number(b))) {
+		return throw_error(cont, "- on non-number");
+	}
+
 	object result;
 	init_number(&result, number_value(b) - number_value(a));
 	return call_cont(cont, &result);
@@ -159,6 +179,11 @@ object* function_multiply(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
+	
+	if (!(is_number(a) && is_number(b))) {
+		return throw_error(cont, "* on non-number");
+	}
+
 	object result;
 	init_number(&result, number_value(a) * number_value(b));
 	return call_cont(cont, &result);
