@@ -10,6 +10,8 @@ typedef enum {
 	syntax_curry,
 	syntax_apply,
 	syntax_if,
+	syntax_and,
+	syntax_or,
 	syntax_list,
 	syntax_map,
 	syntax_fold,

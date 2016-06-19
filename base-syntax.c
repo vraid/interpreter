@@ -392,6 +392,118 @@ object* if_func(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object eval_and_proc;
+
+object* eval_and(object* args, object* cont) {
+	object* value;
+	object* elements;
+	object* environment;
+	delist_3(args, &value, &elements, &environment);
+	
+	if (is_false(value)) {
+		return call_cont(cont, false());
+	}
+	else if (is_empty_list(elements)) {
+		return call_cont(cont, value);
+	}
+	else {
+		object and_args[2];
+		init_list_2(and_args, list_rest(elements), environment);
+		object and_call;
+		init_call(&and_call, &eval_and_proc, and_args, cont);
+		object and_cont;
+		init_cont(&and_cont, &and_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, list_first(elements), environment);
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &and_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object* and(object* args, object* cont) {
+	object* elements;
+	object* environment;
+	delist_2(args, &elements, &environment);
+	
+	if (is_empty_list(elements)) {
+		return call_cont(cont, true());
+	}
+	else {
+		object and_args[2];
+		init_list_2(and_args, list_rest(elements), environment);
+		object and_call;
+		init_call(&and_call, &eval_and_proc, and_args, cont);
+		object and_cont;
+		init_cont(&and_cont, &and_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, list_first(elements), environment);
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &and_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object eval_or_proc;
+
+object* eval_or(object* args, object* cont) {
+	object* value;
+	object* elements;
+	object* environment;
+	delist_3(args, &value, &elements, &environment);
+	
+	if (!is_false(value)) {
+		return call_cont(cont, value);
+	}
+	else if (is_empty_list(elements)) {
+		return call_cont(cont, false());
+	}
+	else {
+		object or_args[2];
+		init_list_2(or_args, list_rest(elements), environment);
+		object or_call;
+		init_call(&or_call, &eval_or_proc, or_args, cont);
+		object or_cont;
+		init_cont(&or_cont, &or_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, list_first(elements), environment);
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &or_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object* or(object* args, object* cont) {
+	object* elements;
+	object* environment;
+	delist_2(args, &elements, &environment);
+	
+	if (is_empty_list(elements)) {
+		return call_cont(cont, false());
+	}
+	else {
+		object or_args[2];
+		init_list_2(or_args, list_rest(elements), environment);
+		object or_call;
+		init_call(&or_call, &eval_or_proc, or_args, cont);
+		object or_cont;
+		init_cont(&or_cont, &or_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, list_first(elements), environment);
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &or_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
 object* list(object* args, object* cont) {
 	object* elements;
 	object* environment;
@@ -750,6 +862,8 @@ void init_base_syntax_procedures(void) {
 	add_syntax("curry", syntax_curry, &curry);
 	add_syntax("apply", syntax_apply, &apply);
 	add_syntax("if", syntax_if, &if_func);
+	add_syntax("and", syntax_and, &and);
+	add_syntax("or", syntax_or, &or);
 	add_syntax("list", syntax_list, &list);
 	add_syntax("map", syntax_map, &map);
 	add_syntax("fold", syntax_fold, &fold);
@@ -759,6 +873,9 @@ void init_base_syntax_procedures(void) {
 	
 	init_primitive_procedure(&bind_value_proc, &bind_value);
 	init_primitive_procedure(&eval_if_proc, &eval_if);
+	
+	init_primitive_procedure(&eval_and_proc, &eval_and);
+	init_primitive_procedure(&eval_or_proc, &eval_or);
 	
 	init_primitive_procedure(&bind_placeholder_proc, &bind_placeholder);
 	init_primitive_procedure(&bind_continued_proc, &bind_continued);
