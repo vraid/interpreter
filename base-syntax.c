@@ -9,8 +9,10 @@
 #include "call.h"
 #include "memory-handling.h"
 #include "environments.h"
+#include "standard-library.h"
 #include "eval.h"
 
+object map_start_proc;
 object bind_value_proc;
 
 object* bind_value(object* args, object* cont) {
@@ -87,6 +89,33 @@ object* bind_placeholder(object* args, object* cont) {
 	init_call(&bind_call, &extend_environment_proc, bind_args, cont);
 	
 	return perform_call(&bind_call);
+}
+
+object bind_placeholders_proc;
+
+object* bind_placeholders(object* args, object* cont) {
+	object* environment;
+	object* names;
+	delist_2(args, &environment, &names);
+	
+	if (is_empty_list(names)) {
+		return call_cont(cont, environment);
+	}
+	else {
+		object next_args[1];
+		init_list_1(next_args, list_rest(names));
+		object next_call;
+		init_call(&next_call, &bind_placeholders_proc, next_args, cont);
+		object next_cont;
+		init_cont(&next_cont, &next_call);
+		
+		object bind_args[3];
+		init_list_3(bind_args, placeholder_value(), list_first(names), environment);
+		object bind_call;
+		init_call(&bind_call, &extend_environment_proc, bind_args, &next_cont);
+		
+		return perform_call(&bind_call);
+	}
 }
 
 object* define(object* args, object* cont) {
@@ -191,6 +220,114 @@ object* let(object* args, object* cont) {
 	init_call(&let_call, &let_bind_proc, let_args, &eval_cont);
 	
 	return perform_call(&let_call);
+}
+
+object map_first_proc;
+
+object* map_first(object* args, object* cont) {
+	object* bindings;
+	delist_1(args, &bindings);
+	
+	object map_args[2];
+	init_list_2(map_args, first_func(), bindings);
+	object map_call_args[1];
+	init_list_1(map_call_args, map_args);
+	object map_call;
+	init_call(&map_call, &map_start_proc, map_call_args, cont);
+	
+	return perform_call(&map_call);
+}
+
+object letrec_eval_single_proc;
+
+object* letrec_eval_single(object* args, object* cont) {
+	object* environment;
+	object* bindings;
+	delist_2(args, &environment, &bindings);
+	
+	if (is_empty_list(bindings)) {
+		return call_cont(cont, environment);
+	}
+	else {
+		object* first = list_first(bindings);
+		object* name;
+		object* value;
+		delist_2(first, &name, &value);
+		
+		object next_args[2];
+		init_list_2(next_args, environment, list_rest(bindings));
+		object next_call;
+		init_call(&next_call, &letrec_eval_single_proc, next_args, cont);
+		object next_cont;
+		init_discarding_cont(&next_cont, &next_call);
+		
+		object update_args[2];
+		init_list_2(update_args, name, environment);
+		object update_call;
+		init_call(&update_call, &update_binding_proc, update_args, &next_cont);
+		object update_cont;
+		init_cont(&update_cont, &update_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, value, environment);
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &update_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object letrec_bind_proc;
+
+object* letrec_bind(object* args, object* cont) {
+	object* names;
+	object* environment;
+	delist_2(args, &names, &environment);
+	
+	object bind_args[2];
+	init_list_2(bind_args, environment, names);
+	object bind_call;
+	init_call(&bind_call, &bind_placeholders_proc, bind_args, cont);
+	
+	return perform_call(&bind_call);
+}
+
+object* letrec(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+
+	object* bindings;
+	object* body;
+	delist_2(syntax, &bindings, &body);
+	
+	object eval_args[1];
+	init_list_1(eval_args, body);
+	object eval_call;
+	init_call(&eval_call, eval_with_environment_proc(), eval_args, cont);
+	object eval_cont;
+	init_cont(&eval_cont, &eval_call);
+	
+	object eval_values_args[1];
+	init_list_1(eval_values_args, bindings);
+	object eval_values_call;
+	init_call(&eval_values_call, &letrec_eval_single_proc, eval_values_args, &eval_cont);
+	object eval_values_cont;
+	init_cont(&eval_values_cont, &eval_values_call);
+	
+	object bind_args[1];
+	init_list_1(bind_args, environment);
+	object bind_call;
+	init_call(&bind_call, &letrec_bind_proc, bind_args, &eval_values_cont);
+	object bind_cont;
+	init_cont(&bind_cont, &bind_call);
+	
+	object map_args[1];
+	init_list_1(map_args, bindings);
+	object map_call;
+	init_call(&map_call, &map_first_proc, map_args, &bind_cont);
+	
+	return perform_call(&map_call);
 }
 
 object* lambda(object* args, object* cont) {
@@ -558,8 +695,6 @@ object* map_single(object* args, object* cont) {
 	}
 }
 
-object map_start_proc;
-
 object* map_start(object* args, object* cont) {
 	object* syntax;
 	delist_1(args, &syntax);
@@ -858,6 +993,7 @@ void init_base_syntax_procedures(void) {
 	add_syntax("define", syntax_define, &define);
 	add_syntax("quote", syntax_quote, &quote);
 	add_syntax("let", syntax_let, &let);
+	add_syntax("let-rec", syntax_letrec, &letrec);
 	add_syntax("lambda", syntax_lambda, &lambda);
 	add_syntax("curry", syntax_curry, &curry);
 	add_syntax("apply", syntax_apply, &apply);
@@ -870,7 +1006,11 @@ void init_base_syntax_procedures(void) {
 	add_syntax("filter", syntax_filter, &filter);
 	
 	init_primitive_procedure(&let_bind_proc, &let_bind);
-	
+	init_primitive_procedure(&map_first_proc, &map_first);
+
+	init_primitive_procedure(&letrec_bind_proc, &letrec_bind);
+	init_primitive_procedure(&letrec_eval_single_proc, &letrec_eval_single);
+
 	init_primitive_procedure(&bind_value_proc, &bind_value);
 	init_primitive_procedure(&eval_if_proc, &eval_if);
 	
@@ -878,6 +1018,8 @@ void init_base_syntax_procedures(void) {
 	init_primitive_procedure(&eval_or_proc, &eval_or);
 	
 	init_primitive_procedure(&bind_placeholder_proc, &bind_placeholder);
+	init_primitive_procedure(&bind_placeholders_proc, &bind_placeholders);
+
 	init_primitive_procedure(&bind_continued_proc, &bind_continued);
 	init_primitive_procedure(&update_binding_proc, &update_binding);
 	

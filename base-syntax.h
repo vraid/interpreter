@@ -6,6 +6,7 @@ typedef enum {
 	syntax_define,
 	syntax_quote,
 	syntax_let,
+	syntax_letrec,
 	syntax_lambda,
 	syntax_curry,
 	syntax_apply,
@@ -17,7 +18,7 @@ typedef enum {
 	syntax_fold,
 	syntax_filter,
 	syntax_count} static_syntax;
-	
+
 object syntax_procedure[syntax_count];
 
 void init_base_syntax_procedures(void);
