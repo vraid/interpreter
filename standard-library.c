@@ -9,9 +9,21 @@
 #include "call.h"
 #include "print.h"
 #include "base-util.h"
+#include "list-util.h"
 #include "environments.h"
 #include "global-variables.h"
 #include "symbols.h"
+
+object* _first_func;
+object* _rest_func;
+
+object* first_func(void) {
+	return _first_func;
+}
+
+object* rest_func(void) {
+	return _rest_func;
+}
 
 object* boolean(char b) {
 	return b ? true() : false();
@@ -243,6 +255,11 @@ void bind_primitive(char* name, int arity, object* obj) {
 	primitive_count++;
 }
 
+void bind_and_save_primitive(char* name, int arity, object* obj, object** saved) {
+	*saved = &primitive_functions[primitive_count];
+	bind_primitive(name, arity, obj);
+}
+
 void init_and_bind_primitive(char* name, int arity, object* obj, primitive_proc* proc) {
 	init_primitive_procedure(obj, proc);
 	bind_primitive(name, arity, obj);
@@ -272,6 +289,8 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
 	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
 	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
+	bind_and_save_primitive("first", 1, first_proc(), &_first_func);
+	bind_and_save_primitive("rest", 1, rest_proc(), &_rest_func);
 	init_and_bind_primitive("+", 2, &add_proc, &function_add);
 	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
