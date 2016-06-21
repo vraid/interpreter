@@ -4,6 +4,7 @@
 #include "object-init.h"
 #include "call.h"
 #include "delist.h"
+#include "base-util.h"
 #include "memory-handling.h"
 
 object _first_proc;
@@ -12,6 +13,7 @@ object _rest_proc;
 object _make_list_proc;
 object _add_to_list_proc;
 object _reverse_list_proc;
+object _unzip_2_proc;
 
 object* first_proc(void) {
 	return &_first_proc;
@@ -31,6 +33,10 @@ object* add_to_list_proc(void) {
 
 object* reverse_list_proc(void) {
 	return &_reverse_list_proc;
+}
+
+object* unzip_2_proc(void) {
+	return &_unzip_2_proc;
 }
 
 object* first(object* args, object* cont) {
@@ -138,6 +144,76 @@ object* reverse_list(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object unzip_2_step_proc;
+
+object* unzip_2_step(object* args, object* cont) {
+	object* one;
+	object* two;
+	object* list;
+	delist_3(args, &one, &two, &list);
+	
+	if (is_empty_list(list)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		object* first = list_first(list);
+		object* a;
+		object* b;
+		delist_2(first, &a, &b);
+		object one_next[1];
+		init_list_1(one_next, a);
+		object two_next[1];
+		init_list_1(two_next, b);
+		one->data.list.rest = one_next;
+		add_mutation(one, one_next);
+		two->data.list.rest = two_next;
+		add_mutation(two, two_next);
+		
+		object call_args[3];
+		init_list_3(call_args, one_next, two_next, list_rest(list));
+		object call;
+		init_call(&call, &unzip_2_step_proc, call_args, cont);
+		
+		return perform_call(&call);
+	}
+}
+
+object* unzip_2(object* args, object* cont) {
+	object* list;
+	delist_1(args, &list);
+	
+	if (is_empty_list(list)) {
+		return call_cont(cont, empty_list());
+	}
+	else {
+		object* first = list_first(list);
+		object* a;
+		object* b;
+		delist_2(first, &a, &b);
+		object one[1];
+		init_list_1(one, a);
+		object two[1];
+		init_list_1(two, b);
+		
+		object result[2];
+		init_list_2(result, one, two);
+		
+		object result_args[1];
+		init_list_1(result_args, result);
+		object result_call;
+		init_call(&result_call, identity_proc(), result_args, cont);
+		object result_cont;
+		init_discarding_cont(&result_cont, &result_call);
+		
+		object unzip_args[3];
+		init_list_3(unzip_args, one, two, list_rest(list));
+		object unzip_call;
+		init_call(&unzip_call, &unzip_2_step_proc, unzip_args, &result_cont);
+		
+		return perform_call(&unzip_call);
+	}
+}
+
 void init_list_util_procedures(void) {
 	init_primitive_procedure(first_proc(), &first);
 	init_primitive_procedure(rest_proc(), &rest);
@@ -146,4 +222,6 @@ void init_list_util_procedures(void) {
 	init_primitive_procedure(&return_list_proc, &return_list);
 	init_primitive_procedure(reverse_list_proc(), &reverse_list);
 	init_primitive_procedure(&reverse_proc, &reverse);
+	init_primitive_procedure(unzip_2_proc(), &unzip_2);
+	init_primitive_procedure(&unzip_2_step_proc, &unzip_2_step);
 }

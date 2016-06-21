@@ -222,22 +222,6 @@ object* let(object* args, object* cont) {
 	return perform_call(&let_call);
 }
 
-object map_first_proc;
-
-object* map_first(object* args, object* cont) {
-	object* bindings;
-	delist_1(args, &bindings);
-	
-	object map_args[2];
-	init_list_2(map_args, first_func(), bindings);
-	object map_call_args[1];
-	init_list_1(map_call_args, map_args);
-	object map_call;
-	init_call(&map_call, &map_start_proc, map_call_args, cont);
-	
-	return perform_call(&map_call);
-}
-
 object letrec_eval_single_proc;
 
 object* letrec_eval_single(object* args, object* cont) {
@@ -280,9 +264,11 @@ object* letrec_eval_single(object* args, object* cont) {
 object letrec_bind_proc;
 
 object* letrec_bind(object* args, object* cont) {
-	object* names;
+	object* names_values;
 	object* environment;
-	delist_2(args, &names, &environment);
+	delist_2(args, &names_values, &environment);
+	
+	object* names = list_first(names_values);
 	
 	object bind_args[2];
 	init_list_2(bind_args, environment, names);
@@ -322,12 +308,12 @@ object* letrec(object* args, object* cont) {
 	object bind_cont;
 	init_cont(&bind_cont, &bind_call);
 	
-	object map_args[1];
-	init_list_1(map_args, bindings);
-	object map_call;
-	init_call(&map_call, &map_first_proc, map_args, &bind_cont);
+	object unzip_args[1];
+	init_list_1(unzip_args, bindings);
+	object unzip_call;
+	init_call(&unzip_call, unzip_2_proc(), unzip_args, &bind_cont);
 	
-	return perform_call(&map_call);
+	return perform_call(&unzip_call);
 }
 
 object* lambda(object* args, object* cont) {
@@ -984,7 +970,6 @@ void init_base_syntax_procedures(void) {
 	add_syntax("filter", syntax_filter, &filter);
 	
 	init_primitive_procedure(&let_bind_proc, &let_bind);
-	init_primitive_procedure(&map_first_proc, &map_first);
 
 	init_primitive_procedure(&letrec_bind_proc, &letrec_bind);
 	init_primitive_procedure(&letrec_eval_single_proc, &letrec_eval_single);
