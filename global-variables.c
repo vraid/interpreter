@@ -17,6 +17,7 @@ object _empty_list;
 object _empty_string;
 object _empty_environment;
 object* _lambda_symbol;
+object* _quote_symbol;
 
 object _end_cont;
 object end_proc;
@@ -64,6 +65,7 @@ void init_global_variables(void) {
 	_empty_environment.data.environment.bindings = empty_list();
 	
 	_lambda_symbol = make_static_symbol("lambda");
+	_quote_symbol = make_static_symbol("quote");
 	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
@@ -118,4 +120,8 @@ object* empty_environment(void) {
 
 object* lambda_symbol(void) {
 	return _lambda_symbol;
+}
+
+object* quote_symbol(void) {
+	return _quote_symbol;
 }

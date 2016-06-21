@@ -24,3 +24,4 @@ object* placeholder_value(void);
 object* empty_environment(void);
 
 object* lambda_symbol(void);
+object* quote_symbol(void);

@@ -83,10 +83,6 @@ void traverse_symbol(target_space space, object* obj, object_location location) 
 	move_if_necessary(space, &obj->data.symbol.name, location);
 }
 
-void traverse_quote(target_space space, object* obj, object_location location) {
-	move_if_necessary(space, &obj->data.quote.value, location);
-}
-
 void traverse_list(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.first, location);
 	move_if_necessary(space, &obj->data.list.rest, location);
@@ -129,7 +125,6 @@ typedef void (traversal)(target_space space, object* obj, object_location locati
 traversal* traversal_function(object* obj) {
 	switch (obj->type) {
 		case type_symbol : return &traverse_symbol;
-		case type_quote : return &traverse_quote;
 		case type_list : return &traverse_list;
 		case type_function : return &traverse_function;
 		case type_binding : return &traverse_binding;

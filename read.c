@@ -213,12 +213,12 @@ object* read_value(object* args, object* cont) {
 	}
 	else if (is_quote_char(c)) {
 		getc(in);
-		object call;
-		init_call(&call, quote_object_proc(), empty_list(), cont);
-		object next_cont;
-		init_cont(&next_cont, &call);
+		object quote_call;
+		init_call(&quote_call, quote_object_proc(), empty_list(), cont);
+		object quote_cont;
+		init_cont(&quote_cont, &quote_call);
 		object read_call;
-		init_call(&read_call, &read_value_proc, args, &next_cont);
+		init_call(&read_call, &read_value_proc, args, &quote_cont);
 		return perform_call(&read_call);
 	}
 	else {

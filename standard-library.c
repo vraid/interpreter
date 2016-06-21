@@ -32,7 +32,6 @@ object* boolean(char b) {
 object* is_of_type(object_type type, object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
-	obj = unquote(obj);
 	object* result = boolean(is_type(type, obj));
 	
 	return call_cont(cont, result);
@@ -41,7 +40,6 @@ object* is_of_type(object_type type, object* args, object* cont) {
 object* is_id(object* id, object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
-	obj = unquote(obj);
 	object* result = boolean(obj == id);
 	
 	return call_cont(cont, result);
@@ -99,8 +97,6 @@ object* function_is_identical(object* args, object* cont) {
 	object* one;
 	object* two;
 	delist_2(args, &one, &two);
-	one = unquote(one);
-	two = unquote(two);
 	object* result = boolean(one == two);
 	
 	return call_cont(cont, result);
@@ -112,7 +108,6 @@ object* function_cons(object* args, object* cont) {
 	object* first;
 	object* rest;
 	delist_2(args, &first, &rest);
-	rest = unquote(rest);
 	
 	if (!is_list(rest)) {
 		return throw_error(cont, "cons on non-list");

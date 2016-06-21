@@ -37,8 +37,6 @@ object* first(object* args, object* cont) {
 	object* list;
 	delist_1(args, &list);
 	
-	list = unquote(list);
-	
 	if (!is_list(list)) {
 		return throw_error(cont, "first on non-list");
 	}
@@ -50,8 +48,6 @@ object* first(object* args, object* cont) {
 object* rest(object* args, object* cont) {
 	object* list;
 	delist_1(args, &list);
-	
-	list = unquote(list);
 	
 	if (!is_list(list)) {
 		return throw_error(cont, "rest on non-list");

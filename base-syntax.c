@@ -149,10 +149,10 @@ object* quote(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &syntax, &environment);
 	
-	object call;
-	init_call(&call, quote_object_proc(), syntax, cont);
+	object* value;
+	delist_1(syntax, &value);
 	
-	return perform_call(&call);
+	return call_cont(cont, value);
 }
 
 object let_bind_proc;
@@ -646,14 +646,8 @@ object* list(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &elements, &environment);
 	
-	object quote_call;
-	init_call(&quote_call, quote_object_proc(), empty_list(), cont);
-	
-	object quote_cont;
-	init_cont(&quote_cont, &quote_call);
-	
 	object eval_call;
-	init_call(&eval_call, eval_list_elements_proc(), args, &quote_cont);
+	init_call(&eval_call, eval_list_elements_proc(), args, cont);
 	
 	return perform_call(&eval_call);
 }
@@ -703,8 +697,6 @@ object* map_start(object* args, object* cont) {
 	object* elements;
 	delist_2(syntax, &function, &elements);
 	
-	elements = unquote(elements);
-	
 	if (is_empty_list(elements)) {
 		return call_cont(cont, empty_list());
 	}
@@ -734,13 +726,8 @@ object* map(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &syntax, &environment);
 	
-	object quote_call;
-	init_call(&quote_call, quote_object_proc(), empty_list(), cont);
-	object quote_cont;
-	init_cont(&quote_cont, &quote_call);
-	
 	object start_call;
-	init_call(&start_call, &map_start_proc, empty_list(), &quote_cont);
+	init_call(&start_call, &map_start_proc, empty_list(), cont);
 	object start_cont;
 	init_cont(&start_cont, &start_call);
 	
@@ -792,8 +779,6 @@ object* fold_start(object* args, object* cont) {
 	object* initial;
 	object* elements;
 	delist_3(syntax, &function, &initial, &elements);
-	
-	elements = unquote(elements);
 	
 	object fold_args[3];
 	init_list_3(fold_args, initial, elements, function);
@@ -936,8 +921,6 @@ object* filter_start(object* args, object* cont) {
 	object* elements;
 	delist_2(syntax, &function, &elements);
 	
-	elements = unquote(elements);
-	
 	if (is_empty_list(elements)) {
 		return call_cont(cont, empty_list());
 	}
@@ -966,13 +949,8 @@ object* filter(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &syntax, &environment);
 	
-	object quote_call;
-	init_call(&quote_call, quote_object_proc(), empty_list(), cont);
-	object quote_cont;
-	init_cont(&quote_cont, &quote_call);
-	
 	object start_call;
-	init_call(&start_call, &filter_start_proc, empty_list(), &quote_cont);
+	init_call(&start_call, &filter_start_proc, empty_list(), cont);
 	object start_cont;
 	init_cont(&start_cont, &start_call);
 	

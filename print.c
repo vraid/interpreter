@@ -73,22 +73,6 @@ object* print_newline(object* args, object* cont) {
 	return call_discarding_cont(cont);
 }
 
-object* print_quote(object* args, object* cont) {
-	object* q;
-	delist_1(args, &q);
-	
-	object* obj = quote_value(q);
-	
-	printf("'");
-	
-	object ls[1];
-	init_list_1(ls, obj);
-		
-	object call;
-	init_call(&call, &print_proc, ls, cont);
-	return perform_call(&call);
-}
-
 object* print_value(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
@@ -117,9 +101,6 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_number:
 			printf("%ld", number_value(obj));
-			break;
-		case type_quote:
-			return print_quote(args, cont);
 			break;
 		case type_list:
 			return print_list(args, cont);

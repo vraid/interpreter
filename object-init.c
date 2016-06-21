@@ -24,11 +24,6 @@ void init_symbol(object* obj, object* name) {
 	obj->data.symbol.name = name;
 }
 
-void init_quote(object* obj, object* value) {
-	init_object(location_stack, type_quote, obj);
-	obj->data.quote.value = value;
-}
-
 void init_binding(object* obj, object* name, object* value) {
 	init_object(location_stack, type_binding, obj);
 	obj->data.binding.name = name;

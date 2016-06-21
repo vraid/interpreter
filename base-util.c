@@ -1,5 +1,6 @@
 #include "base-util.h"
 #include "data-structures.h"
+#include "global-variables.h"
 #include "object-init.h"
 #include "delist.h"
 #include "call.h"
@@ -19,10 +20,10 @@ object* quote_object(object* args, object* cont) {
 	object* value;
 	delist_1(args, &value);
 	
-	object q;
-	init_quote(&q, value);
+	object ls[2];
+	init_list_2(ls, quote_symbol(), value);
 	
-	return call_cont(cont, &q);
+	return call_cont(cont, ls);
 }
 
 object* identity(object* args, object* cont) {
