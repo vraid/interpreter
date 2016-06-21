@@ -127,21 +127,37 @@ object* define(object* args, object* cont) {
 	object* body;
 	delist_2(syntax, &name, &body);
 	
-	object continued_args[2];
-	init_list_2(continued_args, body, name);
-	object bind_continued_call;
-	init_call(&bind_continued_call, &bind_continued_proc, continued_args, cont);
-	object continued_cont;
-	init_cont(&continued_cont, &bind_continued_call);
-	
-	object bind_args[2];
-	init_list_2(bind_args, environment, name);
-	object bind_call;
-	init_call(&bind_call, &bind_placeholder_proc, bind_args, &continued_cont);
-	object bind_cont;
-	init_cont(&bind_cont, &bind_call);
-	
-	return perform_call(&bind_call);
+	// handles cases like (define ((f a) b) ..)
+	if (is_list(name)) {
+		object desugared[3];
+		init_list_3(desugared, lambda_symbol(), list_rest(name), body);
+		object new_syntax[2];
+		init_list_2(new_syntax, list_first(name), desugared);
+		
+		object call_args[2];
+		init_list_2(call_args, new_syntax, environment);
+		object call;
+		init_call(&call, &syntax_procedure[syntax_define], call_args, cont);
+		
+		return perform_call(&call);
+	}
+	else {
+		object continued_args[2];
+		init_list_2(continued_args, body, name);
+		object bind_continued_call;
+		init_call(&bind_continued_call, &bind_continued_proc, continued_args, cont);
+		object continued_cont;
+		init_cont(&continued_cont, &bind_continued_call);
+		
+		object bind_args[2];
+		init_list_2(bind_args, environment, name);
+		object bind_call;
+		init_call(&bind_call, &bind_placeholder_proc, bind_args, &continued_cont);
+		object bind_cont;
+		init_cont(&bind_cont, &bind_call);
+		
+		return perform_call(&bind_call);
+	}
 }
 
 object* quote(object* args, object* cont) {
