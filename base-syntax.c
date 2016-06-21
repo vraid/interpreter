@@ -316,6 +316,105 @@ object* letrec(object* args, object* cont) {
 	return perform_call(&unzip_call);
 }
 
+object rec_three_proc;
+
+object* rec_three(object* args, object* cont) {
+	object* environment;
+	object* function;
+	object* arguments;
+	delist_3(args, &environment, &function, &arguments);
+	
+	function->data.function.environment = environment;
+	add_mutation(function, environment);
+	
+	object eval_args[2];
+	init_list_2(eval_args, arguments, function);
+	object eval_call;
+	init_call(&eval_call, eval_function_call_proc(), eval_args, cont);
+	
+	return perform_call(&eval_call);
+}
+
+object rec_two_proc;
+
+object* rec_two(object* args, object* cont) {
+	object* arguments;
+	object* function;
+	object* name;
+	object* environment;
+	delist_4(args, &arguments, &function, &name, &environment);
+	
+	object rec_args[2];
+	init_list_2(rec_args, function, arguments);
+	object rec_call;
+	init_call(&rec_call, &rec_three_proc, rec_args, cont);
+	object rec_cont;
+	init_cont(&rec_cont, &rec_call);
+	
+	object bind_args[3];
+	init_list_3(bind_args, function, name, environment);
+	object bind_call;
+	init_call(&bind_call, &extend_environment_proc, bind_args, &rec_cont);
+	
+	return perform_call(&bind_call);
+}
+
+object rec_one_proc;
+
+object* rec_one(object* args, object* cont) {
+	object* pars_args;
+	object* name;
+	object* body;
+	object* environment;
+	delist_4(args, &pars_args, &name, &body, &environment);
+	
+	object* parameters;
+	object* arguments;
+	delist_2(pars_args, &parameters, &arguments);
+	
+	object function;
+	init_function(&function, empty_environment(), parameters, body);
+	
+	object rec_args[3];
+	init_list_3(rec_args, &function, name, environment);
+	object rec_call;
+	init_call(&rec_call, &rec_two_proc, rec_args, cont);
+	object rec_cont;
+	init_cont(&rec_cont, &rec_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, arguments, environment);
+	object eval_call;
+	init_call(&eval_call, eval_list_elements_proc(), eval_args, &rec_cont);
+	
+	return perform_call(&eval_call);
+}
+
+object* rec(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object* name;
+	object* bindings;
+	object* body;
+	delist_3(syntax, &name, &bindings, &body);
+	
+	object rec_args[3];
+	init_list_3(rec_args, name, body, environment);
+	object rec_call;
+	init_call(&rec_call, &rec_one_proc, rec_args, cont);
+	object rec_cont;
+	init_cont(&rec_cont, &rec_call);
+	
+	object unzip_args[1];
+	init_list_1(unzip_args, bindings);
+	object unzip_call;
+	init_call(&unzip_call, unzip_2_proc(), unzip_args, &rec_cont);
+	
+	return perform_call(&unzip_call);	
+}
+
 object* lambda(object* args, object* cont) {
 	object* syntax;
 	object* environment;
@@ -958,6 +1057,7 @@ void init_base_syntax_procedures(void) {
 	add_syntax("quote", syntax_quote, &quote);
 	add_syntax("let", syntax_let, &let);
 	add_syntax("let-rec", syntax_letrec, &letrec);
+	add_syntax("rec", syntax_rec, &rec);
 	add_syntax("lambda", syntax_lambda, &lambda);
 	add_syntax("curry", syntax_curry, &curry);
 	add_syntax("apply", syntax_apply, &apply);
@@ -973,6 +1073,10 @@ void init_base_syntax_procedures(void) {
 
 	init_primitive_procedure(&letrec_bind_proc, &letrec_bind);
 	init_primitive_procedure(&letrec_eval_single_proc, &letrec_eval_single);
+	
+	init_primitive_procedure(&rec_one_proc, &rec_one);
+	init_primitive_procedure(&rec_two_proc, &rec_two);
+	init_primitive_procedure(&rec_three_proc, &rec_three);
 
 	init_primitive_procedure(&bind_value_proc, &bind_value);
 	init_primitive_procedure(&eval_if_proc, &eval_if);
