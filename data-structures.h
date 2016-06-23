@@ -9,6 +9,7 @@ typedef enum {
 	type_symbol,
 	type_number,
 	type_list,
+	type_vector,
 	type_syntax,
 	type_primitive_procedure,
 	type_function,
@@ -68,6 +69,10 @@ typedef struct object {
 			struct object* rest;
 		} list;
 		struct {
+			int length;
+			struct object** data;
+		} vector;
+		struct {
 			primitive_proc* proc;
 		} syntax;
 		struct {
@@ -117,6 +122,7 @@ char is_string(object* obj);
 char is_symbol(object* obj);
 char is_number(object* obj);
 char is_list(object* obj);
+char is_vector(object* obj);
 char is_syntax(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
@@ -140,6 +146,8 @@ FILE* file_port_file(object* obj);
 bracket_type list_type(object* obj);
 object* list_first(object* ls);
 object* list_rest(object* ls);
+int vector_length(object* obj);
+object** vector_data(object* obj);
 object* cons(object* first, object* rest);
 object* function_parameters(object* obj);
 object* function_environment(object* obj);

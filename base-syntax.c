@@ -6,6 +6,7 @@
 #include "delist.h"
 #include "base-util.h"
 #include "list-util.h"
+#include "vector-util.h"
 #include "call.h"
 #include "memory-handling.h"
 #include "environments.h"
@@ -753,6 +754,18 @@ object* list(object* args, object* cont) {
 	return perform_call(&eval_call);
 }
 
+object* vector(object* args, object* cont) {
+	object vector_call;
+	init_call(&vector_call, &list_to_vector_proc, empty_list(), cont);
+	object vector_cont;
+	init_cont(&vector_cont, &vector_call);
+	
+	object list_call;
+	init_call(&list_call, &syntax_procedure[syntax_list], args, &vector_cont);
+	
+	return perform_call(&list_call);
+}
+
 object map_single_proc;
 
 object* map_single(object* args, object* cont) {
@@ -1081,6 +1094,7 @@ void init_base_syntax_procedures(void) {
 	add_syntax("and", syntax_and, &and);
 	add_syntax("or", syntax_or, &or);
 	add_syntax("list", syntax_list, &list);
+	add_syntax("vector", syntax_vector, &vector);
 	add_syntax("map", syntax_map, &map);
 	add_syntax("fold", syntax_fold, &fold);
 	add_syntax("filter", syntax_filter, &filter);

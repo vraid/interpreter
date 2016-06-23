@@ -5,6 +5,7 @@
 #include "call.h"
 #include "delist.h"
 #include "object-init.h"
+#include "vector-util.h"
 
 object print_list_element_proc;
 object print_first_list_element_proc;
@@ -68,6 +69,23 @@ object* print_list(object* args, object* cont) {
 	}	
 }
 
+object* print_vector(object* args, object* cont) {
+	object* vec;
+	delist_1(args, &vec);
+	
+	printf("#");
+
+	object print_call;
+	init_call(&print_call, &print_list_proc, empty_list(), cont);
+	object print_cont;
+	init_cont(&print_cont, &print_call);
+	
+	object list_call;
+	init_call(&list_call, &vector_to_list_proc, args, &print_cont);
+	
+	return perform_call(&list_call);
+}
+
 object* print_newline(object* args, object* cont) {
 	printf("\n");
 	return call_discarding_cont(cont);
@@ -104,6 +122,9 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_list:
 			return print_list(args, cont);
+			break;
+		case type_vector:
+			return print_vector(args, cont);
 			break;
 		case type_function:
 			printf("function ");

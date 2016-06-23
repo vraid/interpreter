@@ -15,6 +15,7 @@ typedef enum {
 	syntax_and,
 	syntax_or,
 	syntax_list,
+	syntax_vector,
 	syntax_map,
 	syntax_fold,
 	syntax_filter,

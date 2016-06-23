@@ -30,6 +30,12 @@ void init_binding(object* obj, object* name, object* value) {
 	obj->data.binding.value = value;
 }
 
+void init_vector(object* obj, int length, object** data) {
+	init_object(location_stack, type_vector, obj);
+	obj->data.vector.length = length;
+	obj->data.vector.data = data;
+}
+
 void init_environment(object* obj, object* bindings) {
 	init_object(location_stack, type_environment, obj);
 	obj->data.environment.bindings = bindings;

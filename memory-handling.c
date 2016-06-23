@@ -50,6 +50,9 @@ size_t object_size(object* obj) {
 	if (is_string(obj)) {
 		return sizeof(object) + sizeof(char) * (1 + string_length(obj));
 	}
+	else if (is_vector(obj)) {
+		return sizeof(object) + sizeof(object*) * vector_length(obj);
+	}
 	else {
 		return sizeof(object);
 	}
@@ -64,6 +67,11 @@ void move_object(object* to, object* from, int direction) {
 		char* next_target = (char*)(to + direction);
 		memcpy(next_target, string_value(to), 1 + string_length(to));
 		to->data.string.value = next_target;
+	}
+	else if (is_vector(to)) {
+		char* next_target = (char*)(to + direction);
+		memcpy(next_target, vector_data(to), sizeof(object*) * vector_length(to));
+		to->data.vector.data = (object**)next_target;
 	}
 }
 
@@ -86,6 +94,13 @@ void traverse_symbol(target_space space, object* obj, object_location location) 
 void traverse_list(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.first, location);
 	move_if_necessary(space, &obj->data.list.rest, location);
+}
+
+void traverse_vector(target_space space, object* obj, object_location location) {
+	int i;
+	for (i = 0; i < vector_length(obj); i++) {
+		move_if_necessary(space, &obj->data.vector.data[i], location);
+	}
 }
 
 void traverse_binding(target_space space, object* obj, object_location location) {
@@ -126,6 +141,7 @@ traversal* traversal_function(object* obj) {
 	switch (obj->type) {
 		case type_symbol : return &traverse_symbol;
 		case type_list : return &traverse_list;
+		case type_vector : return &traverse_vector;
 		case type_function : return &traverse_function;
 		case type_binding : return &traverse_binding;
 		case type_environment : return &traverse_environment;

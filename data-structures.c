@@ -126,6 +126,20 @@ char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
 }
 
+char is_vector(object* obj) {
+	return is_type(type_vector, obj);
+}
+
+int vector_length(object* obj) {
+	check_type(type_vector, obj);
+	return obj->data.vector.length;
+}
+
+object** vector_data(object* obj) {
+	check_type(type_vector, obj);
+	return obj->data.vector.data;
+}
+
 char is_syntax(object* obj) {
 	return is_type(type_syntax, obj);
 }
