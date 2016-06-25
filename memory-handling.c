@@ -103,6 +103,10 @@ void traverse_vector(target_space space, object* obj, object_location location) 
 	}
 }
 
+void traverse_vector_iterator(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.vector_iterator.vector, location);
+}
+
 void traverse_binding(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.binding.name, location);
 	move_if_necessary(space, &obj->data.binding.value, location);
@@ -139,15 +143,16 @@ typedef void (traversal)(target_space space, object* obj, object_location locati
 
 traversal* traversal_function(object* obj) {
 	switch (obj->type) {
-		case type_symbol : return &traverse_symbol;
-		case type_list : return &traverse_list;
-		case type_vector : return &traverse_vector;
-		case type_function : return &traverse_function;
-		case type_binding : return &traverse_binding;
-		case type_environment : return &traverse_environment;
-		case type_call : return &traverse_call;
-		case type_continuation : return &traverse_continuation;
-		case type_internal_error : return &traverse_internal_error;
+		case type_symbol: return &traverse_symbol;
+		case type_list: return &traverse_list;
+		case type_vector: return &traverse_vector;
+		case type_vector_iterator: return &traverse_vector_iterator;
+		case type_function: return &traverse_function;
+		case type_binding: return &traverse_binding;
+		case type_environment: return &traverse_environment;
+		case type_call: return &traverse_call;
+		case type_continuation: return &traverse_continuation;
+		case type_internal_error: return &traverse_internal_error;
 		default: return &traverse_nothing;
 	}
 }
