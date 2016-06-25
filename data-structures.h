@@ -127,6 +127,7 @@ char is_string(object* obj);
 char is_symbol(object* obj);
 char is_number(object* obj);
 char is_list(object* obj);
+char is_sequence(object* obj);
 char is_vector(object* obj);
 char is_vector_iterator(object* obj);
 char is_syntax(object* obj);

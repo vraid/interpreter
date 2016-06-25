@@ -2,15 +2,21 @@
 
 #include "data-structures.h"
 
+void init_sequence_procedures(void);
+
 int sequence_length(object* obj);
 object* sequence_first(object* obj);
+object* sequence_rest(object* iter, object* obj);
+
+object* list_to_sequence_proc(object_type type);
+
+object* first_proc(void);
+object* rest_proc(void);
 
 // returns first iterator for non-empty non-lists
 // returns identity of a list
-// returns the empty list for empty sequences
 object* first_iterator(object* iter, object* obj);
 
 // inits and returns next for non-empty, non-lists
 // returns rest of a list
-// returns the empty list for the end of a sequence
 object* next_iterator(object* next, object* current);

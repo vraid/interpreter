@@ -1,6 +1,7 @@
 #include "base-syntax.h"
 
 #include "data-structures.h"
+#include "sequences.h"
 #include "global-variables.h"
 #include "object-init.h"
 #include "delist.h"
@@ -774,12 +775,15 @@ object* map_single(object* args, object* cont) {
 	object* function;
 	delist_3(args, &last, &unmapped, &function);
 	
-	if (is_empty_list(unmapped)) {
+	if (is_empty_sequence(unmapped)) {
 		return call_discarding_cont(cont);
 	}
 	else {
+		object next_iter;
+		object* rest = next_iterator(&next_iter, unmapped);
+		
 		object map_args[2];
-		init_list_2(map_args, list_rest(unmapped), function);
+		init_list_2(map_args, rest, function);
 		object map_call;
 		init_call(&map_call, &map_single_proc, map_args, cont);
 		object map_cont;
@@ -793,7 +797,7 @@ object* map_single(object* args, object* cont) {
 		init_cont(&add_cont, &add_call);
 		
 		object function_args[1];
-		init_list_1(function_args, list_first(unmapped));
+		init_list_1(function_args, sequence_first(unmapped));
 		object eval_args[2];
 		init_list_2(eval_args, function_args, function);
 		object eval_call;
@@ -808,24 +812,32 @@ object* map_start(object* args, object* cont) {
 	delist_1(args, &syntax);
 	
 	object* function;
-	object* elements;
-	delist_2(syntax, &function, &elements);
+	object* sequence;
+	delist_2(syntax, &function, &sequence);
 	
-	if (is_empty_list(elements)) {
-		return call_cont(cont, empty_list());
+	object convert_call;
+	init_call(&convert_call, list_to_sequence_proc(sequence->type), empty_list(), cont);
+	object convert_cont;
+	init_cont(&convert_cont, &convert_call);
+	
+	if (is_empty_list(sequence)) {
+		return call_cont(&convert_cont, empty_list());
 	}
 	else {
+		object next_iter;
+		object* rest = next_iterator(&next_iter, sequence);
+		
 		object map_args[2];
-		init_list_2(map_args, list_rest(elements), function);
+		init_list_2(map_args, rest, function);
 		object list_args[2];
 		init_list_2(list_args, &map_single_proc, map_args);
 		object list_call;
-		init_call(&list_call, make_list_proc(), list_args, cont);
+		init_call(&list_call, make_list_proc(), list_args, &convert_cont);
 		object list_cont;
 		init_cont(&list_cont, &list_call);
 		
 		object function_args[1];
-		init_list_1(function_args, list_first(elements));
+		init_list_1(function_args, sequence_first(sequence));
 		object eval_args[2];
 		init_list_2(eval_args, function_args, function);
 		object eval_call;
@@ -861,19 +873,22 @@ object* fold_single(object* args, object* cont) {
 	object* function;
 	delist_3(args, &value, &elements, &function);
 	
-	if (is_empty_list(elements)) {
+	if (is_empty_sequence(elements)) {
 		return call_cont(cont, value);
 	}
 	else {
+		object iter;
+		object* rest = sequence_rest(&iter, elements);
+		
 		object fold_args[2];
-		init_list_2(fold_args, list_rest(elements), function);
+		init_list_2(fold_args, rest, function);
 		object fold_call;
 		init_call(&fold_call, &fold_single_proc, fold_args, cont);
 		object fold_cont;
 		init_cont(&fold_cont, &fold_call);
 		
 		object function_args[2];
-		init_list_2(function_args, value, list_first(elements));
+		init_list_2(function_args, value, sequence_first(elements));
 		object eval_args[2];
 		init_list_2(eval_args, function_args, function);
 		object eval_call;
@@ -949,18 +964,21 @@ object* filter_single(object* args, object* cont) {
 	object* function;
 	delist_3(args, &last, &unfiltered, &function);
 	
-	if (is_empty_list(unfiltered)) {
+	if (is_empty_sequence(unfiltered)) {
 		return call_discarding_cont(cont);
 	}
 	else {
+		object iter;
+		object* rest = sequence_rest(&iter, unfiltered);
+		
 		object filter_args[2];
-		init_list_2(filter_args, list_rest(unfiltered), function);
+		init_list_2(filter_args, rest, function);
 		object filter_call;
 		init_call(&filter_call, &filter_single_proc, filter_args, cont);
 		object filter_cont;
 		init_cont(&filter_cont, &filter_call);
 		
-		object* value = list_first(unfiltered);
+		object* value = sequence_first(unfiltered);
 		object add_args[2];
 		init_list_2(add_args, value, last);
 		object add_call;
@@ -990,13 +1008,16 @@ object* filter_first(object* args, object* cont) {
 	
 	// continue without starting a list
 	if (is_false(result)) {
-		if (is_empty_list(unfiltered)) {
+		if (is_empty_sequence(unfiltered)) {
 			return call_cont(cont, empty_list());
 		}
 		else {
-			object* value = list_first(unfiltered);
+			object* value = sequence_first(unfiltered);
+			object iter;
+			object* rest = sequence_rest(&iter, unfiltered);
+			
 			object filter_args[3];
-			init_list_3(filter_args, value, list_rest(unfiltered), function);
+			init_list_3(filter_args, value, rest, function);
 			object filter_call;
 			init_call(&filter_call, &filter_first_proc, filter_args, cont);
 			object filter_cont;
@@ -1035,15 +1056,23 @@ object* filter_start(object* args, object* cont) {
 	object* elements;
 	delist_2(syntax, &function, &elements);
 	
-	if (is_empty_list(elements)) {
-		return call_cont(cont, empty_list());
+	object convert_call;
+	init_call(&convert_call, list_to_sequence_proc(elements->type), empty_list(), cont);
+	object convert_cont;
+	init_cont(&convert_cont, &convert_call);
+	
+	if (is_empty_sequence(elements)) {
+		return call_cont(&convert_cont, empty_list());
 	}
 	else {
-		object* value = list_first(elements);
+		object* value = sequence_first(elements);
+		object iter;
+		object* rest = sequence_rest(&iter, elements);
+		
 		object filter_args[3];
-		init_list_3(filter_args, value, list_rest(elements), function);
+		init_list_3(filter_args, value, rest, function);
 		object filter_call;
-		init_call(&filter_call, &filter_first_proc, filter_args, cont);
+		init_call(&filter_call, &filter_first_proc, filter_args, &convert_cont);
 		object filter_cont;
 		init_cont(&filter_cont, &filter_call);
 		

@@ -9,6 +9,7 @@
 #include "environments.h"
 #include "call.h"
 #include "object-init.h"
+#include "sequences.h"
 #include "list-util.h"
 #include "vector-util.h"
 #include "base-util.h"
@@ -26,6 +27,7 @@ int main(int argc, char** argv) {
 	init_data_structure_names();
 	init_symbols();
 	init_global_variables();
+	init_sequence_procedures();
 	init_list_util_procedures();
 	init_vector_util_procedures();
 	init_base_util_procedures();

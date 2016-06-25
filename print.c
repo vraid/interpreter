@@ -17,7 +17,7 @@ object* print_sequence_element_base(char is_first, object* args, object* cont) {
 	object* seq;
 	delist_1(args, &seq);
 	
-	if (is_empty_list(seq)) {
+	if (is_empty_sequence(seq)) {
 		return call_discarding_cont(cont);
 	}
 	else
@@ -54,7 +54,7 @@ object* print_sequence(object* args, object* cont) {
 	object* ls;
 	delist_1(args, &ls);
 	
-	if (is_empty_list(ls)) {
+	if (is_empty_sequence(ls)) {
 		printf("()");
 		return call_discarding_cont(cont);
 	}

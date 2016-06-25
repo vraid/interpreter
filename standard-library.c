@@ -9,7 +9,7 @@
 #include "call.h"
 #include "print.h"
 #include "base-util.h"
-#include "list-util.h"
+#include "sequences.h"
 #include "environments.h"
 #include "global-variables.h"
 #include "symbols.h"
@@ -79,6 +79,12 @@ object is_list_proc;
 
 object* function_is_list(object* args, object* cont) {
 	return is_of_type(type_list, args, cont);
+}
+
+object is_vector_proc;
+
+object* function_is_vector(object* args, object* cont) {
+	return is_of_type(type_vector_iterator, args, cont);
 }
 
 object is_function_proc;
@@ -281,6 +287,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("symbol?", 1, &is_symbol_proc, &function_is_symbol);
 	init_and_bind_primitive("number?", 1, &is_number_proc, &function_is_number);
 	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
+	init_and_bind_primitive("vector?", 1, &is_vector_proc, &function_is_vector);
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
 	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
 	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
