@@ -10,6 +10,7 @@ typedef enum {
 	type_number,
 	type_list,
 	type_vector,
+	type_vector_iterator,
 	type_syntax,
 	type_primitive_procedure,
 	type_function,
@@ -73,6 +74,10 @@ typedef struct object {
 			struct object** data;
 		} vector;
 		struct {
+			int n;
+			struct object* vector;
+		} vector_iterator;
+		struct {
 			primitive_proc* proc;
 		} syntax;
 		struct {
@@ -123,6 +128,7 @@ char is_symbol(object* obj);
 char is_number(object* obj);
 char is_list(object* obj);
 char is_vector(object* obj);
+char is_vector_iterator(object* obj);
 char is_syntax(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
@@ -148,6 +154,9 @@ object* list_first(object* ls);
 object* list_rest(object* ls);
 int vector_length(object* obj);
 object** vector_data(object* obj);
+int vector_iterator_index(object* obj);
+object* vector_iterator_vector(object* obj);
+int vector_iterator_length(object* obj);
 object* cons(object* first, object* rest);
 object* function_parameters(object* obj);
 object* function_environment(object* obj);

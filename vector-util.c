@@ -2,21 +2,27 @@
 
 #include <stdlib.h>
 #include "data-structures.h"
+#include "sequences.h"
 #include "global-variables.h"
 #include "object-init.h"
 #include "call.h"
 #include "delist.h"
 
 object* vector_ref(object* vec, int n) {
-	object** data = vector_data(vec);
-	int length = vector_length(vec);
-	
-	if (n < 0 || n >= length) {
-		fprintf(stderr, "invalid vector index: %i of %i\n", n, length);
-		return no_object();
+	if (is_vector_iterator(vec)) {
+		return vector_ref(vector_iterator_vector(vec), n + vector_iterator_index(vec));
 	}
 	else {
-		 return data[n];
+		object** data = vector_data(vec);
+		int length = vector_length(vec);
+		
+		if (n < 0 || n >= length) {
+			fprintf(stderr, "invalid vector index: %i of %i\n", n, length);
+			return no_object();
+		}
+		else {
+			 return data[n];
+		}
 	}
 }
 
@@ -57,7 +63,10 @@ object* list_to_vector(object* args, object* cont) {
 	object vector;
 	init_vector(&vector, length, data);
 	
-	return call_cont(cont, &vector);
+	object iterator;
+	object* iter = first_iterator(&iterator, &vector);
+	
+	return call_cont(cont, iter);
 }
 
 void init_vector_util_procedures(void) {

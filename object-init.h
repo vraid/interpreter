@@ -8,6 +8,7 @@ void init_number(object* obj, long value);
 void init_symbol(object* obj, object* name);
 void init_binding(object* obj, object* name, object* value);
 void init_vector(object* obj, int length, object** data);
+void init_vector_iterator(object* obj, int n, object* vector);
 void init_environment(object* obj, object* bindings);
 void init_syntax(object* obj, primitive_proc* proc);
 void init_primitive_procedure(object* obj, primitive_proc* proc);

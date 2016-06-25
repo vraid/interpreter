@@ -15,6 +15,8 @@ void init_type_names(void) {
 	type_name[type_symbol] = "symbol";
 	type_name[type_number] = "number";
 	type_name[type_list] = "list";
+	type_name[type_vector] = "vector";
+	type_name[type_vector_iterator] = "vector iterator";
 	type_name[type_primitive_procedure] = "primitive procedure";
 	type_name[type_function] = "function";
 	type_name[type_call] = "call";
@@ -138,6 +140,25 @@ int vector_length(object* obj) {
 object** vector_data(object* obj) {
 	check_type(type_vector, obj);
 	return obj->data.vector.data;
+}
+
+char is_vector_iterator(object* obj) {
+	return is_type(type_vector_iterator, obj);
+}
+
+int vector_iterator_index(object* obj) {
+	check_type(type_vector_iterator, obj);
+	return obj->data.vector_iterator.n;
+}
+
+object* vector_iterator_vector(object* obj) {
+	check_type(type_vector_iterator, obj);
+	return obj->data.vector_iterator.vector;
+}
+
+int vector_iterator_length(object* obj) {
+	check_type(type_vector_iterator, obj);
+	return vector_length(vector_iterator_vector(obj)) - vector_iterator_index(obj);
 }
 
 char is_syntax(object* obj) {

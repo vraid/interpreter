@@ -36,6 +36,12 @@ void init_vector(object* obj, int length, object** data) {
 	obj->data.vector.data = data;
 }
 
+void init_vector_iterator(object* obj, int n, object* vector) {
+	init_object(location_stack, type_vector_iterator, obj);
+	obj->data.vector_iterator.n = n;
+	obj->data.vector_iterator.vector = vector;
+}
+
 void init_environment(object* obj, object* bindings) {
 	init_object(location_stack, type_environment, obj);
 	obj->data.environment.bindings = bindings;
