@@ -6,6 +6,7 @@
 #include "object-init.h"
 #include "base-util.h"
 #include "vector-util.h"
+#include "streams.h"
 #include "delist.h"
 #include "call.h"
 
@@ -42,6 +43,14 @@ object* rest(object* args, object* cont) {
 	else if (is_empty_sequence(seq)) {
 		return throw_error(cont, "rest on empty sequence");
 	}
+	else if (is_stream(seq)) {
+		object eval_args[1];
+		init_list_1(eval_args, seq);
+		object eval_call;
+		init_call(&eval_call, &eval_stream_rest_proc, eval_args, cont);
+		
+		return perform_call(&eval_call);
+	}
 	else {
 		object next_iter;
 		object* next = next_iterator(&next_iter, seq);
@@ -62,6 +71,7 @@ int sequence_length(object* obj) {
 object* sequence_first(object* obj) {
 	switch (obj->type) {
 		case type_list: return list_first(obj);
+		case type_stream: return stream_first(obj);
 		case type_vector_iterator: return vector_ref(obj, 0);
 		default:
 			fprintf(stderr, "invalid sequence type: %s\n", type_name[obj->type]);
@@ -96,6 +106,7 @@ object* first_vector_iterator(object* iter, object* obj) {
 object* first_iterator(object* iter, object* obj) {
 	switch (obj->type) {
 		case type_list:
+		case type_stream:
 		case type_vector_iterator: return obj;
 		case type_vector: return first_vector_iterator(iter, obj);
 		default:

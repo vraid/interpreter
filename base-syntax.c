@@ -203,8 +203,6 @@ object* update_delay(object* args, object* cont) {
 	return call_cont(cont, value);
 }
 
-object eval_force_proc;
-
 object* eval_force(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
@@ -835,6 +833,47 @@ object* list(object* args, object* cont) {
 	return perform_call(&eval_call);
 }
 
+object make_stream_proc;
+
+object* make_stream(object* args, object* cont) {
+	object* first;
+	object* rest;
+	delist_2(args, &first, &rest);
+	
+	object stream;
+	init_stream(&stream, first, rest);
+	
+	return call_cont(cont, &stream);
+}
+
+object* stream(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object* first;
+	object* rest;
+	delist_2(syntax, &first, &rest);
+	
+	object delay;
+	init_delay(&delay, rest, environment);
+	
+	object stream_args[1];
+	init_list_1(stream_args, &delay);
+	object stream_call;
+	init_call(&stream_call, &make_stream_proc, stream_args, cont);
+	object stream_cont;
+	init_cont(&stream_cont, &stream_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, first, environment);
+	object eval_call;
+	init_call(&eval_call, eval_proc(), eval_args, &stream_cont);
+	
+	return perform_call(&eval_call);
+}
+	
+
 object* vector(object* args, object* cont) {
 	object vector_call;
 	init_call(&vector_call, &list_to_vector_proc, empty_list(), cont);
@@ -1205,6 +1244,7 @@ void init_base_syntax_procedures(void) {
 	add_syntax("and", syntax_and, &and);
 	add_syntax("or", syntax_or, &or);
 	add_syntax("list", syntax_list, &list);
+	add_syntax("stream", syntax_stream, &stream);
 	add_syntax("vector", syntax_vector, &vector);
 	add_syntax("map", syntax_map, &map);
 	add_syntax("fold", syntax_fold, &fold);
@@ -1238,6 +1278,8 @@ void init_base_syntax_procedures(void) {
 	init_primitive_procedure(&curry_one_proc, &curry_one);
 	
 	init_primitive_procedure(&start_apply_proc, &start_apply);
+	
+	init_primitive_procedure(&make_stream_proc, &make_stream);
 	
 	init_primitive_procedure(&map_single_proc, &map_single);
 	init_primitive_procedure(&map_start_proc, &map_start);

@@ -96,6 +96,11 @@ void traverse_list(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.rest, location);
 }
 
+void traverse_stream(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.stream.first, location);
+	move_if_necessary(space, &obj->data.stream.rest, location);
+}
+
 void traverse_vector(target_space space, object* obj, object_location location) {
 	int i;
 	for (i = 0; i < vector_length(obj); i++) {
@@ -150,6 +155,7 @@ traversal* traversal_function(object* obj) {
 	switch (obj->type) {
 		case type_symbol: return &traverse_symbol;
 		case type_list: return &traverse_list;
+		case type_stream: return &traverse_stream;
 		case type_vector: return &traverse_vector;
 		case type_vector_iterator: return &traverse_vector_iterator;
 		case type_function: return &traverse_function;

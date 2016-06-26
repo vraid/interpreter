@@ -7,6 +7,7 @@ void init_global_variables(void);
 object* end_cont(void);
 
 char is_empty_list(object* obj);
+char is_empty_stream(object* obj);
 char is_empty_sequence(object* obj);
 char is_false(object* obj);
 char is_true(object* obj);
@@ -17,6 +18,7 @@ char is_placeholder_value(object* obj);
 object* true(void);
 object* false(void);
 object* empty_list(void);
+object* empty_stream(void);
 object* end_vector_iterator(void);
 object* empty_string(void);
 object* no_object(void);

@@ -9,6 +9,7 @@ typedef enum {
 	type_symbol,
 	type_number,
 	type_list,
+	type_stream,
 	type_vector,
 	type_vector_iterator,
 	type_syntax,
@@ -70,6 +71,10 @@ typedef struct object {
 			struct object* first;
 			struct object* rest;
 		} list;
+		struct {
+			struct object* first;
+			struct object* rest;
+		} stream;
 		struct {
 			int length;
 			struct object** data;
@@ -133,6 +138,7 @@ char is_string(object* obj);
 char is_symbol(object* obj);
 char is_number(object* obj);
 char is_list(object* obj);
+char is_stream(object* obj);
 char is_sequence(object* obj);
 char is_vector(object* obj);
 char is_vector_iterator(object* obj);
@@ -160,6 +166,8 @@ FILE* file_port_file(object* obj);
 bracket_type list_type(object* obj);
 object* list_first(object* ls);
 object* list_rest(object* ls);
+object* stream_first(object* obj);
+object* stream_rest(object* obj);
 int vector_length(object* obj);
 object** vector_data(object* obj);
 int vector_iterator_index(object* obj);

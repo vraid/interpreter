@@ -14,6 +14,7 @@ object _no_symbol;
 object _no_binding;
 object _placeholder_value;
 object _empty_list;
+object _empty_stream;
 object _empty_vector;
 object _end_vector_iterator;
 object _empty_string;
@@ -57,7 +58,11 @@ void init_global_variables(void) {
 	_empty_list.data.list.type = shapeless;
 	_empty_list.data.list.first = no_object();
 	_empty_list.data.list.rest = no_object();
-	
+
+	init_object(location_static, type_stream, empty_stream());
+	_empty_stream.data.stream.first = no_object();
+	_empty_stream.data.stream.rest = no_object();
+
 	init_object(location_static, type_vector, &_empty_vector);
 	_empty_vector.data.vector.length = 0;
 	_empty_vector.data.vector.data = 0;
@@ -90,12 +95,16 @@ object* false(void) {
 char is_empty_list(object* obj) {
 	return obj == empty_list();
 }
+char is_empty_stream(object* obj) {
+	return obj == empty_stream();
+}
 char is_end_vector_iterator(object* obj) {
 	return obj == end_vector_iterator();
 }
 char is_empty_sequence(object* obj) {
 	switch(obj->type) {
 		case type_list: return is_empty_list(obj);
+		case type_stream: return is_empty_stream(obj);
 		case type_vector_iterator: return is_end_vector_iterator(obj);
 		default: return 0;
 	}
@@ -117,6 +126,9 @@ char is_placeholder_value(object* obj) {
 }
 object* empty_list(void) {
 	return &_empty_list;
+}
+object* empty_stream(void) {
+	return &_empty_stream;
 }
 object* end_vector_iterator(void) {
 	return &_end_vector_iterator;

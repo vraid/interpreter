@@ -128,9 +128,24 @@ char is_nonempty_list(object* obj) {
 	return is_list(obj) && !is_empty_list(obj);
 }
 
+char is_stream(object* obj) {
+	return is_type(type_stream, obj);
+}
+
+object* stream_first(object* obj) {
+	check_type(type_stream, obj);
+	return obj->data.stream.first;
+}
+
+object* stream_rest(object* obj) {
+	check_type(type_stream, obj);
+	return obj->data.stream.rest;
+}
+
 char is_sequence(object* obj) {
 	switch(obj->type) {
 		case type_list:
+		case type_stream:
 		case type_vector_iterator: return 1;
 		default: return 0;
 	}

@@ -7,6 +7,7 @@ void init_string(object* obj, char* value);
 void init_number(object* obj, long value);
 void init_symbol(object* obj, object* name);
 void init_binding(object* obj, object* name, object* value);
+void init_stream(object* obj, object* first, object* rest);
 void init_vector(object* obj, int length, object** data);
 void init_vector_iterator(object* obj, int n, object* vector);
 void init_environment(object* obj, object* bindings);

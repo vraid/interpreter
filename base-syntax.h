@@ -17,6 +17,7 @@ typedef enum {
 	syntax_and,
 	syntax_or,
 	syntax_list,
+	syntax_stream,
 	syntax_vector,
 	syntax_map,
 	syntax_fold,
@@ -24,5 +25,7 @@ typedef enum {
 	syntax_count} static_syntax;
 
 object syntax_procedure[syntax_count];
+
+object eval_force_proc;
 
 void init_base_syntax_procedures(void);

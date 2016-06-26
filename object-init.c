@@ -30,6 +30,12 @@ void init_binding(object* obj, object* name, object* value) {
 	obj->data.binding.value = value;
 }
 
+void init_stream(object* obj, object* first, object* rest) {
+	init_object(location_stack, type_stream, obj);
+	obj->data.stream.first = first;
+	obj->data.stream.rest = rest;
+}
+
 void init_vector(object* obj, int length, object** data) {
 	init_object(location_stack, type_vector, obj);
 	obj->data.vector.length = length;
