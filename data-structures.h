@@ -18,6 +18,7 @@ typedef enum {
 	type_continuation,
 	type_binding,
 	type_environment,
+	type_delay,
 	type_file_port,
 	type_internal_error,
 	type_count} object_type;
@@ -105,6 +106,11 @@ typedef struct object {
 			struct object* bindings;
 		} environment;
 		struct {
+			struct object* value;
+			struct object* environment;
+			char evaluated;
+		} delay;
+		struct {
 			FILE* file;
 		} file_port;
 		struct {
@@ -135,6 +141,7 @@ char is_function(object* obj);
 char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
 char is_environment(object* obj);
+char is_delay(object* obj);
 char is_file_port(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
@@ -172,6 +179,9 @@ object* call_arguments(object* obj);
 object* call_continuation(object* obj);
 object* continuation_call(object* obj);
 object* internal_error_message(object* obj);
+object* delay_value(object* obj);
+object* delay_environment(object* obj);
+char delay_evaluated(object* obj);
 
 int list_length(object* ls);
 char list_starts_with(object* ls, object* obj);

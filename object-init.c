@@ -94,6 +94,13 @@ void init_internal_error(object* obj, object* message) {
 	obj->data.internal_error.message = message;
 }
 
+void init_delay(object* obj, object* value, object* environment) {
+	init_object(location_stack, type_delay, obj);
+	obj->data.delay.value = value;
+	obj->data.delay.environment = environment;
+	obj->data.delay.evaluated = 0;
+}
+
 void init_list_cell(object* obj, object* first, object* rest) {
 	init_object(location_stack, type_list, obj);
 	obj->data.list.first = first;

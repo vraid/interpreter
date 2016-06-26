@@ -5,6 +5,8 @@
 typedef enum {
 	syntax_define,
 	syntax_quote,
+	syntax_delay,
+	syntax_force,
 	syntax_let,
 	syntax_letrec,
 	syntax_rec,

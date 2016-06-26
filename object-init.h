@@ -18,6 +18,7 @@ void init_cont(object* obj, object* call);
 void init_discarding_cont(object* obj, object* call);
 void init_catching_cont(object* obj, object* call);
 void init_internal_error(object* obj, object* message);
+void init_delay(object* obj, object* value, object* environment);
 
 void init_list_cell(object* obj, object* first, object* rest);
 void init_list_1(object* ls, object* first);

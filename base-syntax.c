@@ -173,6 +173,86 @@ object* quote(object* args, object* cont) {
 	return call_cont(cont, value);
 }
 
+object* delay(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object* value;
+	delist_1(syntax, &value);
+	
+	object obj;
+	init_delay(&obj, value, environment);
+	
+	return call_cont(cont, &obj);
+}
+
+object update_delay_proc;
+
+object* update_delay(object* args, object* cont) {
+	object* value;
+	object* delay;
+	delist_2(args, &value, &delay);
+	
+	delay->data.delay.value = value;
+	delay->data.delay.environment = false();
+	delay->data.delay.evaluated = 1;
+	
+	add_mutation(delay, value);
+	
+	return call_cont(cont, value);
+}
+
+object eval_force_proc;
+
+object* eval_force(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	if (!is_delay(obj)) {
+		return call_cont(cont, obj);
+	}
+	else if (delay_evaluated(obj)) {
+		return call_cont(cont, delay_value(obj));
+	}
+	else {
+		object update_args[1];
+		init_list_1(update_args, obj);
+		object update_call;
+		init_call(&update_call, &update_delay_proc, update_args, cont);
+		object update_cont;
+		init_cont(&update_cont, &update_call);
+		
+		object eval_args[2];
+		init_list_2(eval_args, delay_value(obj), delay_environment(obj));
+		object eval_call;
+		init_call(&eval_call, eval_proc(), eval_args, &update_cont);
+		
+		return perform_call(&eval_call);
+	}
+}
+
+object* force(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	delist_2(args, &syntax, &environment);
+	
+	object* value;
+	delist_1(syntax, &value);
+	
+	object force_call;
+	init_call(&force_call, &eval_force_proc, empty_list(), cont);
+	object force_cont;
+	init_cont(&force_cont, &force_call);
+	
+	object eval_args[2];
+	init_list_2(eval_args, value, environment);
+	object eval_call;
+	init_call(&eval_call, eval_proc(), eval_args, &force_cont);
+	
+	return perform_call(&eval_call);
+}
+
 object let_bind_proc;
 
 object* let_bind(object* args, object* cont) {
@@ -1113,6 +1193,8 @@ void add_syntax(char* name, static_syntax syntax, primitive_proc* proc) {
 void init_base_syntax_procedures(void) {	
 	add_syntax("define", syntax_define, &define);
 	add_syntax("quote", syntax_quote, &quote);
+	add_syntax("delay", syntax_delay, &delay);
+	add_syntax("force", syntax_force, &force);
 	add_syntax("let", syntax_let, &let);
 	add_syntax("let-rec", syntax_letrec, &letrec);
 	add_syntax("rec", syntax_rec, &rec);
@@ -1127,6 +1209,9 @@ void init_base_syntax_procedures(void) {
 	add_syntax("map", syntax_map, &map);
 	add_syntax("fold", syntax_fold, &fold);
 	add_syntax("filter", syntax_filter, &filter);
+	
+	init_primitive_procedure(&update_delay_proc, &update_delay);
+	init_primitive_procedure(&eval_force_proc, &eval_force);
 	
 	init_primitive_procedure(&let_bind_proc, &let_bind);
 

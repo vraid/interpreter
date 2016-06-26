@@ -288,6 +288,25 @@ object* internal_error_message(object* obj) {
 	return obj->data.internal_error.message;
 }
 
+char is_delay(object* obj) {
+	return obj->type == type_delay;
+}
+
+object* delay_value(object* obj) {
+	check_type(type_delay, obj);
+	return obj->data.delay.value;
+}
+
+object* delay_environment(object* obj) {
+	check_type(type_delay, obj);
+	return obj->data.delay.environment;
+}
+
+char delay_evaluated(object* obj) {
+	check_type(type_delay, obj);
+	return obj->data.delay.evaluated;
+}
+
 int list_length(object* ls) {
 	int n = 0;
 	while (!is_empty_list(ls)) {

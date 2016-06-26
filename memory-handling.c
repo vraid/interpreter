@@ -136,6 +136,11 @@ void traverse_internal_error(target_space space, object* obj, object_location lo
 	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
 
+void traverse_delay(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.delay.value, location);
+	move_if_necessary(space, &obj->data.delay.environment, location);
+}
+
 void traverse_nothing(target_space space, object* obj, object_location location) {
 }
 
@@ -153,6 +158,7 @@ traversal* traversal_function(object* obj) {
 		case type_call: return &traverse_call;
 		case type_continuation: return &traverse_continuation;
 		case type_internal_error: return &traverse_internal_error;
+		case type_delay: return &traverse_delay;
 		default: return &traverse_nothing;
 	}
 }
