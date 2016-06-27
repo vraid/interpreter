@@ -57,7 +57,7 @@ void init_global_variables(void) {
 	init_object(location_static, type_list, empty_list());
 	_empty_list.data.list.type = shapeless;
 	_empty_list.data.list.first = no_object();
-	_empty_list.data.list.rest = no_object();
+	_empty_list.data.list.rest = empty_list();
 
 	init_object(location_static, type_stream, empty_stream());
 	_empty_stream.data.stream.first = no_object();
