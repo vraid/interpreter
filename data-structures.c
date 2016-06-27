@@ -15,9 +15,11 @@ void init_type_names(void) {
 	type_name[type_symbol] = "symbol";
 	type_name[type_number] = "number";
 	type_name[type_list] = "list";
+	type_name[type_stream] = "stream";
 	type_name[type_vector] = "vector";
 	type_name[type_vector_iterator] = "vector iterator";
 	type_name[type_primitive_procedure] = "primitive procedure";
+	type_name[type_syntax] = "syntax";
 	type_name[type_function] = "function";
 	type_name[type_call] = "call";
 	type_name[type_continuation] = "continuation";

@@ -13,6 +13,7 @@
 #include "environments.h"
 #include "standard-library.h"
 #include "eval.h"
+#include "streams.h"
 
 object map_start_proc;
 object bind_value_proc;
@@ -833,19 +834,6 @@ object* list(object* args, object* cont) {
 	return perform_call(&eval_call);
 }
 
-object make_stream_proc;
-
-object* make_stream(object* args, object* cont) {
-	object* first;
-	object* rest;
-	delist_2(args, &first, &rest);
-	
-	object stream;
-	init_stream(&stream, first, rest);
-	
-	return call_cont(cont, &stream);
-}
-
 object* stream(object* args, object* cont) {
 	object* syntax;
 	object* environment;
@@ -934,35 +922,42 @@ object* map_start(object* args, object* cont) {
 	object* sequence;
 	delist_2(syntax, &function, &sequence);
 	
-	object convert_call;
-	init_call(&convert_call, list_to_sequence_proc(sequence->type), empty_list(), cont);
-	object convert_cont;
-	init_cont(&convert_cont, &convert_call);
-	
-	if (is_empty_list(sequence)) {
-		return call_cont(&convert_cont, empty_list());
+	if (is_stream(sequence)) {
+		object call;
+		init_call(&call, &stream_map_proc, args, cont);
+		return perform_call(&call);
 	}
 	else {
-		object next_iter;
-		object* rest = next_iterator(&next_iter, sequence);
+		object convert_call;
+		init_call(&convert_call, list_to_sequence_proc(sequence->type), empty_list(), cont);
+		object convert_cont;
+		init_cont(&convert_cont, &convert_call);
 		
-		object map_args[2];
-		init_list_2(map_args, rest, function);
-		object list_args[2];
-		init_list_2(list_args, &map_single_proc, map_args);
-		object list_call;
-		init_call(&list_call, make_list_proc(), list_args, &convert_cont);
-		object list_cont;
-		init_cont(&list_cont, &list_call);
-		
-		object function_args[1];
-		init_list_1(function_args, sequence_first(sequence));
-		object eval_args[2];
-		init_list_2(eval_args, function_args, function);
-		object eval_call;
-		init_call(&eval_call, eval_function_call_proc(), eval_args, &list_cont);
-		
-		return perform_call(&eval_call);
+		if (is_empty_list(sequence)) {
+			return call_cont(&convert_cont, empty_list());
+		}
+		else {
+			object next_iter;
+			object* rest = next_iterator(&next_iter, sequence);
+			
+			object map_args[2];
+			init_list_2(map_args, rest, function);
+			object list_args[2];
+			init_list_2(list_args, &map_single_proc, map_args);
+			object list_call;
+			init_call(&list_call, make_list_proc(), list_args, &convert_cont);
+			object list_cont;
+			init_cont(&list_cont, &list_call);
+			
+			object function_args[1];
+			init_list_1(function_args, sequence_first(sequence));
+			object eval_args[2];
+			init_list_2(eval_args, function_args, function);
+			object eval_call;
+			init_call(&eval_call, eval_function_call_proc(), eval_args, &list_cont);
+			
+			return perform_call(&eval_call);
+		}
 	}
 }
 
@@ -1278,8 +1273,6 @@ void init_base_syntax_procedures(void) {
 	init_primitive_procedure(&curry_one_proc, &curry_one);
 	
 	init_primitive_procedure(&start_apply_proc, &start_apply);
-	
-	init_primitive_procedure(&make_stream_proc, &make_stream);
 	
 	init_primitive_procedure(&map_single_proc, &map_single);
 	init_primitive_procedure(&map_start_proc, &map_start);

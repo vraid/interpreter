@@ -244,6 +244,7 @@ object* eval_list_rest(object* args, object* cont) {
 			proc = &eval_function_proc;
 			break;
 		default:
+			fprintf(stderr, "application of %s\n", type_name[first->type]);
 			return throw_error(cont, "application of non-function");
 	}
 	
