@@ -123,7 +123,14 @@ object* list_rest(object* ls) {
 	if (is_empty_list(ls)) {
 		fprintf(stderr, "rest on empty list\n");
 	}
-	return ls->data.list.rest;
+	object* rest = ls->data.list.rest;
+	if (!is_list(rest)) {
+		fprintf(stderr, "list rest is wrong type: %s\n", type_name[rest->type]);
+		return no_object();
+	}
+	else {
+		return rest;
+	}
 }
 
 char is_nonempty_list(object* obj) {
