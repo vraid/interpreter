@@ -1023,12 +1023,20 @@ object* fold_start(object* args, object* cont) {
 	object* elements;
 	delist_3(syntax, &function, &initial, &elements);
 	
-	object fold_args[3];
-	init_list_3(fold_args, initial, elements, function);
-	object fold_call;
-	init_call(&fold_call, &fold_single_proc, fold_args, cont);
-	
-	return perform_call(&fold_call);
+	if (is_stream(elements)) {
+		object call;
+		init_call(&call, &stream_fold_proc, syntax, cont);
+		
+		return perform_call(&call);
+	}
+	else {
+		object fold_args[3];
+		init_list_3(fold_args, initial, elements, function);
+		object fold_call;
+		init_call(&fold_call, &fold_single_proc, fold_args, cont);
+		
+		return perform_call(&fold_call);
+	}
 }
 
 object* fold(object* args, object* cont) {
@@ -1170,34 +1178,42 @@ object* filter_start(object* args, object* cont) {
 	object* elements;
 	delist_2(syntax, &function, &elements);
 	
-	object convert_call;
-	init_call(&convert_call, list_to_sequence_proc(elements->type), empty_list(), cont);
-	object convert_cont;
-	init_cont(&convert_cont, &convert_call);
-	
-	if (is_empty_sequence(elements)) {
-		return call_cont(&convert_cont, empty_list());
+	if (is_stream(elements)) {
+		object call;
+		init_call(&call, &stream_filter_proc, syntax, cont);
+		
+		return perform_call(&call);
 	}
 	else {
-		object* value = sequence_first(elements);
-		object iter;
-		object* rest = sequence_rest(&iter, elements);
+		object convert_call;
+		init_call(&convert_call, list_to_sequence_proc(elements->type), empty_list(), cont);
+		object convert_cont;
+		init_cont(&convert_cont, &convert_call);
 		
-		object filter_args[3];
-		init_list_3(filter_args, value, rest, function);
-		object filter_call;
-		init_call(&filter_call, &filter_first_proc, filter_args, &convert_cont);
-		object filter_cont;
-		init_cont(&filter_cont, &filter_call);
-		
-		object function_args[1];
-		init_list_1(function_args, value);
-		object eval_args[2];
-		init_list_2(eval_args, function_args, function);
-		object eval_call;
-		init_call(&eval_call, eval_function_call_proc(), eval_args, &filter_cont);
-		
-		return perform_call(&eval_call);
+		if (is_empty_sequence(elements)) {
+			return call_cont(&convert_cont, empty_list());
+		}
+		else {
+			object* value = sequence_first(elements);
+			object iter;
+			object* rest = sequence_rest(&iter, elements);
+			
+			object filter_args[3];
+			init_list_3(filter_args, value, rest, function);
+			object filter_call;
+			init_call(&filter_call, &filter_first_proc, filter_args, &convert_cont);
+			object filter_cont;
+			init_cont(&filter_cont, &filter_call);
+			
+			object function_args[1];
+			init_list_1(function_args, value);
+			object eval_args[2];
+			init_list_2(eval_args, function_args, function);
+			object eval_call;
+			init_call(&eval_call, eval_function_call_proc(), eval_args, &filter_cont);
+			
+			return perform_call(&eval_call);
+		}
 	}
 }
 
