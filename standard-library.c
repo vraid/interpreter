@@ -300,4 +300,6 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
 	bind_primitive("identity", 1, identity_proc());
 	add_static_binding(empty_stream(), "empty-stream");
+	bind_primitive("take", 2, &take_proc);
+	bind_primitive("drop", 2, &drop_proc);
 }

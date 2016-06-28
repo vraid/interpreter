@@ -2,6 +2,9 @@
 
 #include "data-structures.h"
 
+object take_proc;
+object drop_proc;
+
 void init_sequence_procedures(void);
 
 int sequence_length(object* obj);
