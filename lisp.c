@@ -11,6 +11,7 @@
 #include "object-init.h"
 #include "sequences.h"
 #include "streams.h"
+#include "strings.h"
 #include "list-util.h"
 #include "vector-util.h"
 #include "base-util.h"
@@ -30,6 +31,7 @@ int main(int argc, char** argv) {
 	init_global_variables();
 	init_sequence_procedures();
 	init_stream_procedures();
+	init_string_procedures();
 	init_list_util_procedures();
 	init_vector_util_procedures();
 	init_base_util_procedures();
