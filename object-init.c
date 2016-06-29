@@ -48,6 +48,12 @@ void init_vector_iterator(object* obj, int n, object* vector) {
 	obj->data.vector_iterator.vector = vector;
 }
 
+void init_struct_instance(object* obj, object* id, object* data) {
+	init_object(location_stack, type_struct_instance, obj);
+	obj->data.struct_instance.id = id;
+	obj->data.struct_instance.data = data;
+}
+
 void init_environment(object* obj, object* bindings) {
 	init_object(location_stack, type_environment, obj);
 	obj->data.environment.bindings = bindings;
@@ -125,4 +131,9 @@ void init_list_2(object* ls, object* first, object* second) {
 void init_list_3(object* ls, object* first, object* second, object* third) {
 	init_list_cell(ls, first, ls+1);
 	init_list_2(ls+1, second, third);
+}
+
+void init_list_4(object* ls, object* first, object* second, object* third, object* fourth) {
+	init_list_cell(ls, first, ls+1);
+	init_list_3(ls+1, second, third, fourth);
 }
