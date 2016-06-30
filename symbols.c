@@ -5,6 +5,7 @@
 #include "global-variables.h"
 #include "object-init.h"
 #include "call.h"
+#include "delist.h"
 
 #define static_symbol_max 1024
 
@@ -65,7 +66,15 @@ object* symbol(char* name, object* cont) {
 	return call_cont(cont, obj);
 }
 
+object* string_to_symbol(object* args, object* cont) {
+	object* str;
+	delist_1(args, &str);
+	
+	return symbol(string_value(str), cont);
+}
+
 void init_symbols(void) {
 	symbol_list = empty_list();
 	static_symbol_count = 0;
+	init_primitive_procedure(&string_to_symbol_proc, &string_to_symbol);
 }
