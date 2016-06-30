@@ -112,6 +112,16 @@ void traverse_vector_iterator(target_space space, object* obj, object_location l
 	move_if_necessary(space, &obj->data.vector_iterator.vector, location);
 }
 
+void traverse_struct_definition(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.struct_definition.name, location);
+	move_if_necessary(space, &obj->data.struct_definition.fields, location);
+}
+
+void traverse_struct_instance(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.struct_instance.type, location);
+	move_if_necessary(space, &obj->data.struct_instance.data, location);
+}
+
 void traverse_binding(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.binding.name, location);
 	move_if_necessary(space, &obj->data.binding.value, location);
@@ -158,6 +168,8 @@ traversal* traversal_function(object* obj) {
 		case type_stream: return &traverse_stream;
 		case type_vector: return &traverse_vector;
 		case type_vector_iterator: return &traverse_vector_iterator;
+		case type_struct_definition: return &traverse_struct_definition;
+		case type_struct_instance: return &traverse_struct_instance;
 		case type_function: return &traverse_function;
 		case type_binding: return &traverse_binding;
 		case type_environment: return &traverse_environment;

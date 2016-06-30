@@ -12,6 +12,8 @@ typedef enum {
 	type_stream,
 	type_vector,
 	type_vector_iterator,
+	type_struct_definition,
+	type_struct_instance,
 	type_syntax,
 	type_primitive_procedure,
 	type_function,
@@ -84,6 +86,14 @@ typedef struct object {
 			struct object* vector;
 		} vector_iterator;
 		struct {
+			struct object* name;
+			struct object* fields;
+		} struct_definition;
+		struct {
+			struct object* type;
+			struct object* data;
+		} struct_instance;
+		struct {
 			primitive_proc* proc;
 		} syntax;
 		struct {
@@ -142,6 +152,8 @@ char is_stream(object* obj);
 char is_sequence(object* obj);
 char is_vector(object* obj);
 char is_vector_iterator(object* obj);
+char is_struct_definition(object* obj);
+char is_struct_instance(object* obj);
 char is_syntax(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
@@ -173,6 +185,10 @@ object** vector_data(object* obj);
 int vector_iterator_index(object* obj);
 object* vector_iterator_vector(object* obj);
 int vector_iterator_length(object* obj);
+object* struct_definition_name(object* obj);
+object* struct_definition_fields(object* obj);
+object* struct_instance_type(object* obj);
+object* struct_instance_data(object* obj);
 object* cons(object* first, object* rest);
 object* function_parameters(object* obj);
 object* function_environment(object* obj);

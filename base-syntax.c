@@ -14,6 +14,7 @@
 #include "standard-library.h"
 #include "eval.h"
 #include "streams.h"
+#include "structs.h"
 
 object map_start_proc;
 object bind_value_proc;
@@ -823,6 +824,13 @@ object* or(object* args, object* cont) {
 	}
 }
 
+object* struct_func(object* args, object* cont) {	
+	object call;
+	init_call(&call, &define_struct_proc, args, cont);
+	
+	return perform_call(&call);
+}
+
 object* list(object* args, object* cont) {
 	object* elements;
 	object* environment;
@@ -1254,6 +1262,7 @@ void init_base_syntax_procedures(void) {
 	add_syntax("if", syntax_if, &if_func);
 	add_syntax("and", syntax_and, &and);
 	add_syntax("or", syntax_or, &or);
+	add_syntax("struct", syntax_struct, &struct_func);
 	add_syntax("list", syntax_list, &list);
 	add_syntax("stream", syntax_stream, &stream);
 	add_syntax("vector", syntax_vector, &vector);

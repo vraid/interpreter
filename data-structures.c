@@ -14,6 +14,8 @@ void init_type_names(void) {
 	type_name[type_string] = "string";
 	type_name[type_symbol] = "symbol";
 	type_name[type_number] = "number";
+	type_name[type_struct_definition] = "struct definition";
+	type_name[type_struct_instance] = "struct instance";
 	type_name[type_list] = "list";
 	type_name[type_stream] = "stream";
 	type_name[type_vector] = "vector";
@@ -191,6 +193,34 @@ object* vector_iterator_vector(object* obj) {
 int vector_iterator_length(object* obj) {
 	check_type(type_vector_iterator, obj);
 	return vector_length(vector_iterator_vector(obj)) - vector_iterator_index(obj);
+}
+
+char is_struct_definition(object* obj) {
+	return is_type(type_struct_definition, obj);
+}
+
+object* struct_definition_name(object* obj) {
+	check_type(type_struct_definition, obj);
+	return obj->data.struct_definition.name;
+}
+
+object* struct_definition_fields(object* obj) {
+	check_type(type_struct_definition, obj);
+	return obj->data.struct_definition.fields;
+}
+
+char is_struct_instance(object* obj) {
+	return is_type(type_struct_instance, obj);
+}
+
+object* struct_instance_type(object* obj) {
+	check_type(type_struct_instance, obj);
+	return obj->data.struct_instance.type;
+}
+
+object* struct_instance_data(object* obj) {
+	check_type(type_struct_instance, obj);
+	return obj->data.struct_instance.data;
 }
 
 char is_syntax(object* obj) {

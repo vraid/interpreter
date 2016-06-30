@@ -9,6 +9,7 @@
 #include "environments.h"
 #include "call.h"
 #include "object-init.h"
+#include "structs.h"
 #include "sequences.h"
 #include "streams.h"
 #include "strings.h"
@@ -29,6 +30,7 @@ int main(int argc, char** argv) {
 	init_data_structure_names();
 	init_symbols();
 	init_global_variables();
+	init_struct_procedures();
 	init_sequence_procedures();
 	init_stream_procedures();
 	init_string_procedures();

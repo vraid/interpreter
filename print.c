@@ -158,9 +158,31 @@ object* print_stream(object* args, object* cont) {
 	}
 }
 
-object print_first_sequence_element_proc;
-object print_sequence_proc;
-object print_sequence_end_proc;
+object print_struct_proc;
+
+object* print_struct(object* args, object* cont) {
+	object* st;
+	delist_1(args, &st);
+	object* type = struct_instance_type(st);
+	printf("#struct(%s ", string_value(symbol_name(struct_definition_name(type))));
+	
+	if (is_empty_list(struct_definition_fields(type))) {
+		printf(")");
+		return call_discarding_cont(cont);
+	}
+	else {
+		object end_call;
+		init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
+		object end_cont;
+		init_discarding_cont(&end_cont, &end_call);
+		
+		object print_args[1];
+		init_list_1(print_args, struct_instance_data(st));
+		object call;
+		init_call(&call, &print_first_sequence_element_proc, print_args, &end_cont);
+		return perform_call(&call);
+	}
+}
 
 object* print_newline(object* args, object* cont) {
 	printf("\n");
@@ -196,6 +218,9 @@ object* print_value(object* args, object* cont) {
 		case type_number:
 			printf("%ld", number_value(obj));
 			break;
+		case type_struct_instance:
+			return print_struct(args, cont);
+			break;
 		case type_list:
 			return print_sequence(args, cont);
 			break;
@@ -213,6 +238,9 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_primitive_procedure:
 			printf("function: primitive");
+			break;
+		case type_syntax:
+			printf("syntax");
 			break;
 		case type_delay:
 			printf("delay");
@@ -234,4 +262,6 @@ void init_print_procedures(void) {
 	
 	init_primitive_procedure(&print_stream_element_proc, &print_stream_element);
 	init_primitive_procedure(&print_first_stream_element_proc, &print_first_stream_element);
+	
+	init_primitive_procedure(&print_struct_proc, &print_struct);
 }
