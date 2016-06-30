@@ -25,10 +25,6 @@ object* rest_func(void) {
 	return _rest_func;
 }
 
-object* boolean(char b) {
-	return b ? true() : false();
-}
-
 object* is_of_type(object_type type, object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
@@ -228,10 +224,8 @@ object* function_display_newline(object* args, object* cont) {
 	return function_display(args, &next_cont);
 }
 
-#define args_max 3
-char argnames[args_max][2];
-object argcells[args_max];
-object* args[args_max+1];
+char argnames[generic_args_max][2];
+object argcells[generic_args_max];
 
 #define primitive_max 1024
 object primitive_functions[primitive_max];
@@ -245,7 +239,7 @@ void bind_primitive(char* name, int arity, object* obj) {
 	}
 	
 	object* function = &primitive_functions[primitive_count];
-	object* par = args[arity];
+	object* par = generic_arg_list[arity];
 	object* body = &primitive_bodies[primitive_count];
 	init_list_cell(body, obj, par);
 	body->location = location_static;
@@ -270,16 +264,18 @@ void init_standard_functions(void) {
 	int i;
 	argnames[0][0] = 'a';
 	argnames[0][1] = 0;
-	init_list_cell(&argcells[0], make_static_symbol(argnames[0]), empty_list());
+	generic_args[0] = make_static_symbol(argnames[0]);
+	init_list_cell(&argcells[0], generic_args[0], empty_list());
 	argcells[0].location = location_static;
-	for (i = 1; i < args_max; i++) {
+	for (i = 1; i < generic_args_max; i++) {
 		argnames[i][0] = argnames[i-1][0] + 1;
 		argnames[i][1] = 0;
-		init_list_cell(&argcells[i], make_static_symbol(argnames[i]), &argcells[i-1]);
+		generic_args[i] = make_static_symbol(argnames[i]);
+		init_list_cell(&argcells[i], generic_args[i], &argcells[i-1]);
 		argcells[i].location = location_static;
-		args[i] = &argcells[i-1];
+		generic_arg_list[i] = &argcells[i-1];
 	}
-	args[args_max] = &argcells[args_max]-1;
+	generic_arg_list[generic_args_max] = &argcells[generic_args_max]-1;
 	
 	init_and_bind_primitive("boolean?", 1, &is_boolean_proc, &function_is_boolean);
 	init_and_bind_primitive("false?", 1, &is_false_proc, &function_is_false);

@@ -21,6 +21,9 @@ object _empty_string;
 object _empty_environment;
 object* _lambda_symbol;
 object* _quote_symbol;
+object _dash_string;
+object _question_mark_string;
+object _zero;
 
 object _end_cont;
 object end_proc;
@@ -81,6 +84,14 @@ void init_global_variables(void) {
 	_lambda_symbol = make_static_symbol("lambda");
 	_quote_symbol = make_static_symbol("quote");
 	
+	init_string(dash_string(), "-");
+	_dash_string.location = location_static;
+	init_string(question_mark_string(), "?");
+	_question_mark_string.location = location_static;
+	
+	init_number(zero(), 0);
+	_zero.location = location_static;
+	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
 	init_cont(end_cont(), &end_call);
@@ -91,6 +102,9 @@ object* true(void) {
 }
 object* false(void) {
 	return &_false;
+}
+object* boolean(char b) {
+	return b ? true() : false();
 }
 char is_empty_list(object* obj) {
 	return obj == empty_list();
@@ -158,4 +172,15 @@ object* lambda_symbol(void) {
 
 object* quote_symbol(void) {
 	return _quote_symbol;
+}
+
+object* dash_string(void) {
+	return &_dash_string;
+}
+object* question_mark_string(void) {
+	return &_question_mark_string;
+}
+
+object* zero(void) {
+	return &_zero;
 }

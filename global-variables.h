@@ -17,6 +17,7 @@ char is_placeholder_value(object* obj);
 
 object* true(void);
 object* false(void);
+object* boolean(char b);
 object* empty_list(void);
 object* empty_stream(void);
 object* end_vector_iterator(void);
@@ -29,3 +30,8 @@ object* empty_environment(void);
 
 object* lambda_symbol(void);
 object* quote_symbol(void);
+
+object* dash_string(void);
+object* question_mark_string(void);
+
+object* zero(void);
