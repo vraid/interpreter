@@ -12,6 +12,7 @@ typedef enum {
 	type_stream,
 	type_vector,
 	type_vector_iterator,
+	type_delay,
 	type_struct_definition,
 	type_struct_instance,
 	type_syntax,
@@ -21,7 +22,6 @@ typedef enum {
 	type_continuation,
 	type_binding,
 	type_environment,
-	type_delay,
 	type_file_port,
 	type_internal_error,
 	type_count} object_type;
@@ -67,9 +67,9 @@ typedef struct object {
 			long value;
 		} number;
 		struct {
-			bracket_type type;
 			struct object* first;
 			struct object* rest;
+			bracket_type type;
 		} list;
 		struct {
 			struct object* first;
@@ -163,7 +163,6 @@ char is_file_port(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
 char is_continuation(object* obj);
-cont_type continuation_type(object* obj);
 char is_discarding_continuation(object* obj);
 char is_catching_continuation(object* obj);
 char is_internal_error(object* obj);
@@ -174,9 +173,10 @@ char* string_value(object* obj);
 object* symbol_name(object* obj);
 long number_value(object* obj);
 FILE* file_port_file(object* obj);
-bracket_type list_type(object* obj);
+
 object* list_first(object* ls);
 object* list_rest(object* ls);
+bracket_type list_type(object* obj);
 object* stream_first(object* obj);
 object* stream_rest(object* obj);
 int vector_length(object* obj);
@@ -184,24 +184,29 @@ object** vector_data(object* obj);
 int vector_iterator_index(object* obj);
 object* vector_iterator_vector(object* obj);
 int vector_iterator_length(object* obj);
+
+object* delay_value(object* obj);
+object* delay_environment(object* obj);
+char delay_evaluated(object* obj);
+
 object* struct_definition_name(object* obj);
 object* struct_definition_fields(object* obj);
 object* struct_instance_type(object* obj);
 object* struct_instance_data(object* obj);
-object* cons(object* first, object* rest);
+
 object* function_parameters(object* obj);
 object* function_environment(object* obj);
 object* function_body(object* obj);
 primitive_proc* syntax_proc(object* obj);
 primitive_proc* primitive_procedure_proc(object* obj);
-object* binding_name(object* obj);
-object* binding_value(object* obj);
-object* environment_bindings(object* obj);
 object* call_function(object* obj);
 object* call_arguments(object* obj);
 object* call_continuation(object* obj);
+cont_type continuation_type(object* obj);
 object* continuation_call(object* obj);
+
+object* binding_name(object* obj);
+object* binding_value(object* obj);
+object* environment_bindings(object* obj);
+
 object* internal_error_message(object* obj);
-object* delay_value(object* obj);
-object* delay_environment(object* obj);
-char delay_evaluated(object* obj);
