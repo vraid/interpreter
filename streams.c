@@ -52,7 +52,7 @@ object* stream_map(object* args, object* cont) {
 		object eval_args[2];
 		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_call_proc(), eval_args, &make_cont);
+		init_call(&eval_call, &eval_function_call_proc, eval_args, &make_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -119,7 +119,7 @@ object* stream_fold(object* args, object* cont) {
 		object eval_list[2];
 		init_list_2(eval_list, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_call_proc(), eval_list, &next_cont);
+		init_call(&eval_call, &eval_function_call_proc, eval_list, &next_cont);
 		
 		return perform_call(&eval_call);	
 	}
@@ -183,7 +183,7 @@ object* stream_filter_func_eval(object* args, object* cont) {
 		object eval_args[2];
 		init_list_2(eval_args, function_args, function);
 		object eval_call;
-		init_call(&eval_call, eval_function_call_proc(), eval_args, &stream_cont);
+		init_call(&eval_call, &eval_function_call_proc, eval_args, &stream_cont);
 		
 		return perform_call(&eval_call);
 	}

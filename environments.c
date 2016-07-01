@@ -7,12 +7,6 @@
 #include "call.h"
 #include "delist.h"
 
-object _bind_values_proc;
-
-object* bind_values_proc(void) {
-	return &_bind_values_proc;
-}
-
 #define static_binding_max 1024
 object _static_environment;
 object static_bindings[static_binding_max];
@@ -119,6 +113,6 @@ void init_environment_procedures(void) {
 	_static_environment.location = location_static;
 	
 	init_primitive_procedure(&extend_environment_proc, &extend_environment);
-	init_primitive_procedure(bind_values_proc(), &bind_values);
+	init_primitive_procedure(&bind_values_proc, &bind_values);
 	init_primitive_procedure(&bind_single_value_proc, &bind_single_value);
 }

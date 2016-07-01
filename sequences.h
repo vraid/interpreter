@@ -2,6 +2,8 @@
 
 #include "data-structures.h"
 
+object first_proc;
+object rest_proc;
 object take_proc;
 object drop_proc;
 
@@ -12,9 +14,6 @@ object* sequence_first(object* obj);
 object* sequence_rest(object* iter, object* obj);
 
 object* list_to_sequence_proc(object_type type);
-
-object* first_proc(void);
-object* rest_proc(void);
 
 // returns first iterator for non-empty non-lists
 // returns identity of a list

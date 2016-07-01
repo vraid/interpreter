@@ -214,7 +214,7 @@ object* read_value(object* args, object* cont) {
 	else if (is_quote_char(c)) {
 		getc(in);
 		object quote_call;
-		init_call(&quote_call, quote_object_proc(), empty_list(), cont);
+		init_call(&quote_call, &quote_object_proc, empty_list(), cont);
 		object quote_cont;
 		init_cont(&quote_cont, &quote_call);
 		object read_call;

@@ -7,27 +7,6 @@
 #include "base-util.h"
 #include "memory-handling.h"
 
-object _make_list_proc;
-object _add_to_list_proc;
-object _reverse_list_proc;
-object _unzip_2_proc;
-
-object* make_list_proc(void) {
-	return &_make_list_proc;
-}
-
-object* add_to_list_proc(void) {
-	return &_add_to_list_proc;
-}
-
-object* reverse_list_proc(void) {
-	return &_reverse_list_proc;
-}
-
-object* unzip_2_proc(void) {
-	return &_unzip_2_proc;
-}
-
 int list_length(object* ls) {
 	int n = 0;
 	while (!is_empty_list(ls)) {
@@ -175,7 +154,7 @@ object* unzip_2(object* args, object* cont) {
 		object result_args[1];
 		init_list_1(result_args, result);
 		object result_call;
-		init_call(&result_call, identity_proc(), result_args, cont);
+		init_call(&result_call, &identity_proc, result_args, cont);
 		object result_cont;
 		init_discarding_cont(&result_cont, &result_call);
 		
@@ -189,11 +168,11 @@ object* unzip_2(object* args, object* cont) {
 }
 
 void init_list_util_procedures(void) {
-	init_primitive_procedure(make_list_proc(), &make_list);
-	init_primitive_procedure(add_to_list_proc(), &add_to_list);
+	init_primitive_procedure(&make_list_proc, &make_list);
+	init_primitive_procedure(&add_to_list_proc, &add_to_list);
 	init_primitive_procedure(&return_list_proc, &return_list);
-	init_primitive_procedure(reverse_list_proc(), &reverse_list);
+	init_primitive_procedure(&reverse_list_proc, &reverse_list);
 	init_primitive_procedure(&reverse_proc, &reverse);
-	init_primitive_procedure(unzip_2_proc(), &unzip_2);
+	init_primitive_procedure(&unzip_2_proc, &unzip_2);
 	init_primitive_procedure(&unzip_2_step_proc, &unzip_2_step);
 }

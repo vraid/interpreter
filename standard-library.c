@@ -282,14 +282,14 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
 	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
 	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
-	bind_and_save_primitive("first", 1, first_proc(), &_first_func);
-	bind_and_save_primitive("rest", 1, rest_proc(), &_rest_func);
+	bind_and_save_primitive("first", 1, &first_proc, &_first_func);
+	bind_and_save_primitive("rest", 1, &rest_proc, &_rest_func);
 	init_and_bind_primitive("+", 2, &add_proc, &function_add);
 	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
-	bind_primitive("identity", 1, identity_proc());
+	bind_primitive("identity", 1, &identity_proc);
 	add_static_binding(empty_stream(), "empty-stream");
 	bind_primitive("take", 2, &take_proc);
 	bind_primitive("drop", 2, &drop_proc);

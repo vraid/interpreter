@@ -11,17 +11,6 @@
 #include "delist.h"
 #include "call.h"
 
-object _first_proc;
-object _rest_proc;
-
-object* first_proc(void) {
-	return &_first_proc;
-}
-
-object* rest_proc(void) {
-	return &_rest_proc;
-}
-
 object* first(object* args, object* cont) {
 	object* seq;
 	delist_1(args, &seq);
@@ -79,7 +68,7 @@ object* take_single(object* args, object* cont) {
 	object add_args[2];
 	init_list_2(add_args, sequence_first(sequence), last);
 	object add_call;
-	init_call(&add_call, add_to_list_proc(), add_args, &rest_cont);
+	init_call(&add_call, &add_to_list_proc, add_args, &rest_cont);
 	
 	return perform_call(&add_call);
 }
@@ -107,7 +96,7 @@ object* take_rest(object* args, object* cont) {
 		object eval_args[1];
 		init_list_1(eval_args, sequence);
 		object eval_call;
-		init_call(&eval_call, rest_proc(), eval_args, &take_cont);
+		init_call(&eval_call, &rest_proc, eval_args, &take_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -125,7 +114,7 @@ object* take_first(object* args, object* cont) {
 	object list_args[3];
 	init_list_3(list_args, sequence_first(sequence), &take_rest_proc, take_args);
 	object list_call;
-	init_call(&list_call, make_list_proc(), list_args, cont);
+	init_call(&list_call, &make_list_proc, list_args, cont);
 	
 	return perform_call(&list_call);
 }
@@ -169,7 +158,7 @@ object* drop_single(object* args, object* cont) {
 		object eval_args[1];
 		init_list_1(eval_args, sequence);
 		object eval_call;
-		init_call(&eval_call, rest_proc(), eval_args, &drop_cont);
+		init_call(&eval_call, &rest_proc, eval_args, &drop_cont);
 		
 		return perform_call(&eval_call);
 	}
@@ -215,7 +204,7 @@ object* sequence_rest(object* iter, object* obj) {
 
 object* list_to_sequence_proc(object_type type) {
 	switch (type) {
-		case type_list: return identity_proc();
+		case type_list: return &identity_proc;
 		case type_vector_iterator: return &list_to_vector_proc;
 		default:
 			fprintf(stderr, "invalid sequence type: %s\n", type_name(type));
@@ -268,8 +257,8 @@ object* next_iterator(object* next, object* current) {
 }
 
 void init_sequence_procedures(void) {
-	init_primitive_procedure(first_proc(), &first);
-	init_primitive_procedure(rest_proc(), &rest);
+	init_primitive_procedure(&first_proc, &first);
+	init_primitive_procedure(&rest_proc, &rest);
 	init_primitive_procedure(&take_proc, &take);
 	init_primitive_procedure(&take_first_proc, &take_first);
 	init_primitive_procedure(&take_single_proc, &take_single);

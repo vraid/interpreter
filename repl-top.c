@@ -85,7 +85,7 @@ object* repl_eval_entry(object* args, object* cont) {
 	init_catching_cont(&error_cont, &error_call);
 	
 	object eval_call;
-	init_call(&eval_call, eval_proc(), args, &error_cont);
+	init_call(&eval_call, &eval_proc, args, &error_cont);
 	
 	return perform_call(&eval_call);
 }

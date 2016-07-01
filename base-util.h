@@ -2,7 +2,7 @@
 
 #include "data-structures.h"
 
-void init_base_util_procedures(void);
+object quote_object_proc;
+object identity_proc;
 
-object* quote_object_proc(void);
-object* identity_proc(void);
+void init_base_util_procedures(void);
