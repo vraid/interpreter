@@ -8,27 +8,37 @@
 char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '(', 0};
 char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')', 0};
 
+char* type_names[type_count];
+
+char* type_name(object_type type) {
+	return type_names[type];
+}
+
+char* object_type_name(object* obj) {
+	return type_name(obj->type);
+}
+
 void init_type_names(void) {
-	type_name[type_none] = "no type";
-	type_name[type_boolean] = "boolean";
-	type_name[type_string] = "string";
-	type_name[type_symbol] = "symbol";
-	type_name[type_number] = "number";
-	type_name[type_struct_definition] = "struct definition";
-	type_name[type_struct_instance] = "struct instance";
-	type_name[type_list] = "list";
-	type_name[type_stream] = "stream";
-	type_name[type_vector] = "vector";
-	type_name[type_vector_iterator] = "vector iterator";
-	type_name[type_primitive_procedure] = "primitive procedure";
-	type_name[type_syntax] = "syntax";
-	type_name[type_function] = "function";
-	type_name[type_call] = "call";
-	type_name[type_continuation] = "continuation";
-	type_name[type_binding] = "binding";
-	type_name[type_environment] = "environment";
-	type_name[type_file_port] = "file port";
-	type_name[type_internal_error] = "internal error";
+	type_names[type_none] = "no type";
+	type_names[type_boolean] = "boolean";
+	type_names[type_string] = "string";
+	type_names[type_symbol] = "symbol";
+	type_names[type_number] = "number";
+	type_names[type_struct_definition] = "struct definition";
+	type_names[type_struct_instance] = "struct instance";
+	type_names[type_list] = "list";
+	type_names[type_stream] = "stream";
+	type_names[type_vector] = "vector";
+	type_names[type_vector_iterator] = "vector iterator";
+	type_names[type_primitive_procedure] = "primitive procedure";
+	type_names[type_syntax] = "syntax";
+	type_names[type_function] = "function";
+	type_names[type_call] = "call";
+	type_names[type_continuation] = "continuation";
+	type_names[type_binding] = "binding";
+	type_names[type_environment] = "environment";
+	type_names[type_file_port] = "file port";
+	type_names[type_internal_error] = "internal error";
 }
 
 void init_location_names(void) {
@@ -44,16 +54,12 @@ void init_data_structure_names(void) {
 	init_location_names();
 }
 
-char* object_type_name(object* obj) {
-	return type_name[obj->type];
-}
-
 void check_type(object_type type, object* obj) {
 	if (obj->type >= type_count) {
-		fprintf(stderr, "type out of range at %p, expected %s\n", (void*)obj, type_name[type]);
+		fprintf(stderr, "type out of range at %p, expected %s\n", (void*)obj, type_name(type));
 	}
 	if (obj->type != type) {
-		fprintf(stderr, "faulty type at %p: expected %s, got %s\n", (void*)obj, type_name[type], type_name[obj->type]);
+		fprintf(stderr, "faulty type at %p: expected %s, got %s\n", (void*)obj, type_name(type), object_type_name(obj));
 	}
 	return;
 }
@@ -127,7 +133,7 @@ object* list_rest(object* ls) {
 	}
 	object* rest = ls->data.list.rest;
 	if (!is_list(rest)) {
-		fprintf(stderr, "list rest is wrong type: %s\n", type_name[rest->type]);
+		fprintf(stderr, "list rest is wrong type: %s\n", object_type_name(rest));
 		return no_object();
 	}
 	else {
@@ -359,17 +365,4 @@ object* delay_environment(object* obj) {
 char delay_evaluated(object* obj) {
 	check_type(type_delay, obj);
 	return obj->data.delay.evaluated;
-}
-
-int list_length(object* ls) {
-	int n = 0;
-	while (!is_empty_list(ls)) {
-		n++;
-		ls = list_rest(ls);
-	}
-	return n;
-}
-
-char list_starts_with(object* ls, object* obj) {
-	return is_nonempty_list(ls) && (obj == list_first(ls));
 }

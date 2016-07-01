@@ -228,7 +228,7 @@ object* stream_filter(object* args, object* cont) {
 }
 
 object* throw_stream_rest_error(object* cont, object* rest) {
-	fprintf(stderr, "invalid stream rest type: %s\n", type_name[rest->type]);
+	fprintf(stderr, "invalid stream rest type: %s\n", object_type_name(rest));
 	return throw_error(cont, "invalid stream rest type");
 }
 

@@ -28,6 +28,15 @@ object* unzip_2_proc(void) {
 	return &_unzip_2_proc;
 }
 
+int list_length(object* ls) {
+	int n = 0;
+	while (!is_empty_list(ls)) {
+		n++;
+		ls = list_rest(ls);
+	}
+	return n;
+}
+
 object return_list_proc;
 
 object* return_list(object* args, object* cont) {

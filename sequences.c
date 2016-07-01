@@ -193,7 +193,7 @@ int sequence_length(object* obj) {
 		case type_list: return list_length(obj);
 		case type_vector_iterator: return vector_iterator_length(obj);
 		default:
-			fprintf(stderr, "invalid sequence type: %s\n", type_name[obj->type]);
+			fprintf(stderr, "invalid sequence type: %s\n", object_type_name(obj));
 			exit(0);
 	}
 }
@@ -204,7 +204,7 @@ object* sequence_first(object* obj) {
 		case type_stream: return stream_first(obj);
 		case type_vector_iterator: return vector_ref(obj, 0);
 		default:
-			fprintf(stderr, "invalid sequence type: %s\n", type_name[obj->type]);
+			fprintf(stderr, "invalid sequence type: %s\n", object_type_name(obj));
 			exit(0);
 	}
 }
@@ -218,7 +218,7 @@ object* list_to_sequence_proc(object_type type) {
 		case type_list: return identity_proc();
 		case type_vector_iterator: return &list_to_vector_proc;
 		default:
-			fprintf(stderr, "invalid sequence type: %s\n", type_name[type]);
+			fprintf(stderr, "invalid sequence type: %s\n", type_name(type));
 			exit(0);
 	}
 }
@@ -240,7 +240,7 @@ object* first_iterator(object* iter, object* obj) {
 		case type_vector_iterator: return obj;
 		case type_vector: return first_vector_iterator(iter, obj);
 		default:
-			fprintf(stderr, "invalid sequence type: %s\n", type_name[obj->type]);
+			fprintf(stderr, "invalid sequence type: %s\n", object_type_name(obj));
 			return no_object();
 	}
 }
@@ -262,7 +262,7 @@ object* next_iterator(object* next, object* current) {
 		case type_list: return list_rest(current);
 		case type_vector_iterator: return next_vector_iterator(next, current);
 		default:
-			fprintf(stderr, "invalid iterator type: %s\n", type_name[current->type]);
+			fprintf(stderr, "invalid iterator type: %s\n", object_type_name(current));
 			return no_object();
 	}
 }

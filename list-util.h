@@ -8,3 +8,5 @@ object* make_list_proc(void);
 object* add_to_list_proc(void);
 object* reverse_list_proc(void);
 object* unzip_2_proc(void);
+
+int list_length(object* ls);

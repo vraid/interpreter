@@ -19,7 +19,6 @@ object _empty_vector;
 object _end_vector_iterator;
 object _empty_string;
 object _empty_environment;
-object* _lambda_symbol;
 object* _quote_symbol;
 object _dash_string;
 object _question_mark_string;
@@ -81,7 +80,6 @@ void init_global_variables(void) {
 	init_object(location_static, type_environment, &_empty_environment);
 	_empty_environment.data.environment.bindings = empty_list();
 	
-	_lambda_symbol = make_static_symbol("lambda");
 	_quote_symbol = make_static_symbol("quote");
 	
 	init_string(dash_string(), "-");
@@ -165,22 +163,15 @@ object* placeholder_value(void) {
 object* empty_environment(void) {
 	return &_empty_environment;
 }
-
-object* lambda_symbol(void) {
-	return _lambda_symbol;
-}
-
 object* quote_symbol(void) {
 	return _quote_symbol;
 }
-
 object* dash_string(void) {
 	return &_dash_string;
 }
 object* question_mark_string(void) {
 	return &_question_mark_string;
 }
-
 object* zero(void) {
 	return &_zero;
 }

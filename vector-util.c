@@ -5,6 +5,7 @@
 #include "sequences.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "list-util.h"
 #include "call.h"
 #include "delist.h"
 

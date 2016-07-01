@@ -134,7 +134,7 @@ object* define(object* args, object* cont) {
 	// handles cases like (define ((f a) b) ..)
 	if (is_list(name)) {
 		object desugared[3];
-		init_list_3(desugared, lambda_symbol(), list_rest(name), body);
+		init_list_3(desugared, &syntax_procedure[syntax_lambda], list_rest(name), body);
 		object new_syntax[2];
 		init_list_2(new_syntax, list_first(name), desugared);
 		
@@ -542,7 +542,7 @@ object* curry_one(object* args, object* cont) {
 		object par[1];
 		init_list_1(par, list_first(parameters));
 		object syntax[3];
-		init_list_3(syntax, lambda_symbol(), par, body);
+		init_list_3(syntax, &syntax_procedure[syntax_lambda], par, body);
 		
 		object ls[2];
 		init_list_2(ls, list_rest(parameters), syntax);
@@ -631,7 +631,7 @@ object* start_apply(object* args, object* cont) {
 	}
 	
 	object body_ls[3];
-	init_list_3(body_ls, lambda_symbol(), ps, function_body(function));
+	init_list_3(body_ls, &syntax_procedure[syntax_lambda], ps, function_body(function));
 	object eval_ls[1];
 	init_list_1(eval_ls, body_ls);
 	object eval_call;

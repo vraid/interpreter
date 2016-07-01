@@ -26,8 +26,6 @@ typedef enum {
 	type_internal_error,
 	type_count} object_type;
 
-char* type_name[type_count];
-
 typedef enum {
 	location_none,
 	location_stack,
@@ -139,6 +137,7 @@ void init_data_structure_names(void);
 char list_start_delimiter[bracket_type_count];
 char list_end_delimiter[bracket_type_count];
 
+char* type_name(object_type type);
 char* object_type_name(object* obj);
 void check_type(object_type type, object* obj);
 
@@ -206,6 +205,3 @@ object* internal_error_message(object* obj);
 object* delay_value(object* obj);
 object* delay_environment(object* obj);
 char delay_evaluated(object* obj);
-
-int list_length(object* ls);
-char list_starts_with(object* ls, object* obj);

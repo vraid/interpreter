@@ -118,12 +118,7 @@ object* function_cons(object* args, object* cont) {
 	object list_cell;
 	init_list_cell(&list_cell, first, rest);
 	
-	object ls[1];
-	init_list_1(ls, &list_cell);
-	object quote_call;
-	init_call(&quote_call, quote_object_proc(), ls, cont);
-	
-	return perform_call(&quote_call);
+	return call_cont(cont, &list_cell);
 }
 
 object add_proc;
