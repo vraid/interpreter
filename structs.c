@@ -36,7 +36,7 @@ object* define_struct_constructor(object* args, object* cont) {
 	delist_4(args, &name, &fields, &type, &environment);
 	
 	object vector_list;
-	init_list_cell(&vector_list, &syntax_procedure[syntax_vector], fields);
+	init_list_cell(&vector_list, syntax_obj(syntax_vector), fields);
 	object body[3];
 	init_list_3(body, &make_struct_proc, type, &vector_list);
 	object function;

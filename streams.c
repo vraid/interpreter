@@ -36,7 +36,7 @@ object* stream_map(object* args, object* cont) {
 		object rest_list[2];
 		init_list_2(rest_list, &eval_stream_rest_proc, stream);
 		object map_list[3];
-		init_list_3(map_list, &syntax_procedure[syntax_map], function, rest_list);
+		init_list_3(map_list, syntax_obj(syntax_map), function, rest_list);
 		object delay;
 		init_delay(&delay, map_list, empty_environment());
 		
@@ -147,7 +147,7 @@ object* stream_filter_build(object* args, object* cont) {
 		object rest_list[2];
 		init_list_2(rest_list, &eval_stream_rest_proc, stream);
 		object filter_list[3];
-		init_list_3(filter_list, &syntax_procedure[syntax_filter], function, rest_list);
+		init_list_3(filter_list, syntax_obj(syntax_filter), function, rest_list);
 		object delay;
 		init_delay(&delay, filter_list, empty_environment());
 

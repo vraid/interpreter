@@ -25,7 +25,7 @@ typedef enum {
 	syntax_filter,
 	syntax_count} static_syntax;
 
-object syntax_procedure[syntax_count];
+object* syntax_obj(static_syntax type);
 
 object eval_force_proc;
 
