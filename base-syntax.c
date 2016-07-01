@@ -7,7 +7,7 @@
 #include "delist.h"
 #include "base-util.h"
 #include "list-util.h"
-#include "vector-util.h"
+#include "vectors.h"
 #include "call.h"
 #include "memory-handling.h"
 #include "environments.h"

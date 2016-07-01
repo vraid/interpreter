@@ -1,4 +1,4 @@
-#include "vector-util.h"
+#include "vectors.h"
 
 #include <stdlib.h>
 #include "data-structures.h"
@@ -70,7 +70,7 @@ object* list_to_vector(object* args, object* cont) {
 	return call_cont(cont, iter);
 }
 
-void init_vector_util_procedures(void) {
+void init_vector_procedures(void) {
 	init_primitive_procedure(&vector_to_list_proc, &vector_to_list);
 	init_primitive_procedure(&list_to_vector_proc, list_to_vector);
 }

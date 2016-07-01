@@ -6,7 +6,7 @@
 #include "call.h"
 #include "delist.h"
 #include "object-init.h"
-#include "vector-util.h"
+#include "vectors.h"
 
 object print_sequence_element_proc;
 object print_first_sequence_element_proc;

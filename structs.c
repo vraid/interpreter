@@ -5,7 +5,7 @@
 #include "object-init.h"
 #include "delist.h"
 #include "call.h"
-#include "vector-util.h"
+#include "vectors.h"
 #include "strings.h"
 #include "symbols.h"
 #include "environments.h"

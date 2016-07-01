@@ -6,7 +6,7 @@
 #include "object-init.h"
 #include "base-util.h"
 #include "list-util.h"
-#include "vector-util.h"
+#include "vectors.h"
 #include "streams.h"
 #include "delist.h"
 #include "call.h"

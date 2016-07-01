@@ -14,7 +14,7 @@
 #include "streams.h"
 #include "strings.h"
 #include "list-util.h"
-#include "vector-util.h"
+#include "vectors.h"
 #include "base-util.h"
 #include "memory-handling.h"
 #include "base-syntax.h"
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 	init_stream_procedures();
 	init_string_procedures();
 	init_list_util_procedures();
-	init_vector_util_procedures();
+	init_vector_procedures();
 	init_base_util_procedures();
 	init_read_procedures();
 	init_print_procedures();
