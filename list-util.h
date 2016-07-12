@@ -5,6 +5,7 @@
 object make_list_proc;
 object add_to_list_proc;
 object reverse_list_proc;
+object list_append_proc;
 object unzip_2_proc;
 
 void init_list_util_procedures(void);

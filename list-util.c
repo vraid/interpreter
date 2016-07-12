@@ -1,4 +1,6 @@
 #include "list-util.h"
+
+#include <stdlib.h>
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -131,6 +133,65 @@ object* unzip_2_step(object* args, object* cont) {
 	}
 }
 
+// full stack allocation, may fail on large lists
+// should be changed to allocate in steps for large lists
+
+object* list_append_multiple(object* lists, int list_count, object* cont) {
+	int length = 0;
+	int i;
+	object* ls = lists;
+	for (i = 0; i < list_count-1; i++) {
+		length += list_length(list_first(ls));
+		ls = list_rest(ls);
+	}
+	object* last = list_first(ls);
+	
+	if (length == 0) {
+		return call_cont(cont, last);
+	}
+	else {
+		// one extra length to avoid corner case on last cell
+		object* new_list = alloca(sizeof(object) * (length + 1));
+		
+		i = 0;
+		int k;
+		for (k = 0; k < list_count-1; k++) {
+			ls = list_first(lists);
+			while (!is_empty_list(ls)) {
+				init_list_cell(&new_list[i], list_first(ls), &new_list[i+1]);
+				ls = list_rest(ls);
+				i++;
+			}
+			lists = list_rest(lists);
+		}
+		new_list[length-1].data.list.rest = last;
+		
+		return call_cont(cont, new_list);
+	}
+}
+
+object* list_append(object* args, object* cont) {
+	object* lists;
+	delist_1(args, &lists);
+	
+	int list_count = 0;
+	object* ls = lists;
+	while (!is_empty_list(ls)) {
+		ls = list_rest(ls);
+		list_count++;
+	}
+	
+	if (list_count == 0) {
+		return call_cont(cont, empty_list());
+	}
+	else if (list_count == 1) {
+		return call_cont(cont, list_first(lists));
+	}
+	else {
+		return list_append_multiple(lists, list_count, cont);
+	}
+}
+
 object* unzip_2(object* args, object* cont) {
 	object* list;
 	delist_1(args, &list);
@@ -173,6 +234,7 @@ void init_list_util_procedures(void) {
 	init_primitive_procedure(&return_list_proc, &return_list);
 	init_primitive_procedure(&reverse_list_proc, &reverse_list);
 	init_primitive_procedure(&reverse_proc, &reverse);
+	init_primitive_procedure(&list_append_proc, &list_append);
 	init_primitive_procedure(&unzip_2_proc, &unzip_2);
 	init_primitive_procedure(&unzip_2_step_proc, &unzip_2_step);
 }
