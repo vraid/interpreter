@@ -9,21 +9,11 @@
 #include "call.h"
 #include "print.h"
 #include "base-util.h"
+#include "list-util.h"
 #include "sequences.h"
 #include "environments.h"
 #include "global-variables.h"
 #include "symbols.h"
-
-object* _first_func;
-object* _rest_func;
-
-object* first_func(void) {
-	return _first_func;
-}
-
-object* rest_func(void) {
-	return _rest_func;
-}
 
 object* is_of_type(object_type type, object* args, object* cont) {
 	object* obj;
@@ -198,6 +188,28 @@ object* function_numeric_equality(object* args, object* cont) {
 	return call_cont(cont, boolean(number_value(a) == number_value(b)));
 }
 
+object remainder_proc;
+
+object* function_remainder(object* args, object* cont) {
+	object* d;
+	object* n;
+	delist_2(args, &d, &n);
+	
+	if (!(is_number(n) && is_number(d))) {
+		return throw_error(cont, "remainder on non-number");
+	}
+	
+	if (number_value(d) == 0) {
+		return throw_error(cont, "remainder divisor 0");
+	}
+	
+	long r = number_value(n) % number_value(d);
+	object result;
+	init_number(&result, r);
+	
+	return call_cont(cont, &result);
+}
+
 object display_proc;
 
 object* function_display(object* args, object* cont) {
@@ -282,15 +294,18 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
 	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
 	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
-	bind_and_save_primitive("first", 1, &first_proc, &_first_func);
-	bind_and_save_primitive("rest", 1, &rest_proc, &_rest_func);
+	bind_primitive("append", 1, &list_append_proc);
+	bind_primitive("first", 1, &first_proc);
+	bind_primitive("rest", 1, &rest_proc);
 	init_and_bind_primitive("+", 2, &add_proc, &function_add);
 	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
+	init_and_bind_primitive("remainder", 2, &remainder_proc, &function_remainder);
 	bind_primitive("identity", 1, &identity_proc);
 	add_static_binding(empty_stream(), "empty-stream");
 	bind_primitive("take", 2, &take_proc);
 	bind_primitive("drop", 2, &drop_proc);
+	bind_and_save_primitive("symbol->string", 1, &symbol_to_string_proc, &symbol_to_string_func);
 }

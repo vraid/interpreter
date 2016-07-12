@@ -6,7 +6,6 @@
 object* generic_args[generic_args_max];
 object* generic_arg_list[generic_args_max+1];
 
-void init_standard_functions(void);
+object* symbol_to_string_func;
 
-object* first_func(void);
-object* rest_func(void);
+void init_standard_functions(void);
