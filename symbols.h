@@ -5,6 +5,7 @@
 object* symbol_list;
 
 object string_to_symbol_proc;
+object symbol_to_string_proc;
 
 void init_symbols(void);
 object* make_static_symbol(char* name);

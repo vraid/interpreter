@@ -73,8 +73,16 @@ object* string_to_symbol(object* args, object* cont) {
 	return symbol(string_value(str), cont);
 }
 
+object* symbol_to_string(object* args, object* cont) {
+	object* symbol;
+	delist_1(args, &symbol);
+	
+	return call_cont(cont, symbol_name(symbol));
+}
+
 void init_symbols(void) {
 	symbol_list = empty_list();
 	static_symbol_count = 0;
 	init_primitive_procedure(&string_to_symbol_proc, &string_to_symbol);
+	init_primitive_procedure(&symbol_to_string_proc, &symbol_to_string);
 }
