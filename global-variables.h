@@ -14,6 +14,7 @@ char is_true(object* obj);
 char is_no_object(object* obj);
 char is_no_binding(object* obj);
 char is_placeholder_value(object* obj);
+char is_empty_struct_definition(object* obj);
 
 object* true(void);
 object* false(void);
@@ -27,6 +28,7 @@ object* no_symbol(void);
 object* no_binding(void);
 object* placeholder_value(void);
 object* empty_environment(void);
+object* empty_struct_definition(void);
 
 object* quote_symbol(void);
 

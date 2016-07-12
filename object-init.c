@@ -48,10 +48,12 @@ void init_vector_iterator(object* obj, int n, object* vector) {
 	obj->data.vector_iterator.vector = vector;
 }
 
-void init_struct_definition(object* obj, object* name, object* fields) {
+void init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent) {
 	init_object(location_stack, type_struct_definition, obj);
 	obj->data.struct_definition.name = name;
 	obj->data.struct_definition.fields = fields;
+	obj->data.struct_definition.constructor = constructor;
+	obj->data.struct_definition.parent = parent;
 }
 
 void init_struct_instance(object* obj, object* type, object* data) {

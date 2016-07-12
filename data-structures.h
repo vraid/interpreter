@@ -86,6 +86,8 @@ typedef struct object {
 		struct {
 			struct object* name;
 			struct object* fields;
+			struct object* constructor;
+			struct object* parent;
 		} struct_definition;
 		struct {
 			struct object* type;
@@ -191,6 +193,8 @@ char delay_evaluated(object* obj);
 
 object* struct_definition_name(object* obj);
 object* struct_definition_fields(object* obj);
+object* struct_definition_constructor(object* obj);
+object* struct_definition_parent(object* obj);
 object* struct_instance_type(object* obj);
 object* struct_instance_data(object* obj);
 

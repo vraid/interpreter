@@ -245,6 +245,14 @@ object* struct_definition_fields(object* obj) {
 	check_type(type_struct_definition, obj);
 	return obj->data.struct_definition.fields;
 }
+object* struct_definition_constructor(object* obj) {
+	check_type(type_struct_definition, obj);
+	return obj->data.struct_definition.constructor;
+}
+object* struct_definition_parent(object* obj) {
+	check_type(type_struct_definition, obj);
+	return obj->data.struct_definition.parent;
+}
 object* struct_instance_type(object* obj) {
 	check_type(type_struct_instance, obj);
 	return obj->data.struct_instance.type;

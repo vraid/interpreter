@@ -19,6 +19,7 @@ object _empty_vector;
 object _end_vector_iterator;
 object _empty_string;
 object _empty_environment;
+object _empty_struct_definition;
 object* _quote_symbol;
 object _dash_string;
 object _question_mark_string;
@@ -80,6 +81,11 @@ void init_global_variables(void) {
 	init_object(location_static, type_environment, &_empty_environment);
 	_empty_environment.data.environment.bindings = empty_list();
 	
+	init_object(location_static, type_struct_definition, &_empty_struct_definition);
+	_empty_struct_definition.data.struct_definition.name = no_symbol();
+	_empty_struct_definition.data.struct_definition.fields = empty_list();
+	_empty_struct_definition.data.struct_definition.parent = no_object();
+	
 	_quote_symbol = make_static_symbol("quote");
 	
 	init_string(dash_string(), "-");
@@ -136,6 +142,9 @@ char is_no_binding(object* obj) {
 char is_placeholder_value(object* obj) {
 	return obj == placeholder_value();
 }
+char is_empty_struct_definition(object* obj) {
+	return obj == empty_struct_definition();
+}
 object* empty_list(void) {
 	return &_empty_list;
 }
@@ -162,6 +171,9 @@ object* placeholder_value(void) {
 }
 object* empty_environment(void) {
 	return &_empty_environment;
+}
+object* empty_struct_definition(void) {
+	return &_empty_struct_definition;
 }
 object* quote_symbol(void) {
 	return _quote_symbol;

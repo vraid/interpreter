@@ -275,7 +275,11 @@ object* eval_symbol(object* args, object* cont) {
 		return throw_error(cont, str);
 	}
 	else {
-		return call_cont(cont, binding_value(binding));
+		object* value = binding_value(binding);
+		if (is_struct_definition(value)) {
+			value = struct_definition_constructor(value);
+		}
+		return call_cont(cont, value);
 	}
 }
 
