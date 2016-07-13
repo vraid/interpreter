@@ -93,7 +93,7 @@ void init_global_variables(void) {
 	init_string(question_mark_string(), "?");
 	_question_mark_string.location = location_static;
 	
-	init_number(zero(), 0);
+	init_fixnum(zero(), 0);
 	_zero.location = location_static;
 	
 	init_primitive_procedure(&end_proc, &end);

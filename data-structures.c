@@ -23,7 +23,7 @@ void init_type_names(void) {
 	type_names[type_boolean] = "boolean";
 	type_names[type_string] = "string";
 	type_names[type_symbol] = "symbol";
-	type_names[type_number] = "number";
+	type_names[type_fixnum] = "fixnum";
 	type_names[type_struct_definition] = "struct definition";
 	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
@@ -76,8 +76,8 @@ char is_string(object* obj) {
 char is_symbol(object* obj) {
 	return is_type(type_symbol, obj);
 }
-char is_number(object* obj) {
-	return is_type(type_number, obj);
+char is_fixnum(object* obj) {
+	return is_type(type_fixnum, obj);
 }
 char is_list(object* obj) {
 	return is_type(type_list, obj);
@@ -161,13 +161,14 @@ object* symbol_name(object* obj) {
 	check_type(type_symbol, obj);
 	return obj->data.symbol.name;
 }
-long number_value(object* obj) {
-	check_type(type_number, obj);
-	return obj->data.number.value;
-}
 FILE* file_port_file(object* obj) {
 	check_type(type_file_port, obj);
 	return obj->data.file_port.file;
+}
+
+long fixnum_value(object* obj) {
+	check_type(type_fixnum, obj);
+	return obj->data.fixnum.value;
 }
 
 object* list_first(object* ls) {

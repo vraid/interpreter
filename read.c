@@ -169,7 +169,7 @@ object* read_number(object* args, object* cont) {
 	
 	if (is_valid_number(string)) {
 		object number;
-		init_number(&number, string_to_int(string_value(string)));
+		init_fixnum(&number, string_to_int(string_value(string)));
 		
 		return call_cont(cont, &number);
 	}

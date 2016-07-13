@@ -55,10 +55,10 @@ object* function_is_symbol(object* args, object* cont) {
 	return is_of_type(type_symbol, args, cont);
 }
 
-object is_number_proc;
+object is_fixnum_proc;
 
-object* function_is_number(object* args, object* cont) {
-	return is_of_type(type_number, args, cont);
+object* function_is_fixnum(object* args, object* cont) {
+	return is_of_type(type_fixnum, args, cont);
 }
 
 object is_list_proc;
@@ -118,12 +118,12 @@ object* function_add(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_number(a) && is_number(b))) {
+	if (!(is_fixnum(a) && is_fixnum(b))) {
 		return throw_error(cont, "+ on non-number");
 	}
 	
 	object result;
-	init_number(&result, number_value(a) + number_value(b));
+	init_fixnum(&result, fixnum_value(a) + fixnum_value(b));
 	return call_cont(cont, &result);
 }
 
@@ -133,12 +133,12 @@ object* function_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 		
-	if (!is_number(a)) {
+	if (!is_fixnum(a)) {
 		return throw_error(cont, "negative on non-number");
 	}
 	
 	object result;
-	init_number(&result, -number_value(a));
+	init_fixnum(&result, -fixnum_value(a));
 	return call_cont(cont, &result);
 }
 
@@ -149,12 +149,12 @@ object* function_subtract(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_number(a) && is_number(b))) {
+	if (!(is_fixnum(a) && is_fixnum(b))) {
 		return throw_error(cont, "- on non-number");
 	}
 
 	object result;
-	init_number(&result, number_value(b) - number_value(a));
+	init_fixnum(&result, fixnum_value(b) - fixnum_value(a));
 	return call_cont(cont, &result);
 }
 
@@ -165,12 +165,12 @@ object* function_multiply(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_number(a) && is_number(b))) {
+	if (!(is_fixnum(a) && is_fixnum(b))) {
 		return throw_error(cont, "* on non-number");
 	}
 
 	object result;
-	init_number(&result, number_value(a) * number_value(b));
+	init_fixnum(&result, fixnum_value(a) * fixnum_value(b));
 	return call_cont(cont, &result);
 }
 
@@ -181,11 +181,11 @@ object* function_numeric_equality(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_number(a) && is_number(b))) {
+	if (!(is_fixnum(a) && is_fixnum(b))) {
 		return throw_error(cont, "= on non-number");
 	}
 	
-	return call_cont(cont, boolean(number_value(a) == number_value(b)));
+	return call_cont(cont, boolean(fixnum_value(a) == fixnum_value(b)));
 }
 
 object remainder_proc;
@@ -195,17 +195,17 @@ object* function_remainder(object* args, object* cont) {
 	object* n;
 	delist_2(args, &d, &n);
 	
-	if (!(is_number(n) && is_number(d))) {
+	if (!(is_fixnum(n) && is_fixnum(d))) {
 		return throw_error(cont, "remainder on non-number");
 	}
 	
-	if (number_value(d) == 0) {
+	if (fixnum_value(d) == 0) {
 		return throw_error(cont, "remainder divisor 0");
 	}
 	
-	long r = number_value(n) % number_value(d);
+	long r = fixnum_value(n) % fixnum_value(d);
 	object result;
-	init_number(&result, r);
+	init_fixnum(&result, r);
 	
 	return call_cont(cont, &result);
 }
@@ -288,7 +288,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("false?", 1, &is_false_proc, &function_is_false);
 	init_and_bind_primitive("true?", 1, &is_true_proc, &function_is_true);
 	init_and_bind_primitive("symbol?", 1, &is_symbol_proc, &function_is_symbol);
-	init_and_bind_primitive("number?", 1, &is_number_proc, &function_is_number);
+	init_and_bind_primitive("number?", 1, &is_fixnum_proc, &function_is_fixnum);
 	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
 	init_and_bind_primitive("vector?", 1, &is_vector_proc, &function_is_vector);
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);

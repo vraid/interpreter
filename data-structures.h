@@ -7,7 +7,7 @@ typedef enum {
 	type_boolean,
 	type_string,
 	type_symbol,
-	type_number,
+	type_fixnum,
 	type_list,
 	type_stream,
 	type_vector,
@@ -65,7 +65,7 @@ typedef struct object {
 		} symbol;
 		struct {
 			long value;
-		} number;
+		} fixnum;
 		struct {
 			struct object* first;
 			struct object* rest;
@@ -147,7 +147,7 @@ char is_type(object_type type, object* obj);
 char is_boolean(object* obj);
 char is_string(object* obj);
 char is_symbol(object* obj);
-char is_number(object* obj);
+char is_fixnum(object* obj);
 char is_list(object* obj);
 char is_stream(object* obj);
 char is_sequence(object* obj);
@@ -173,8 +173,9 @@ char boolean_value(object* obj);
 int string_length(object* obj);
 char* string_value(object* obj);
 object* symbol_name(object* obj);
-long number_value(object* obj);
 FILE* file_port_file(object* obj);
+
+long fixnum_value(object* obj);
 
 object* list_first(object* ls);
 object* list_rest(object* ls);

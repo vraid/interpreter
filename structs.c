@@ -162,7 +162,7 @@ object* struct_access(object* args, object* cont) {
 	}
 	else {
 		object* data = struct_instance_data(st);
-		int n = number_value(num);
+		int n = fixnum_value(num);
 		object* element = vector_ref(data, n);
 		
 		return call_cont(cont, element);
@@ -228,7 +228,7 @@ object* define_field_accessors(object* args, object* cont) {
 		object* first = list_first(fields);
 		
 		object next_count;
-		init_number(&next_count, number_value(count)+1);
+		init_fixnum(&next_count, fixnum_value(count)+1);
 		
 		object next_args[3];
 		init_list_3(next_args, list_rest(fields), &next_count, type);
@@ -255,7 +255,7 @@ object* define_struct_next(object* args, object* cont) {
 	delist_3(args, &renamed_fields, &type, &environment);
 	
 	object access_start;
-	init_number(&access_start, list_length(struct_definition_fields(struct_definition_parent(type))));
+	init_fixnum(&access_start, list_length(struct_definition_fields(struct_definition_parent(type))));
 	
 	object field_args[3];
 	init_list_3(field_args, renamed_fields, &access_start, type);

@@ -215,8 +215,8 @@ object* print_value(object* args, object* cont) {
 				fprintf(stderr, "erroneous boolean");
 			}
 			break;
-		case type_number:
-			printf("%ld", number_value(obj));
+		case type_fixnum:
+			printf("%ld", fixnum_value(obj));
 			break;
 		case type_struct_instance:
 			return print_struct(args, cont);

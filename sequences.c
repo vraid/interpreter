@@ -80,9 +80,9 @@ object* take_rest(object* args, object* cont) {
 	delist_3(args, &last, &count, &sequence);
 	
 	object next_count;
-	init_number(&next_count, number_value(count)-1);
+	init_fixnum(&next_count, fixnum_value(count)-1);
 	
-	if ((number_value(&next_count) == 0) || is_empty_sequence(sequence)) {
+	if ((fixnum_value(&next_count) == 0) || is_empty_sequence(sequence)) {
 		return call_discarding_cont(cont);
 	}
 	else {
@@ -124,7 +124,7 @@ object* take(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	if ((number_value(count) == 0) || is_empty_sequence(sequence)) {
+	if ((fixnum_value(count) == 0) || is_empty_sequence(sequence)) {
 		return call_cont(cont, empty_list());
 	}
 	else {
@@ -142,12 +142,12 @@ object* drop_single(object* args, object* cont) {
 	object* count;
 	delist_2(args, &sequence, &count);
 	
-	if ((number_value(count) == 0) || is_empty_sequence(sequence)) {
+	if ((fixnum_value(count) == 0) || is_empty_sequence(sequence)) {
 		return call_cont(cont, sequence);
 	}
 	else {
 		object next_count;
-		init_number(&next_count, number_value(count)-1);
+		init_fixnum(&next_count, fixnum_value(count)-1);
 		object drop_args[1];
 		init_list_1(drop_args, &next_count);
 		object drop_call;
