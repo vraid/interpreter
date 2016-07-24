@@ -10,6 +10,7 @@
 #include "print.h"
 #include "base-util.h"
 #include "list-util.h"
+#include "bignums.h"
 #include "sequences.h"
 #include "environments.h"
 #include "global-variables.h"
@@ -118,13 +119,13 @@ object* function_add(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fixnum(a) && is_fixnum(b))) {
+	if (!(is_bignum(a) && is_bignum(b))) {
 		return throw_error(cont, "+ on non-number");
 	}
 	
-	object result;
-	init_fixnum(&result, fixnum_value(a) + fixnum_value(b));
-	return call_cont(cont, &result);
+	object call;
+	init_call(&call, &bignum_add_proc, args, cont);
+	return perform_call(&call);
 }
 
 object negative_proc;
@@ -133,13 +134,13 @@ object* function_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 		
-	if (!is_fixnum(a)) {
+	if (!is_bignum(a)) {
 		return throw_error(cont, "negative on non-number");
 	}
 	
-	object result;
-	init_fixnum(&result, -fixnum_value(a));
-	return call_cont(cont, &result);
+	object num;
+	init_bignum(&num, -1 * bignum_sign(a), bignum_digits(a));
+	return call_cont(cont, &num); 
 }
 
 object subtract_proc;
@@ -149,13 +150,13 @@ object* function_subtract(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fixnum(a) && is_fixnum(b))) {
+	if (!(is_bignum(a) && is_bignum(b))) {
 		return throw_error(cont, "- on non-number");
 	}
-
-	object result;
-	init_fixnum(&result, fixnum_value(b) - fixnum_value(a));
-	return call_cont(cont, &result);
+	
+	object call;
+	init_call(&call, &bignum_subtract_proc, args, cont);
+	return perform_call(&call);
 }
 
 object multiply_proc;
@@ -165,13 +166,13 @@ object* function_multiply(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fixnum(a) && is_fixnum(b))) {
+	if (!(is_bignum(a) && is_bignum(b))) {
 		return throw_error(cont, "* on non-number");
 	}
-
-	object result;
-	init_fixnum(&result, fixnum_value(a) * fixnum_value(b));
-	return call_cont(cont, &result);
+	
+	object call;
+	init_call(&call, &bignum_multiply_proc, args, cont);
+	return perform_call(&call);
 }
 
 object numeric_equality_proc;
@@ -181,11 +182,25 @@ object* function_numeric_equality(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fixnum(a) && is_fixnum(b))) {
+	if (!(is_bignum(a) && is_bignum(b))) {
 		return throw_error(cont, "= on non-number");
 	}
-	
-	return call_cont(cont, boolean(fixnum_value(a) == fixnum_value(b)));
+	else if (bignum_sign(a) != bignum_sign(b)) {
+		return call_cont(cont, false());
+	}
+	else {
+		object* as = bignum_digits(a);
+		object* bs = bignum_digits(b);
+		
+		while (!is_empty_list(as) && !is_empty_list(bs)) {
+			if (fixnum_value(list_first(as)) != fixnum_value(list_first(bs))) {
+				return call_cont(cont, false());
+			}
+			as = list_rest(as);
+			bs = list_rest(bs);
+		}
+		return call_cont(cont, boolean(is_empty_list(as) && is_empty_list(bs)));
+	}
 }
 
 object remainder_proc;

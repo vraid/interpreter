@@ -8,6 +8,7 @@ typedef enum {
 	type_string,
 	type_symbol,
 	type_fixnum,
+	type_bignum,
 	type_list,
 	type_stream,
 	type_vector,
@@ -66,6 +67,10 @@ typedef struct object {
 		struct {
 			long value;
 		} fixnum;
+		struct {
+			int sign;
+			struct object* digits;
+		} bignum;
 		struct {
 			struct object* first;
 			struct object* rest;
@@ -148,6 +153,7 @@ char is_boolean(object* obj);
 char is_string(object* obj);
 char is_symbol(object* obj);
 char is_fixnum(object* obj);
+char is_bignum(object* obj);
 char is_list(object* obj);
 char is_stream(object* obj);
 char is_sequence(object* obj);
@@ -176,9 +182,12 @@ object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
 
 long fixnum_value(object* obj);
+int bignum_sign(object* obj);
+object* bignum_digits(object* obj);
 
 object* list_first(object* ls);
 object* list_rest(object* ls);
+object* list_rest_or_empty(object* ls);
 bracket_type list_type(object* obj);
 object* stream_first(object* obj);
 object* stream_rest(object* obj);

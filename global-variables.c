@@ -24,6 +24,10 @@ object* _quote_symbol;
 object _dash_string;
 object _question_mark_string;
 object _zero;
+object _one;
+object _negative_one;
+object _bignum_zero_list;
+object _bignum_zero;
 
 object _end_cont;
 object end_proc;
@@ -93,8 +97,20 @@ void init_global_variables(void) {
 	init_string(question_mark_string(), "?");
 	_question_mark_string.location = location_static;
 	
-	init_fixnum(zero(), 0);
-	_zero.location = location_static;
+	init_object(location_static, type_fixnum, &_zero);
+	_zero.data.fixnum.value = 0;
+	init_object(location_static, type_fixnum, &_one);
+	_one.data.fixnum.value = 1;
+	init_object(location_static, type_fixnum, &_negative_one);
+	_negative_one.data.fixnum.value = -1;
+	
+	init_object(location_static, type_list, &_bignum_zero_list);
+	_bignum_zero_list.data.list.first = zero();
+	_bignum_zero_list.data.list.rest = empty_list();
+
+	init_object(location_static, type_bignum, &_bignum_zero);
+	_bignum_zero.data.bignum.sign = 1;
+	_bignum_zero.data.bignum.digits = &_bignum_zero_list;
 	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
@@ -145,6 +161,9 @@ char is_placeholder_value(object* obj) {
 char is_empty_struct_definition(object* obj) {
 	return obj == empty_struct_definition();
 }
+char is_zero(object* obj) {
+	return obj == zero();
+}
 object* empty_list(void) {
 	return &_empty_list;
 }
@@ -186,4 +205,28 @@ object* question_mark_string(void) {
 }
 object* zero(void) {
 	return &_zero;
+}
+object* one(void) {
+	return &_one;
+}
+object* negative_one(void) {
+	return &_negative_one;
+}
+object* sign_object(int sign) {
+	switch (sign) {
+		case 1: return one();
+		case -1: return negative_one();
+		default: {
+			fprintf(stderr, "invalid sign: %i\n", sign);
+			return no_object();
+		}
+	}
+}
+
+object* bignum_zero_list(void) {
+	return &_bignum_zero_list;
+}
+
+object* bignum_zero(void) {
+	return &_bignum_zero;
 }

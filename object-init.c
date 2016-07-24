@@ -19,6 +19,12 @@ void init_fixnum(object* obj, long value) {
 	obj->data.fixnum.value = value;
 }
 
+void init_bignum(object* obj, int sign, object* digits) {
+	init_object(location_stack, type_bignum, obj);
+	obj->data.bignum.sign = sign;
+	obj->data.bignum.digits = digits;
+}
+
 void init_symbol(object* obj, object* name) {
 	init_object(location_stack, type_symbol, obj);
 	obj->data.symbol.name = name;
@@ -144,4 +150,9 @@ void init_list_3(object* ls, object* first, object* second, object* third) {
 void init_list_4(object* ls, object* first, object* second, object* third, object* fourth) {
 	init_list_cell(ls, first, ls+1);
 	init_list_3(ls+1, second, third, fourth);
+}
+
+void init_list_5(object* ls, object* first, object* second, object* third, object* fourth, object* fifth) {
+	init_list_cell(ls, first, ls+1);
+	init_list_4(ls+1, second, third, fourth, fifth);
 }

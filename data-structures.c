@@ -24,6 +24,7 @@ void init_type_names(void) {
 	type_names[type_string] = "string";
 	type_names[type_symbol] = "symbol";
 	type_names[type_fixnum] = "fixnum";
+	type_names[type_bignum] = "bignum";
 	type_names[type_struct_definition] = "struct definition";
 	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
@@ -78,6 +79,9 @@ char is_symbol(object* obj) {
 }
 char is_fixnum(object* obj) {
 	return is_type(type_fixnum, obj);
+}
+char is_bignum(object* obj) {
+	return is_type(type_bignum, obj);
 }
 char is_list(object* obj) {
 	return is_type(type_list, obj);
@@ -170,6 +174,14 @@ long fixnum_value(object* obj) {
 	check_type(type_fixnum, obj);
 	return obj->data.fixnum.value;
 }
+int bignum_sign(object* obj) {
+	check_type(type_bignum, obj);
+	return obj->data.bignum.sign;
+}
+object* bignum_digits(object* obj) {
+	check_type(type_bignum, obj);
+	return obj->data.bignum.digits;
+}
 
 object* list_first(object* ls) {
 	check_type(type_list, ls);
@@ -192,6 +204,10 @@ object* list_rest(object* ls) {
 	else {
 		return rest;
 	}
+}
+object* list_rest_or_empty(object* ls) {
+	check_type(type_list, ls);
+	return is_empty_list(ls) ? empty_list() : list_rest(ls);
 }
 bracket_type list_type(object* obj) {
 	check_type(type_list, obj);

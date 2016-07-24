@@ -15,6 +15,7 @@ char is_no_object(object* obj);
 char is_no_binding(object* obj);
 char is_placeholder_value(object* obj);
 char is_empty_struct_definition(object* obj);
+char is_zero(object* obj);
 
 object* true(void);
 object* false(void);
@@ -36,3 +37,9 @@ object* dash_string(void);
 object* question_mark_string(void);
 
 object* zero(void);
+object* one(void);
+object* negative_one(void);
+object* sign_object(int sign);
+
+object* bignum_zero_list(void);
+object* bignum_zero(void);

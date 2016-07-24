@@ -27,3 +27,8 @@ void delist_4(object* ls, object** first, object** second, object** third, objec
 	*first = list_first(ls);
 	delist_3(list_rest(ls), second, third, fourth);
 }
+
+void delist_5(object* ls, object** first, object** second, object** third, object** fourth, object** fifth) {
+	*first = list_first(ls);
+	delist_4(list_rest(ls), second, third, fourth, fifth);
+}

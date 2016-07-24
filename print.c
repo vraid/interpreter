@@ -184,6 +184,18 @@ object* print_struct(object* args, object* cont) {
 	}
 }
 
+object print_bignum_proc;
+
+object* print_bignum(object* args, object* cont) {
+	object* num;
+	delist_1(args, &num);
+	
+	if (bignum_sign(num) == -1) printf("-");
+	object call_args[1];
+	init_list_1(call_args, bignum_digits(num));
+	return print_sequence(call_args, cont);
+}
+
 object* print_newline(object* args, object* cont) {
 	printf("\n");
 	return call_discarding_cont(cont);
@@ -217,6 +229,9 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_fixnum:
 			printf("%ld", fixnum_value(obj));
+			break;
+		case type_bignum:
+			return print_bignum(args, cont);
 			break;
 		case type_struct_instance:
 			return print_struct(args, cont);
@@ -264,4 +279,5 @@ void init_print_procedures(void) {
 	init_primitive_procedure(&print_first_stream_element_proc, &print_first_stream_element);
 	
 	init_primitive_procedure(&print_struct_proc, &print_struct);
+	init_primitive_procedure(&print_bignum_proc, &print_bignum);
 }

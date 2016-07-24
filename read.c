@@ -170,8 +170,12 @@ object* read_number(object* args, object* cont) {
 	if (is_valid_number(string)) {
 		object number;
 		init_fixnum(&number, string_to_int(string_value(string)));
+		object list_cell;
+		init_list_1(&list_cell, &number);
+		object num;
+		init_bignum(&num, 1, &list_cell);
 		
-		return call_cont(cont, &number);
+		return call_cont(cont, &num);
 	}
 	else {
 		return throw_error(cont, "invalid number");

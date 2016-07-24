@@ -91,6 +91,10 @@ void traverse_symbol(target_space space, object* obj, object_location location) 
 	move_if_necessary(space, &obj->data.symbol.name, location);
 }
 
+void traverse_bignum(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.bignum.digits, location);
+}
+
 void traverse_list(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.first, location);
 	move_if_necessary(space, &obj->data.list.rest, location);
@@ -164,6 +168,7 @@ typedef void (traversal)(target_space space, object* obj, object_location locati
 traversal* traversal_function(object* obj) {
 	switch (obj->type) {
 		case type_symbol: return &traverse_symbol;
+		case type_bignum: return &traverse_bignum;
 		case type_list: return &traverse_list;
 		case type_stream: return &traverse_stream;
 		case type_vector: return &traverse_vector;
@@ -252,24 +257,27 @@ void init_memory_space(memory_space* space, int quarter_size) {
 	printf("heap is at %p\n", (void*)space->memory);
 }
 
+#define print_gc 0
+
 void perform_gc(object** root) {
 	object_location location;
 	char resize = 0;
 	char* old_memory;
 	char is_major = heap_full(&main_memory_space);
 	if (is_major) {
-		printf("used heap data pre-gc: %i\n", used_heap_data(&main_memory_space));
+		int used_data = used_heap_data(&main_memory_space);
 		location = location_heap;
 		if (main_memory_space.fill_and_resize) {
-			printf("major resizing gc\n");
+			if (print_gc) printf("major resizing gc\n");
 			resize = 1;
 			old_memory = main_memory_space.memory;
 			init_memory_space(&main_memory_space, main_memory_space.half_size);
 		}
 		else {
-			printf("major gc\n");
+			if (print_gc) printf("major gc\n");
 			reset_memory_space(&main_memory_space);
 		}
+		if (print_gc) printf("used heap data pre-gc: %i\n", used_data);
 	}
 	else {
 		location = location_stack;
@@ -286,7 +294,7 @@ void perform_gc(object** root) {
 	}
 	if (is_major) {
 		main_memory_space.fill_and_resize =  resize_at_next_major_gc(&main_memory_space);
-		printf("used heap data post-gc: %i\n", used_heap_data(&main_memory_space));
+		if (print_gc) printf("used heap data post-gc: %i\n", used_heap_data(&main_memory_space));
 	}
 	mutation_count = 0;
 }
