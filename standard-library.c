@@ -185,22 +185,64 @@ object* function_numeric_equality(object* args, object* cont) {
 	if (!(is_bignum(a) && is_bignum(b))) {
 		return throw_error(cont, "= on non-number");
 	}
-	else if (bignum_sign(a) != bignum_sign(b)) {
-		return call_cont(cont, false());
+	
+	return call_cont(cont, boolean(0 == compare_signed_bignums(a, b)));
+}
+
+object greater_proc;
+
+object* function_greater(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_bignum(a) && is_bignum(b))) {
+		return throw_error(cont, "> on non-number");
 	}
-	else {
-		object* as = bignum_digits(a);
-		object* bs = bignum_digits(b);
-		
-		while (!is_empty_list(as) && !is_empty_list(bs)) {
-			if (fixnum_value(list_first(as)) != fixnum_value(list_first(bs))) {
-				return call_cont(cont, false());
-			}
-			as = list_rest(as);
-			bs = list_rest(bs);
-		}
-		return call_cont(cont, boolean(is_empty_list(as) && is_empty_list(bs)));
+	
+	return call_cont(cont, boolean(1 == compare_signed_bignums(a, b)));
+}
+
+object greater_or_equal_proc;
+
+object* function_greater_or_equal(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_bignum(a) && is_bignum(b))) {
+		return throw_error(cont, ">= on non-number");
 	}
+	
+	return call_cont(cont, boolean(-1 != compare_signed_bignums(a, b)));
+}
+
+object less_proc;
+
+object* function_less(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_bignum(a) && is_bignum(b))) {
+		return throw_error(cont, "< on non-number");
+	}
+	
+	return call_cont(cont, boolean(-1 == compare_signed_bignums(a, b)));
+}
+
+object less_or_equal_proc;
+
+object* function_less_or_equal(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_bignum(a) && is_bignum(b))) {
+		return throw_error(cont, "<= on non-number");
+	}
+	
+	return call_cont(cont, boolean(1 != compare_signed_bignums(a, b)));
 }
 
 object remainder_proc;
@@ -317,6 +359,10 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
+	init_and_bind_primitive(">", 2, &greater_proc, &function_greater);
+	init_and_bind_primitive(">=", 2, &greater_or_equal_proc, &function_greater_or_equal);
+	init_and_bind_primitive("<", 2, &less_proc, &function_less);
+	init_and_bind_primitive("<=", 2, &less_or_equal_proc, &function_less_or_equal);
 	init_and_bind_primitive("remainder", 2, &remainder_proc, &function_remainder);
 	bind_primitive("identity", 1, &identity_proc);
 	add_static_binding(empty_stream(), "empty-stream");

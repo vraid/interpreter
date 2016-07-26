@@ -10,4 +10,6 @@ object bignum_add_proc;
 object bignum_subtract_proc;
 object bignum_multiply_proc;
 
+int compare_signed_bignums(object* a, object* b);
+
 void init_bignum_procedures(void);

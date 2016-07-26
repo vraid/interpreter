@@ -258,7 +258,12 @@ int signum(long a) {
 	else return 0;
 }
 
-int compare_bignums(object* a, object* b) {
+char is_zero_bignum(object* a) {
+	object* digits = bignum_digits(a);
+	return is_empty_list(list_rest(digits)) && (0 == fixnum_value(list_first(digits)));
+}
+
+int compare_unsigned_bignums(object* a, object* b) {
 	int compare = 0;
 	
 	object* as = bignum_digits(a);
@@ -277,10 +282,27 @@ int compare_bignums(object* a, object* b) {
 	if (a_empty && !b_empty) {
 		compare = -1;
 	}
-	else if (a_empty && !b_empty) {
+	else if (b_empty && !a_empty) {
 		compare = 1;
 	}
 	return compare;
+}
+
+int compare_signed_bignums(object* a, object* b) {
+	if (is_zero_bignum(a) && is_zero_bignum(b)) {
+		return 0;
+	}
+	else {
+		int a_sign = bignum_sign(a);
+		int b_sign = bignum_sign(b);
+		
+		if (a_sign == b_sign) {
+			return a_sign * compare_unsigned_bignums(a, b);
+		}
+		else {
+			return (a_sign == 1) ? 1 : -1;
+		}
+	}
 }
 
 object* bignum_subtract(object* args, object* cont) {
@@ -307,7 +329,7 @@ object* bignum_subtract(object* args, object* cont) {
 	}
 	// subtraction
 	else {
-		int compare = compare_bignums(subtrahend, minuend);
+		int compare = compare_unsigned_bignums(subtrahend, minuend);
 		if (compare == 0) {
 			return call_cont(cont, bignum_zero());
 		}
