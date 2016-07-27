@@ -154,6 +154,24 @@ object* function_subtract(object* args, object* cont) {
 		return throw_error(cont, "- on non-number");
 	}
 	
+	object call_args[2];
+	init_list_2(call_args, b, a);
+	object call;
+	init_call(&call, &bignum_subtract_proc, call_args, cont);
+	return perform_call(&call);
+}
+
+object subtract_by_proc;
+
+object* function_subtract_by(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_bignum(a) && is_bignum(b))) {
+		return throw_error(cont, "subtract-by on non-number");
+	}
+	
 	object call;
 	init_call(&call, &bignum_subtract_proc, args, cont);
 	return perform_call(&call);
@@ -357,6 +375,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("+", 2, &add_proc, &function_add);
 	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
+	init_and_bind_primitive("subtract-by", 2, &subtract_by_proc, &function_subtract_by);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
 	init_and_bind_primitive(">", 2, &greater_proc, &function_greater);
