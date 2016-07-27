@@ -56,36 +56,36 @@ object* remove_leading_zeroes_and_reverse(object* args, object* cont) {
 object bignum_add_digits_proc;
 
 object* bignum_add_digits(object* args, object* cont) {
-	object* last;
-	object* carry;
 	object* a;
 	object* b;
-	delist_4(args, &last, &carry, &a, &b);
+	delist_2(args, &a, &b);
 	
-	if (is_empty_list(a) && is_empty_list(b) && is_zero(carry)) {
-		return call_cont(cont, last);
-	}
-	else {
+	object* digits = empty_list();
+	long carry = 0;
+	
+	while (!(is_empty_list(a) && is_empty_list(b) && (carry == 0))) {
 		object* anum = first_or_zero(a);
 		object* bnum = first_or_zero(b);
-		long n = fixnum_value(anum) + fixnum_value(bnum) + fixnum_value(carry);
-		object* next_carry = zero();
+		
+		long n = fixnum_value(anum) + fixnum_value(bnum) + carry;
+		carry = 0;
 		if (n >= bignum_base) {
-			next_carry = one();
+			carry = 1;
 			n -= bignum_base;
 		}
-		object num;
-		init_fixnum(&num, n);
-		object list_cell;
-		init_list_cell(&list_cell, &num, last);
 		
-		object next_args[4];
-		init_list_4(next_args, &list_cell, next_carry, list_rest_or_empty(a), list_rest_or_empty(b));
-		object next_call;
-		init_call(&next_call, &bignum_add_digits_proc, next_args, cont);
+		object* next_digit = alloca(sizeof(object));
+		init_fixnum(next_digit, n);
 		
-		return perform_call(&next_call);
+		object* next_cell = alloca(sizeof(object));
+		init_list_cell(next_cell, next_digit, digits);
+		
+		digits = next_cell;
+		
+		a = list_rest_or_empty(a);
+		b = list_rest_or_empty(b);
 	}
+	return call_cont(cont, digits);
 }
 
 object bignum_add_signless_proc;
@@ -100,8 +100,8 @@ object* bignum_add_signless(object* args, object* cont) {
 	object reverse_cont;
 	init_cont(&reverse_cont, &reverse_call);
 	
-	object add_args[4];
-	init_list_4(add_args, empty_list(), zero(), a, b);
+	object add_args[2];
+	init_list_2(add_args, a, b);
 	object add_call;
 	init_call(&add_call, &bignum_add_digits_proc, add_args, &reverse_cont);
 	
@@ -171,52 +171,37 @@ object* bignum_add(object* args, object* cont) {
 object bignum_subtract_digits_proc;
 
 object* bignum_subtract_digits(object* args, object* cont) {
-	object* last;
-	object* carry;
 	object* subtrahend;
 	object* minuend;
-	delist_4(args, &last, &carry, &subtrahend, &minuend);
+	delist_2(args, &subtrahend, &minuend);
 	
-	char subtrahend_empty = is_empty_list(subtrahend);
+	object* digits = empty_list();
+	long carry = 0;
 	
-	object* subtrahend_first = subtrahend_empty ? zero() : list_first(subtrahend);
-	object* subtrahend_rest = list_rest_or_empty(subtrahend);
-	
-	char minuend_empty = is_empty_list(minuend);
-	
-	object* minuend_first = minuend_empty ? zero() : list_first(minuend);
-	object* minuend_rest = list_rest_or_empty(minuend);
-	
-	long n = fixnum_value(minuend_first) - fixnum_value(carry) - fixnum_value(subtrahend_first);
-	
-	object* next_carry = zero();
-	if (n < 0) {
-		next_carry = one();
-		n += bignum_base;
-	}
-	
-	object num;
-	init_fixnum(&num, n);
-	
-	object cell;
-	init_list_cell(&cell, &num, last);
-	
-	if (is_empty_list(subtrahend)) {
-		object append_args[2];
-		init_list_2(append_args, minuend_rest, last);
-		object append_call;
-		init_call(&append_call, &list_append_first_reversed_proc, append_args, cont);
+	while (!is_empty_list(minuend)) {
+		object* minuend_first = first_or_zero(minuend);
+		object* subtrahend_first = first_or_zero(subtrahend);
 		
-		return perform_call(&append_call);
-	}
-	else {
-		object next_args[4];
-		init_list_4(next_args, &cell, carry, subtrahend_rest, minuend_rest);
-		object next_call;
-		init_call(&next_call, &bignum_subtract_digits_proc, next_args, cont);
+		long n = fixnum_value(minuend_first) - fixnum_value(subtrahend_first) - carry;
+		carry = 0;
+		if (n < 0) {
+			carry = 1;
+			n += bignum_base;
+		}
 		
-		return perform_call(&next_call);
+		object* num = alloca(sizeof(object));
+		init_fixnum(num, n);
+		
+		object* next = alloca(sizeof(object));
+		init_list_cell(next, num, digits);
+
+		digits = next;
+		
+		minuend = list_rest_or_empty(minuend);
+		subtrahend = list_rest_or_empty(subtrahend);
 	}
+	
+	return call_cont(cont, digits);
 }
 
 object bignum_subtract_with_sign_proc;
@@ -244,8 +229,8 @@ object* bignum_subtract_with_sign(object* args, object* cont) {
 	object trim_cont;
 	init_cont(&trim_cont, &trim_call);
 	
-	object subtract_args[4];
-	init_list_4(subtract_args, empty_list(), zero(), subtrahend, minuend);
+	object subtract_args[2];
+	init_list_2(subtract_args, subtrahend, minuend);
 	object subtract_call;
 	init_call(&subtract_call, &bignum_subtract_digits_proc, subtract_args, &trim_cont);
 	
@@ -372,44 +357,39 @@ object* bignum_multiply_add(object* args, object* cont) {
 object bignum_multiply_digit_proc;
 
 object* bignum_multiply_digit(object* args, object* cont) {
-	object* last;
-	object* carry;
-	object* a;
+	object* a_num;
 	object* b;
-	object* b_rest;
-	delist_5(args, &last, &carry, &a, &b, &b_rest);
+	delist_2(args, &a_num, &b);
 	
-	long product = fixnum_value(a) * fixnum_value(b) + fixnum_value(carry);
-	long result_value = product & (bignum_base - 1);
-	long carry_value = product >> bignum_base_bits;
+	object* b_num;
+	long carry = 0;
 	
-	object result;
-	init_fixnum(&result, result_value);
-	object next_carry;
-	init_fixnum(&next_carry, carry_value);
+	object* digits = empty_list();
 	
-	object cell;
-	init_list_cell(&cell, &result, last);
-	
-	if (is_empty_list(b_rest)) {
-		object carry_cell;
-		init_list_cell(&carry_cell, &next_carry, &cell);
+	while (!(is_empty_list(b) && (carry == 0))) {
+		b_num = first_or_zero(b);
 		
-		object reverse_args[1];
-		init_list_1(reverse_args, &carry_cell);
-		object reverse_call;
-		init_call(&reverse_call, &remove_leading_zeroes_and_reverse_proc, reverse_args, cont);
+		long product = fixnum_value(a_num) * fixnum_value(b_num) + carry;
+		long result_value = product & (bignum_base - 1);
+		carry = product >> bignum_base_bits;
 		
-		return perform_call(&reverse_call);
+		object* num = alloca(sizeof(object));
+		init_fixnum(num, result_value);
+		
+		object* cell = alloca(sizeof(object));
+		init_list_cell(cell, num, digits);
+
+		digits = cell;
+		
+		b = list_rest_or_empty(b);
 	}
-	else {
-		object next_args[5];
-		init_list_5(next_args, &cell, &next_carry, a, list_first(b_rest), list_rest(b_rest));
-		object next_call;
-		init_call(&next_call, &bignum_multiply_digit_proc, next_args, cont);
 		
-		return perform_call(&next_call);
-	}
+	object reverse_args[1];
+	init_list_1(reverse_args, digits);
+	object reverse_call;
+	init_call(&reverse_call, &remove_leading_zeroes_and_reverse_proc, reverse_args, cont);
+	
+	return perform_call(&reverse_call);
 }
 
 object bignum_multiply_digits_proc;
@@ -438,8 +418,8 @@ object* bignum_multiply_digits(object* args, object* cont) {
 		object add_cont;
 		init_cont(&add_cont, &add_call);
 		
-		object multiply_args[5];
-		init_list_5(multiply_args, empty_list(), zero(), list_first(b), list_first(a), list_rest(a));
+		object multiply_args[2];
+		init_list_2(multiply_args, list_first(b), a);
 		object multiply_call;
 		init_call(&multiply_call, &bignum_multiply_digit_proc, multiply_args, &add_cont);
 		

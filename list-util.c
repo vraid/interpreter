@@ -64,39 +64,20 @@ object* add_to_list(object* args, object* cont) {
 	return call_cont(cont, &cell);
 }
 
-object reverse_proc;
-
-object* reverse(object* args, object* cont) {
-	object* next;
-	object* reversed;
-	delist_2(args, &next, &reversed);
-	
-	if (is_empty_list(next)) {
-		return call_cont(cont, reversed);
-	}
-	else {
-		object cell;
-		init_list_cell(&cell, list_first(next), reversed);
-		
-		object ls[2];
-		init_list_2(ls, list_rest(next), &cell);
-		object call;
-		init_call(&call, &reverse_proc, ls, cont);
-		
-		return perform_call(&call);
-	}
-}
-
 object* reverse_list(object* args, object* cont) {
 	object* list;
 	delist_1(args, &list);
 	
-	object ls[2];
-	init_list_2(ls, list, empty_list());
-	object call;
-	init_call(&call, &reverse_proc, ls, cont);
+	object* next = empty_list();
 	
-	return perform_call(&call);
+	while (!is_empty_list(list)) {
+		object* cell = alloca(sizeof(object));
+		init_list_cell(cell, list_first(list), next);
+		list = list_rest(list);
+		next = cell;
+	}
+	
+	return call_cont(cont, next);
 }
 
 object unzip_2_step_proc;
@@ -137,37 +118,29 @@ object* unzip_2_step(object* args, object* cont) {
 // should be changed to allocate in steps for large lists
 
 object* list_append_multiple(object* lists, int list_count, object* cont) {
-	int length = 0;
-	int i;
-	object* ls = lists;
-	for (i = 0; i < list_count-1; i++) {
-		length += list_length(list_first(ls));
-		ls = list_rest(ls);
-	}
-	object* last = list_first(ls);
+	object* last = empty_list();
+	object* first = last;
+	char is_first = 1;
 	
-	if (length == 0) {
-		return call_cont(cont, last);
-	}
-	else {
-		// one extra length to avoid corner case on last cell
-		object* new_list = alloca(sizeof(object) * (length + 1));
-		
-		i = 0;
-		int k;
-		for (k = 0; k < list_count-1; k++) {
-			ls = list_first(lists);
-			while (!is_empty_list(ls)) {
-				init_list_cell(&new_list[i], list_first(ls), &new_list[i+1]);
-				ls = list_rest(ls);
-				i++;
+	while (!is_empty_list(lists)) {
+		object* ls = list_first(lists);
+		while (!is_empty_list(ls)) {
+			object* cell = alloca(sizeof(object));
+			init_list_cell(cell, list_first(ls), empty_list());
+			if (is_first) {
+				first = cell;
+				is_first = 0;
 			}
-			lists = list_rest(lists);
+			if (!is_empty_list(last)) {
+				last->data.list.rest = cell;
+			}
+			ls = list_rest(ls);
+			last = cell;
 		}
-		new_list[length-1].data.list.rest = last;
-		
-		return call_cont(cont, new_list);
+		lists = list_rest(lists);
 	}
+	
+	return call_cont(cont, first);
 }
 
 object* list_append(object* args, object* cont) {
@@ -201,18 +174,16 @@ object* list_append_first_reversed(object* args, object* cont) {
 		return call_cont(cont, second);
 	}
 	else {
-		int length = list_length(first);
-		object* ls = alloca(sizeof(object) * length);
+		object* next = second;
 		
-		ls[0].data.list.rest = second;
-		int i;
-		for (i = 0; i < length; i++) {
-			if (i > 0) ls[i].data.list.rest = &ls[i-1];
-			ls[i].data.list.first = list_first(first);
+		while (!is_empty_list(first)) {
+			object* cell = alloca(sizeof(object));
+			init_list_cell(cell, list_first(first), next);
+			next = cell;
 			first = list_rest(first);
 		}
 		
-		return call_cont(cont, &ls[length-1]);
+		return call_cont(cont, next);
 	}
 }
 
@@ -257,7 +228,6 @@ void init_list_util_procedures(void) {
 	init_primitive_procedure(&add_to_list_proc, &add_to_list);
 	init_primitive_procedure(&return_list_proc, &return_list);
 	init_primitive_procedure(&reverse_list_proc, &reverse_list);
-	init_primitive_procedure(&reverse_proc, &reverse);
 	init_primitive_procedure(&list_append_proc, &list_append);
 	init_primitive_procedure(&list_append_first_reversed_proc, &list_append_first_reversed);
 	init_primitive_procedure(&unzip_2_proc, &unzip_2);
