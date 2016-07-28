@@ -28,6 +28,8 @@ object _one;
 object _negative_one;
 object _bignum_zero_list;
 object _bignum_zero;
+object _bignum_one_list;
+object _bignum_one;
 
 object _end_cont;
 object end_proc;
@@ -111,6 +113,14 @@ void init_global_variables(void) {
 	init_object(location_static, type_bignum, &_bignum_zero);
 	_bignum_zero.data.bignum.sign = 1;
 	_bignum_zero.data.bignum.digits = &_bignum_zero_list;
+	
+	init_object(location_static, type_list, &_bignum_one_list);
+	_bignum_one_list.data.list.first = one();
+	_bignum_one_list.data.list.rest = empty_list();
+
+	init_object(location_static, type_bignum, &_bignum_one);
+	_bignum_one.data.bignum.sign = 1;
+	_bignum_one.data.bignum.digits = &_bignum_one_list;
 	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
@@ -226,7 +236,12 @@ object* sign_object(int sign) {
 object* bignum_zero_list(void) {
 	return &_bignum_zero_list;
 }
-
 object* bignum_zero(void) {
 	return &_bignum_zero;
+}
+object* bignum_one_list(void) {
+	return &_bignum_one_list;
+}
+object* bignum_one(void) {
+	return &_bignum_one;
 }

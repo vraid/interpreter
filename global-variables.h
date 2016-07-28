@@ -43,3 +43,5 @@ object* sign_object(int sign);
 
 object* bignum_zero_list(void);
 object* bignum_zero(void);
+object* bignum_one_list(void);
+object* bignum_one(void);

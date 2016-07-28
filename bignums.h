@@ -8,8 +8,10 @@
 object make_bignum_proc;
 object bignum_add_proc;
 object bignum_subtract_proc;
+object bignum_subtract_one_proc;
 object bignum_multiply_proc;
 
 int compare_signed_bignums(object* a, object* b);
+char is_zero_bignum(object* a);
 
 void init_bignum_procedures(void);

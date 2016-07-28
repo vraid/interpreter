@@ -473,6 +473,18 @@ object* bignum_multiply(object* args, object* cont) {
 	return perform_call(&reverse_call);
 }
 
+object* bignum_subtract_one(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	object subtract_args[2];
+	init_list_2(subtract_args, bignum_one(), a);
+	object subtract_call;
+	init_call(&subtract_call, &bignum_subtract_proc, subtract_args, cont);
+	
+	return perform_call(&subtract_call);
+}
+
 object bignum_to_string_proc;
 
 object* bignum_to_string(object* args, object* cont) {
@@ -495,6 +507,7 @@ void init_bignum_procedures(void) {
 	init_primitive_procedure(&bignum_subtract_proc, &bignum_subtract);
 	init_primitive_procedure(&bignum_subtract_with_sign_proc, &bignum_subtract_with_sign);
 	init_primitive_procedure(&bignum_subtract_digits_proc, &bignum_subtract_digits);
+	init_primitive_procedure(&bignum_subtract_one_proc, &bignum_subtract_one);
 
 	init_primitive_procedure(&bignum_multiply_proc, &bignum_multiply);
 	init_primitive_procedure(&bignum_multiply_reversed_proc, &bignum_multiply_reversed);
