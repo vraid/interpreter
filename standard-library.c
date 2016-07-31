@@ -56,10 +56,10 @@ object* function_is_symbol(object* args, object* cont) {
 	return is_of_type(type_symbol, args, cont);
 }
 
-object is_fixnum_proc;
+object is_bignum_proc;
 
-object* function_is_fixnum(object* args, object* cont) {
-	return is_of_type(type_fixnum, args, cont);
+object* function_is_bignum(object* args, object* cont) {
+	return is_of_type(type_bignum, args, cont);
 }
 
 object is_list_proc;
@@ -363,7 +363,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("false?", 1, &is_false_proc, &function_is_false);
 	init_and_bind_primitive("true?", 1, &is_true_proc, &function_is_true);
 	init_and_bind_primitive("symbol?", 1, &is_symbol_proc, &function_is_symbol);
-	init_and_bind_primitive("number?", 1, &is_fixnum_proc, &function_is_fixnum);
+	init_and_bind_primitive("number?", 1, &is_bignum_proc, &function_is_bignum);
 	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
 	init_and_bind_primitive("vector?", 1, &is_vector_proc, &function_is_vector);
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
