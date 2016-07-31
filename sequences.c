@@ -6,6 +6,7 @@
 #include "object-init.h"
 #include "base-util.h"
 #include "list-util.h"
+#include "bignums.h"
 #include "vectors.h"
 #include "streams.h"
 #include "delist.h"
@@ -73,21 +74,20 @@ object* take_single(object* args, object* cont) {
 	return perform_call(&add_call);
 }
 
-object* take_rest(object* args, object* cont) {
-	object* last;
+object take_rest_second_proc;
+
+object* take_rest_second(object* args, object* cont) {
 	object* count;
+	object* last;
 	object* sequence;
-	delist_3(args, &last, &count, &sequence);
+	delist_3(args, &count, &last, &sequence);
 	
-	object next_count;
-	init_fixnum(&next_count, fixnum_value(count)-1);
-	
-	if ((fixnum_value(&next_count) == 0) || is_empty_sequence(sequence)) {
+	if (is_zero_bignum(count) || is_empty_sequence(sequence)) {
 		return call_discarding_cont(cont);
 	}
 	else {
 		object take_args[2];
-		init_list_2(take_args, last, &next_count);
+		init_list_2(take_args, last, count);
 		object take_call;
 		init_call(&take_call, &take_single_proc, take_args, cont);
 		object take_cont;
@@ -100,6 +100,27 @@ object* take_rest(object* args, object* cont) {
 		
 		return perform_call(&eval_call);
 	}
+}
+
+object* take_rest(object* args, object* cont) {
+	object* last;
+	object* count;
+	object* sequence;
+	delist_3(args, &last, &count, &sequence);
+	
+	object rest_args[2];
+	init_list_2(rest_args, last, sequence);
+	object rest_call;
+	init_call(&rest_call, &take_rest_second_proc, rest_args, cont);
+	object rest_cont;
+	init_cont(&rest_cont, &rest_call);
+	
+	object dec_args[1];
+	init_list_1(dec_args, count);
+	object dec_call;
+	init_call(&dec_call, &bignum_subtract_one_proc, dec_args, &rest_cont);
+	
+	return perform_call(&dec_call);
 }
 
 object take_first_proc;
@@ -124,7 +145,7 @@ object* take(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	if ((fixnum_value(count) == 0) || is_empty_sequence(sequence)) {
+	if (is_zero_bignum(count) || is_empty_sequence(sequence)) {
 		return call_cont(cont, empty_list());
 	}
 	else {
@@ -136,20 +157,19 @@ object* take(object* args, object* cont) {
 }
 
 object drop_single_proc;
+object drop_single_second_proc;
 
-object* drop_single(object* args, object* cont) {
-	object* sequence;
+object* drop_single_second(object* args, object* cont) {
 	object* count;
-	delist_2(args, &sequence, &count);
+	object* sequence;
+	delist_2(args, &count, &sequence);
 	
-	if ((fixnum_value(count) == 0) || is_empty_sequence(sequence)) {
+	if (is_zero_bignum(count) || is_empty_sequence(sequence)) {
 		return call_cont(cont, sequence);
 	}
 	else {
-		object next_count;
-		init_fixnum(&next_count, fixnum_value(count)-1);
 		object drop_args[1];
-		init_list_1(drop_args, &next_count);
+		init_list_1(drop_args, count);
 		object drop_call;
 		init_call(&drop_call, &drop_single_proc, drop_args, cont);
 		object drop_cont;
@@ -162,6 +182,26 @@ object* drop_single(object* args, object* cont) {
 		
 		return perform_call(&eval_call);
 	}
+}
+
+object* drop_single(object* args, object* cont) {
+	object* sequence;
+	object* count;
+	delist_2(args, &sequence, &count);
+	
+	object drop_args[1];
+	init_list_1(drop_args, sequence);
+	object drop_call;
+	init_call(&drop_call, &drop_single_second_proc, drop_args, cont);
+	object drop_cont;
+	init_cont(&drop_cont, &drop_call);
+	
+	object dec_args[1];
+	init_list_1(dec_args, count);
+	object dec_call;
+	init_call(&dec_call, &bignum_subtract_one_proc, dec_args, &drop_cont);
+	
+	return perform_call(&dec_call);
 }
 
 object* drop(object* args, object* cont) {
@@ -263,6 +303,8 @@ void init_sequence_procedures(void) {
 	init_primitive_procedure(&take_first_proc, &take_first);
 	init_primitive_procedure(&take_single_proc, &take_single);
 	init_primitive_procedure(&take_rest_proc, &take_rest);
+	init_primitive_procedure(&take_rest_second_proc, &take_rest_second);
 	init_primitive_procedure(&drop_proc, &drop);
 	init_primitive_procedure(&drop_single_proc, &drop_single);
+	init_primitive_procedure(&drop_single_second_proc, &drop_single_second);
 }
