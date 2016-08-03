@@ -18,6 +18,14 @@ int list_length(object* ls) {
 	return n;
 }
 
+object* list_ref(int n, object* ls) {
+	while (n > 0) {
+		ls = list_rest(ls);
+		n--;
+	}
+	return list_first(ls);
+}
+
 object return_list_proc;
 
 object* return_list(object* args, object* cont) {

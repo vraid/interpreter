@@ -473,6 +473,188 @@ object* bignum_multiply(object* args, object* cont) {
 	return perform_call(&reverse_call);
 }
 
+object bignum_divide_one_proc;
+
+object* bignum_divide_one(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	object* divisor_digits = bignum_digits(divisor);
+	long divisor_first = 0; 
+	long power = 1;
+	
+	while (!is_empty_list(divisor_digits)) {
+		divisor_first = fixnum_value(list_first(divisor_digits));
+		divisor_digits = list_rest(divisor_digits);
+		power--;
+	}
+	
+	object* dividend_digits = bignum_digits(dividend);
+	long dividend_first = fixnum_value(list_first(dividend_digits));
+	long dividend_second = 0;
+
+	dividend_digits = list_rest(dividend_digits);
+
+	while (!is_empty_list(dividend_digits)) {
+		dividend_second = dividend_first;
+		dividend_first = fixnum_value(list_first(dividend_digits));
+		dividend_digits = list_rest(dividend_digits);
+		power++;
+	}
+	
+	if (dividend_first < divisor_first) {
+		dividend_first = dividend_second + dividend_first * bignum_base;
+		power--;
+	}
+	
+	long result = dividend_first / divisor_first;
+	
+	object num;
+	init_fixnum(&num, result);
+	object first_cell;
+	init_list_cell(&first_cell, &num, empty_list());
+	object* digits = &first_cell;
+	int i;
+	for (i = power; i > 0; i--) {
+		object* next_cell = alloca(sizeof(object));
+		init_list_cell(next_cell, zero(), digits);
+		digits = next_cell;
+	}
+	
+	object bign;
+	init_positive_bignum(&bign, digits);
+	
+	return call_cont(cont, &bign);
+}
+
+object bignum_perform_division_proc;
+object bignum_adjust_dividend_proc;
+
+object* bignum_adjust_dividend(object* args, object* cont) {
+	object* quotient;
+	object* divisor;
+	object* dividend;
+	delist_3(args, &quotient, &divisor, &dividend);
+	
+	object continue_call;
+	init_call(&continue_call, &bignum_perform_division_proc, args, cont);
+	object continue_cont;
+	init_cont(&continue_cont, &continue_call);
+	
+	object subtract_args[1];
+	init_list_1(subtract_args, dividend);
+	object subtract_call;
+	init_call(&subtract_call, &bignum_subtract_proc, subtract_args, &continue_cont);
+	object subtract_cont;
+	init_cont(&subtract_cont, &subtract_call);
+	
+	object multiply_args[2];
+	init_list_2(multiply_args, quotient, divisor);
+	object multiply_call;
+	init_call(&multiply_call, &bignum_multiply_proc, multiply_args, &subtract_cont);
+	
+	return perform_call(&multiply_call);
+}
+
+object* bignum_perform_division(object* args, object* cont) {
+	object* difference;
+	object* quotient;
+	object* divisor;
+	object* dividend;
+	delist_4(args, &difference, &quotient, &divisor, &dividend);
+	
+	char difference_positive = bignum_sign(difference) == 1;
+	
+	int compare = compare_unsigned_bignums(divisor, difference);
+	
+	if (is_zero_bignum(difference) || (compare == 1 && difference_positive)) {
+		object ls[2];
+		init_list_2(ls, quotient, difference);
+		
+		return call_cont(cont, ls);
+	}
+	else {
+		object* adjust_quotient_proc = difference_positive ? &bignum_add_proc : &bignum_subtract_proc;
+		
+		object difference_args[2];
+		init_list_2(difference_args, divisor, dividend);
+		object difference_call;
+		init_call(&difference_call, &bignum_adjust_dividend_proc, difference_args, cont);
+		object difference_cont;
+		init_cont(&difference_cont, &difference_call);
+		
+		object quotient_args[1];
+		init_list_1(quotient_args, quotient);
+		object quotient_call;
+		init_call(&quotient_call, adjust_quotient_proc, quotient_args, &difference_cont);
+		object quotient_cont;
+		init_cont(&quotient_cont, &quotient_call);
+		
+		object divide_args[2];
+		init_list_2(divide_args, divisor, difference);
+		object divide_call;
+		init_call(&divide_call, &bignum_divide_one_proc, divide_args, &quotient_cont);
+		
+		return perform_call(&divide_call);
+	}
+}
+
+object bignum_make_division_result_proc;
+
+object* bignum_make_division_result(object* args, object* cont) {
+	object* quot_rem;
+	object* quotient_sign;
+	object* remainder_sign;
+	delist_3(args, &quot_rem, &quotient_sign, &remainder_sign);
+	
+	object* quot;
+	object* rem;
+	delist_2(quot_rem, &quot, &rem);
+	
+	object quotient;
+	init_bignum(&quotient, fixnum_value(quotient_sign), bignum_digits(quot));
+	object remainder;
+	init_bignum(&remainder, fixnum_value(remainder_sign), bignum_digits(rem));
+	
+	object ls[2];
+	init_list_2(ls, &quotient, &remainder);
+	
+	return call_cont(cont, ls);
+}
+
+object* bignum_divide(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	int divisor_sign = bignum_sign(divisor);
+	int dividend_sign = bignum_sign(dividend);
+	
+	int quotient_sign = divisor_sign * dividend_sign;
+	int remainder_sign = dividend_sign;
+	
+	object positive_divisor;
+	init_positive_bignum(&positive_divisor, bignum_digits(divisor));
+	
+	object positive_dividend;
+	init_positive_bignum(&positive_dividend, bignum_digits(dividend));
+	
+	object result_args[2];
+	init_list_2(result_args, sign_object(quotient_sign), sign_object(remainder_sign));
+	object result_call;
+	init_call(&result_call, &bignum_make_division_result_proc, result_args, cont);
+	object result_cont;
+	init_cont(&result_cont, &result_call);
+	
+	object divide_args[4];
+	init_list_4(divide_args, &positive_dividend, bignum_zero(), &positive_divisor, &positive_dividend);
+	object divide_call;
+	init_call(&divide_call, &bignum_perform_division_proc, divide_args, &result_cont);
+	
+	return perform_call(&divide_call);
+}
+
 object* bignum_subtract_one(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
@@ -514,6 +696,12 @@ void init_bignum_procedures(void) {
 	init_primitive_procedure(&bignum_multiply_digits_proc, &bignum_multiply_digits);
 	init_primitive_procedure(&bignum_multiply_digit_proc, &bignum_multiply_digit);
 	init_primitive_procedure(&bignum_multiply_add_proc, &bignum_multiply_add);
+	
+	init_primitive_procedure(&bignum_divide_proc, &bignum_divide);
+	init_primitive_procedure(&bignum_make_division_result_proc, &bignum_make_division_result);
+	init_primitive_procedure(&bignum_divide_one_proc, &bignum_divide_one);
+	init_primitive_procedure(&bignum_perform_division_proc, &bignum_perform_division);
+	init_primitive_procedure(&bignum_adjust_dividend_proc, &bignum_adjust_dividend);
 	
 	init_primitive_procedure(&bignum_to_string_proc, &bignum_to_string);
 }

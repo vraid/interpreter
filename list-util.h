@@ -12,3 +12,4 @@ object unzip_2_proc;
 void init_list_util_procedures(void);
 
 int list_length(object* ls);
+object* list_ref(int n, object* ls);

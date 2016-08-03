@@ -193,6 +193,74 @@ object* function_multiply(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object quotient_continued_proc;
+
+object* quotient_continued(object* args, object* cont) {
+	object* ls;
+	delist_1(args, &ls);
+	
+	return call_cont(cont, list_first(ls));
+}
+
+object quotient_proc;
+
+object* function_quotient(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	if (!(is_bignum(divisor) && is_bignum(dividend))) {
+		return throw_error(cont, "quotient on non-number");
+	}
+	if (is_zero_bignum(divisor)) {
+		return throw_error(cont, "divide by zero (quotient)");
+	}
+	
+	object next_call;
+	init_call(&next_call, &quotient_continued_proc, empty_list(), cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object call;
+	init_call(&call, &bignum_divide_proc, args, &next_cont);
+	
+	return perform_call(&call);
+}
+
+object remainder_continued_proc;
+
+object* remainder_continued(object* args, object* cont) {
+	object* ls;
+	delist_1(args, &ls);
+	
+	return call_cont(cont, list_ref(1, ls));
+}
+
+object remainder_proc;
+
+object* function_remainder(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	if (!(is_bignum(divisor) && is_bignum(dividend))) {
+		return throw_error(cont, "remainder on non-number");
+	}
+	if (is_zero_bignum(divisor)) {
+		return throw_error(cont, "divide by zero (remainder)");
+	}
+	
+	object next_call;
+	init_call(&next_call, &remainder_continued_proc, empty_list(), cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object call;
+	init_call(&call, &bignum_divide_proc, args, &next_cont);
+	
+	return perform_call(&call);
+}
+
 object numeric_equality_proc;
 
 object* function_numeric_equality(object* args, object* cont) {
@@ -261,28 +329,6 @@ object* function_less_or_equal(object* args, object* cont) {
 	}
 	
 	return call_cont(cont, boolean(1 != compare_signed_bignums(a, b)));
-}
-
-object remainder_proc;
-
-object* function_remainder(object* args, object* cont) {
-	object* d;
-	object* n;
-	delist_2(args, &d, &n);
-	
-	if (!(is_fixnum(n) && is_fixnum(d))) {
-		return throw_error(cont, "remainder on non-number");
-	}
-	
-	if (fixnum_value(d) == 0) {
-		return throw_error(cont, "remainder divisor 0");
-	}
-	
-	long r = fixnum_value(n) % fixnum_value(d);
-	object result;
-	init_fixnum(&result, r);
-	
-	return call_cont(cont, &result);
 }
 
 object display_proc;
@@ -377,12 +423,15 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
 	init_and_bind_primitive("subtract-by", 2, &subtract_by_proc, &function_subtract_by);
 	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
+	init_and_bind_primitive("quotient", 2, &quotient_proc, &function_quotient);
+	init_primitive_procedure(&quotient_continued_proc, &quotient_continued);
+	init_and_bind_primitive("remainder", 2, &remainder_proc, &function_remainder);
+	init_primitive_procedure(&remainder_continued_proc, &remainder_continued);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
 	init_and_bind_primitive(">", 2, &greater_proc, &function_greater);
 	init_and_bind_primitive(">=", 2, &greater_or_equal_proc, &function_greater_or_equal);
 	init_and_bind_primitive("<", 2, &less_proc, &function_less);
 	init_and_bind_primitive("<=", 2, &less_or_equal_proc, &function_less_or_equal);
-	init_and_bind_primitive("remainder", 2, &remainder_proc, &function_remainder);
 	bind_primitive("identity", 1, &identity_proc);
 	add_static_binding(empty_stream(), "empty-stream");
 	bind_primitive("take", 2, &take_proc);

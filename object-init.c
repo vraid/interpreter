@@ -25,6 +25,10 @@ void init_bignum(object* obj, int sign, object* digits) {
 	obj->data.bignum.digits = digits;
 }
 
+void init_positive_bignum(object* obj, object* digits) {
+	init_bignum(obj, 1, digits);
+}
+
 void init_symbol(object* obj, object* name) {
 	init_object(location_stack, type_symbol, obj);
 	obj->data.symbol.name = name;

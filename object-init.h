@@ -6,6 +6,7 @@ void init_object(object_location loc, object_type t, object* obj);
 void init_string(object* obj, char* value);
 void init_fixnum(object* obj, long value);
 void init_bignum(object* obj, int sign, object* digits);
+void init_positive_bignum(object* obj, object* digits);
 void init_symbol(object* obj, object* name);
 void init_binding(object* obj, object* name, object* value);
 void init_stream(object* obj, object* first, object* rest);
