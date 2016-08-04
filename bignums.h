@@ -14,5 +14,7 @@ object bignum_divide_proc;
 
 int compare_signed_bignums(object* a, object* b);
 char is_zero_bignum(object* a);
+char is_positive_bignum(object* a);
+char is_negative_bignum(object* a);
 
 void init_bignum_procedures(void);

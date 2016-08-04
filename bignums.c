@@ -248,6 +248,14 @@ char is_zero_bignum(object* a) {
 	return is_empty_list(list_rest(digits)) && (0 == fixnum_value(list_first(digits)));
 }
 
+char is_positive_bignum(object* a) {
+	return (bignum_sign(a) == 1) && !is_zero_bignum(a);
+}
+
+char is_negative_bignum(object* a) {
+	return (bignum_sign(a) == -1) && !is_zero_bignum(a);
+}
+
 int compare_unsigned_bignums(object* a, object* b) {
 	int compare = 0;
 	

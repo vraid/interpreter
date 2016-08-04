@@ -261,6 +261,57 @@ object* function_remainder(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object modulo_continued_proc;
+
+object* modulo_continued(object* args, object* cont) {
+	object* ls;
+	object* divisor;
+	delist_2(args, &ls, &divisor);
+	
+	object* quotient;
+	object* remainder;
+	delist_2(ls, &quotient, &remainder);
+	
+	if (is_negative_bignum(remainder)) {
+		object add_args[2];
+		init_list_2(add_args, remainder, divisor);
+		object add_call;
+		init_call(&add_call, &bignum_add_proc, add_args, cont);
+		
+		return perform_call(&add_call);
+	}
+	else {
+		return call_cont(cont, remainder);
+	}
+}
+
+object modulo_proc;
+
+object* function_modulo(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	if (!(is_bignum(divisor) && is_bignum(dividend))) {
+		return throw_error(cont, "modulo on non-number");
+	}
+	if (!is_positive_bignum(divisor)) {
+		return throw_error(cont, "modulo with nonpositive base");
+	}
+	
+	object next_args[1];
+	init_list_1(next_args, divisor);
+	object next_call;
+	init_call(&next_call, &modulo_continued_proc, next_args, cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object call;
+	init_call(&call, &bignum_divide_proc, args, &next_cont);
+	
+	return perform_call(&call);
+}
+
 object numeric_equality_proc;
 
 object* function_numeric_equality(object* args, object* cont) {
@@ -427,6 +478,8 @@ void init_standard_functions(void) {
 	init_primitive_procedure(&quotient_continued_proc, &quotient_continued);
 	init_and_bind_primitive("remainder", 2, &remainder_proc, &function_remainder);
 	init_primitive_procedure(&remainder_continued_proc, &remainder_continued);
+	init_and_bind_primitive("modulo", 2, &modulo_proc, &function_modulo);
+	init_primitive_procedure(&modulo_continued_proc, &modulo_continued);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
 	init_and_bind_primitive(">", 2, &greater_proc, &function_greater);
 	init_and_bind_primitive(">=", 2, &greater_or_equal_proc, &function_greater_or_equal);
