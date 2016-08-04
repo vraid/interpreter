@@ -11,6 +11,8 @@ object bignum_subtract_proc;
 object bignum_subtract_one_proc;
 object bignum_multiply_proc;
 object bignum_divide_proc;
+object bignum_to_decimal_proc;
+object bignum_to_string_proc;
 
 int compare_signed_bignums(object* a, object* b);
 char is_zero_bignum(object* a);

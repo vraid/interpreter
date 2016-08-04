@@ -675,13 +675,134 @@ object* bignum_subtract_one(object* args, object* cont) {
 	return perform_call(&subtract_call);
 }
 
-object bignum_to_string_proc;
+object bignum_digits_to_new_base_proc;
+
+object* bignum_digits_to_new_base(object* args, object* cont) {
+	object* quot_rem;
+	object* last;
+	object* base;
+	delist_3(args, &quot_rem, &last, &base);
+	
+	object* quotient;
+	object* remainder;
+	delist_2(quot_rem, &quotient, &remainder);
+	
+	// assumes remainder only has one digit, which holds true for conversion to bases <= bignum_base
+	object* num = list_first(bignum_digits(remainder));
+	object cell;
+	init_list_cell(&cell, num, last);
+	
+	if (is_zero_bignum(quotient)) {
+		return call_cont(cont, &cell);
+	}
+	else {
+		object next_args[2];
+		init_list_2(next_args, &cell, base);
+		object next_call;
+		init_call(&next_call, &bignum_digits_to_new_base_proc, next_args, cont);
+		object next_cont;
+		init_cont(&next_cont, &next_call);
+		
+		object divide_args[2];
+		init_list_2(divide_args, base, quotient);
+		object divide_call;
+		init_call(&divide_call, &bignum_divide_proc, divide_args, &next_cont);
+		
+		return perform_call(&divide_call);
+	}
+}
+
+object bignum_to_new_base_proc;
+
+// returns a list of digits in the new base, from largest to smallest (opposite to order in bignum objects)
+
+object* bignum_to_new_base(object* args, object* cont) {
+	object* num;
+	object* base;
+	delist_2(args, &num, &base);
+	
+	object next_args[2];
+	init_list_2(next_args, empty_list(), base);
+	object next_call;
+	init_call(&next_call, &bignum_digits_to_new_base_proc, next_args, cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object divide_args[2];
+	init_list_2(divide_args, base, num);
+	object divide_call;
+	init_call(&divide_call, &bignum_divide_proc, divide_args, &next_cont);
+	
+	return perform_call(&divide_call);
+}
+
+object* bignum_to_decimal(object* args, object* cont) {
+	object* num;
+	delist_1(args, &num);
+	
+	object positive_num;
+	init_positive_bignum(&positive_num, bignum_digits(num));
+	
+	object call_args[2];
+	init_list_2(call_args, &positive_num, bignum_ten());
+	object call;
+	init_call(&call, &bignum_to_new_base_proc, call_args, cont);
+	
+	return perform_call(&call);
+}
+
+object decimal_to_string_proc;
+
+object* decimal_to_string(object* args, object* cont) {
+	object* digits;
+	object* sign;
+	delist_2(args, &digits, &sign);
+	
+	int length = list_length(digits);
+	char negative = fixnum_value(sign) == -1;
+	
+	int string_length = length + negative;
+	
+	char* str = alloca(sizeof(char) * (string_length + 1));
+	
+	if (negative) {
+		str[0] = '-';
+	}
+	
+	int i;
+	for (i = !negative; i < string_length; i++) {
+		str[i] = fixnum_value(list_first(digits)) - '0';
+		digits = list_rest(digits);
+	}
+	
+	str[string_length] = 0;
+	
+	object string;
+	init_string(&string, str);
+	
+	return call_cont(cont, &string);
+}
 
 object* bignum_to_string(object* args, object* cont) {
 	object* number;
 	delist_1(args, &number);
 	
-	return call_cont(cont, no_object());
+	object* sign = sign_object(bignum_sign(number));
+	if (is_zero_bignum(number)) {
+		sign = sign_object(1);
+	}
+	
+	object string_args[1];
+	init_list_1(string_args, sign);
+	object string_call;
+	init_call(&string_call, &decimal_to_string_proc, string_args, cont);
+	object string_cont;
+	init_cont(&string_cont, &string_call);
+	
+	object decimal_call;
+	init_call(&decimal_call, &bignum_to_new_base_proc, args, &string_cont);
+	
+	return perform_call(&decimal_call);
 }
 
 void init_bignum_procedures(void) {
@@ -711,5 +832,9 @@ void init_bignum_procedures(void) {
 	init_primitive_procedure(&bignum_perform_division_proc, &bignum_perform_division);
 	init_primitive_procedure(&bignum_adjust_dividend_proc, &bignum_adjust_dividend);
 	
+	init_primitive_procedure(&bignum_to_new_base_proc, &bignum_to_new_base);
+	init_primitive_procedure(&bignum_digits_to_new_base_proc, &bignum_digits_to_new_base);
+	init_primitive_procedure(&bignum_to_decimal_proc, &bignum_to_decimal);
+	init_primitive_procedure(&decimal_to_string_proc, &decimal_to_string);
 	init_primitive_procedure(&bignum_to_string_proc, &bignum_to_string);
 }

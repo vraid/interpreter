@@ -45,3 +45,4 @@ object* bignum_zero_list(void);
 object* bignum_zero(void);
 object* bignum_one_list(void);
 object* bignum_one(void);
+object* bignum_ten(void);

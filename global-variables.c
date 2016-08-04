@@ -26,10 +26,13 @@ object _question_mark_string;
 object _zero;
 object _one;
 object _negative_one;
+object _ten;
 object _bignum_zero_list;
 object _bignum_zero;
 object _bignum_one_list;
 object _bignum_one;
+object _bignum_ten_list;
+object _bignum_ten;
 
 object _end_cont;
 object end_proc;
@@ -47,6 +50,11 @@ object* end(object* args, object* cont) {
 void init_boolean(object* obj, char value) {
 	init_object(location_static, type_boolean, obj);
 	obj->data.boolean.value = value;
+}
+
+void init_static_fixnum(object* obj, long value) {
+	init_fixnum(obj, value);
+	make_static(obj);
 }
 
 void init_global_variables(void) {
@@ -99,28 +107,28 @@ void init_global_variables(void) {
 	init_string(question_mark_string(), "?");
 	_question_mark_string.location = location_static;
 	
-	init_object(location_static, type_fixnum, &_zero);
-	_zero.data.fixnum.value = 0;
-	init_object(location_static, type_fixnum, &_one);
-	_one.data.fixnum.value = 1;
-	init_object(location_static, type_fixnum, &_negative_one);
-	_negative_one.data.fixnum.value = -1;
+	init_static_fixnum(&_zero, 0);
+	init_static_fixnum(&_one, 1);
+	init_static_fixnum(&_negative_one, -1);
+	init_static_fixnum(&_ten, 10);
 	
-	init_object(location_static, type_list, &_bignum_zero_list);
-	_bignum_zero_list.data.list.first = zero();
-	_bignum_zero_list.data.list.rest = empty_list();
+	init_list_1(&_bignum_zero_list, zero());
+	make_static(&_bignum_zero_list);
 
-	init_object(location_static, type_bignum, &_bignum_zero);
-	_bignum_zero.data.bignum.sign = 1;
-	_bignum_zero.data.bignum.digits = &_bignum_zero_list;
+	init_bignum(&_bignum_zero, 1, &_bignum_zero_list);
+	make_static(&_bignum_zero);
 	
-	init_object(location_static, type_list, &_bignum_one_list);
-	_bignum_one_list.data.list.first = one();
-	_bignum_one_list.data.list.rest = empty_list();
+	init_list_1(&_bignum_one_list, one());
+	make_static(&_bignum_one_list);
 
-	init_object(location_static, type_bignum, &_bignum_one);
-	_bignum_one.data.bignum.sign = 1;
-	_bignum_one.data.bignum.digits = &_bignum_one_list;
+	init_bignum(&_bignum_one, 1, &_bignum_one_list);
+	make_static(&_bignum_one);
+	
+	init_list_1(&_bignum_ten_list, &_ten);
+	make_static(&_bignum_ten_list);
+
+	init_bignum(&_bignum_ten, 1, &_bignum_ten_list);
+	make_static(&_bignum_ten);
 	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
@@ -244,4 +252,7 @@ object* bignum_one_list(void) {
 }
 object* bignum_one(void) {
 	return &_bignum_one;
+}
+object* bignum_ten(void) {
+	return &_bignum_ten;
 }

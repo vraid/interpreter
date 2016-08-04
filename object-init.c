@@ -3,6 +3,10 @@
 #include "object-init.h"
 #include "global-variables.h"
 
+void make_static(object* obj) {
+	obj->location = location_static;
+}
+
 void init_object(object_location loc, object_type t, object* obj) {
 	obj->type = t;
 	obj->location = loc;

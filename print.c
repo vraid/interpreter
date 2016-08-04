@@ -7,6 +7,7 @@
 #include "delist.h"
 #include "object-init.h"
 #include "vectors.h"
+#include "bignums.h"
 
 object print_sequence_element_proc;
 object print_first_sequence_element_proc;
@@ -184,16 +185,39 @@ object* print_struct(object* args, object* cont) {
 	}
 }
 
+object print_bignum_digits_proc;
+
+object* print_bignum_digits(object* args, object* cont) {
+	object* digits;
+	delist_1(args, &digits);
+	
+	while (!is_empty_list(digits)) {
+		printf("%ld", fixnum_value(list_first(digits)));
+		digits = list_rest(digits);
+	}
+	
+	return call_discarding_cont(cont);
+}
+
 object print_bignum_proc;
 
 object* print_bignum(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
-	if (bignum_sign(num) == -1) printf("-");
-	object call_args[1];
-	init_list_1(call_args, bignum_digits(num));
-	return print_sequence(call_args, cont);
+	if ((bignum_sign(num) == -1) && !is_zero_bignum(num)) {
+		printf("-");
+	}
+	
+	object print_call;
+	init_call(&print_call, &print_bignum_digits_proc, empty_list(), cont);
+	object print_cont;
+	init_cont(&print_cont, &print_call);
+	
+	object call;
+	init_call(&call, &bignum_to_decimal_proc, args, &print_cont);
+	
+	return perform_call(&call);
 }
 
 object* print_newline(object* args, object* cont) {
@@ -280,4 +304,5 @@ void init_print_procedures(void) {
 	
 	init_primitive_procedure(&print_struct_proc, &print_struct);
 	init_primitive_procedure(&print_bignum_proc, &print_bignum);
+	init_primitive_procedure(&print_bignum_digits_proc, &print_bignum_digits);
 }
