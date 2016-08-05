@@ -312,6 +312,23 @@ object* function_modulo(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object gcd_proc;
+
+object* function_gcd(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (!(is_bignum(a) && is_bignum(b))) {
+		return throw_error(cont, "gcd on non-number");
+	}
+	
+	object gcd_call;
+	init_call(&gcd_call, &bignum_greatest_common_divisor_proc, args, cont);
+	
+	return perform_call(&gcd_call);
+}
+
 object numeric_equality_proc;
 
 object* function_numeric_equality(object* args, object* cont) {
@@ -480,6 +497,7 @@ void init_standard_functions(void) {
 	init_primitive_procedure(&remainder_continued_proc, &remainder_continued);
 	init_and_bind_primitive("modulo", 2, &modulo_proc, &function_modulo);
 	init_primitive_procedure(&modulo_continued_proc, &modulo_continued);
+	init_and_bind_primitive("gcd", 2, &gcd_proc, &function_gcd);
 	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
 	init_and_bind_primitive(">", 2, &greater_proc, &function_greater);
 	init_and_bind_primitive(">=", 2, &greater_or_equal_proc, &function_greater_or_equal);

@@ -663,6 +663,69 @@ object* bignum_divide(object* args, object* cont) {
 	return perform_call(&divide_call);
 }
 
+object bignum_gcd_step_proc;
+
+object* bignum_gcd_step(object* args, object* cont) {
+	object* quot_rem;
+	object* smaller;
+	object* larger;
+	delist_3(args, &quot_rem, &smaller, &larger);
+	
+	object* quotient;
+	object* remainder;
+	delist_2(quot_rem, &quotient, &remainder);
+	
+	if (is_zero_bignum(remainder)) {
+		return call_cont(cont, smaller);
+	}
+	else {
+		object gcd_args[2];
+		init_list_2(gcd_args, remainder, smaller);
+		object gcd_call;
+		init_call(&gcd_call, &bignum_gcd_step_proc, gcd_args, cont);
+		object gcd_cont;
+		init_cont(&gcd_cont, &gcd_call);
+		
+		object divide_args[2];
+		init_list_2(divide_args, remainder, smaller);
+		object divide_call;
+		init_call(&divide_call, &bignum_divide_proc, divide_args, &gcd_cont);
+		
+		return perform_call(&divide_call);
+	}
+}
+
+object* bignum_greatest_common_divisor(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	object a_pos;
+	init_positive_bignum(&a_pos, bignum_digits(a));
+	object b_pos;
+	init_positive_bignum(&b_pos, bignum_digits(b));
+	
+	int compare = compare_unsigned_bignums(a, b);
+	
+	if (compare == 0) {
+		return call_cont(cont, a);
+	}
+	else {
+		char a_smaller = (compare == -1);
+		object* smaller = a_smaller ? a : b;
+		object* larger = a_smaller ? b : a;
+		
+		object quot_rem[2];
+		init_list_2(quot_rem, bignum_zero(), smaller);
+		object gcd_args[3];
+		init_list_3(gcd_args, quot_rem, larger, bignum_zero());
+		object gcd_call;
+		init_call(&gcd_call, &bignum_gcd_step_proc, gcd_args, cont);
+		
+		return perform_call(&gcd_call);
+	}
+}
+
 object* bignum_subtract_one(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
@@ -831,6 +894,9 @@ void init_bignum_procedures(void) {
 	init_primitive_procedure(&bignum_divide_one_proc, &bignum_divide_one);
 	init_primitive_procedure(&bignum_perform_division_proc, &bignum_perform_division);
 	init_primitive_procedure(&bignum_adjust_dividend_proc, &bignum_adjust_dividend);
+	
+	init_primitive_procedure(&bignum_greatest_common_divisor_proc, &bignum_greatest_common_divisor);
+	init_primitive_procedure(&bignum_gcd_step_proc, &bignum_gcd_step);
 	
 	init_primitive_procedure(&bignum_to_new_base_proc, &bignum_to_new_base);
 	init_primitive_procedure(&bignum_digits_to_new_base_proc, &bignum_digits_to_new_base);
