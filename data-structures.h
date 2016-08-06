@@ -58,8 +58,8 @@ typedef struct object {
 			char value;
 		} boolean;
 		struct {
-			int length;
 			char* value;
+			int length;
 		} string;
 		struct {
 			struct object* name;
@@ -68,8 +68,8 @@ typedef struct object {
 			long value;
 		} fixnum;
 		struct {
-			int sign;
 			struct object* digits;
+			int sign;
 		} bignum;
 		struct {
 			struct object* first;
@@ -81,12 +81,12 @@ typedef struct object {
 			struct object* rest;
 		} stream;
 		struct {
-			int length;
 			struct object** data;
+			int length;
 		} vector;
 		struct {
-			int n;
 			struct object* vector;
+			int n;
 		} vector_iterator;
 		struct {
 			struct object* name;
@@ -115,8 +115,8 @@ typedef struct object {
 			struct object* continuation;
 		} call;
 		struct {
-			cont_type conttype;
 			struct object* call;
+			cont_type conttype;
 		} continuation;
 		struct {
 			struct object* name;
