@@ -47,15 +47,15 @@ typedef struct {
 memory_space main_memory_space;
 
 size_t object_size(object* obj) {
-	if (is_string(obj)) {
-		return sizeof(object) + sizeof(char) * (1 + string_length(obj));
+	switch (obj->type) {
+		case type_string: return sizeof(object) + sizeof(char) * (1 + string_length(obj));
+		case type_vector: return sizeof(object) + sizeof(object*) * vector_length(obj);
+		default: return sizeof(object);
 	}
-	else if (is_vector(obj)) {
-		return sizeof(object) + sizeof(object*) * vector_length(obj);
-	}
-	else {
-		return sizeof(object);
-	}
+}
+
+char* target_offset(object* obj, int direction) {
+	return (char*)(obj + 1) - ((direction == 1) ? 0 : (object_size(obj)));
 }
 
 void move_object(object* to, object* from, int direction) {
@@ -63,13 +63,12 @@ void move_object(object* to, object* from, int direction) {
 	to->location = location_heap;
 	from->location = location_moved;
 	from->data.forward_reference.ref = to;
+	char* next_target = target_offset(to, direction);
 	if (is_string(to)) {
-		char* next_target = (char*)(to + direction);
-		memcpy(next_target, string_value(to), 1 + string_length(to));
+		strcpy(next_target, string_value(to));
 		to->data.string.value = next_target;
 	}
 	else if (is_vector(to)) {
-		char* next_target = (char*)(to + direction);
 		memcpy(next_target, vector_data(to), sizeof(object*) * vector_length(to));
 		to->data.vector.data = (object**)next_target;
 	}

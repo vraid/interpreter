@@ -148,5 +148,7 @@ void init_repl_procedures(void) {
 	init_primitive_procedure(&repl_error_proc, &repl_error);
 	
 	init_string(&read_error_string, "read error");
+	make_static(&read_error_string);
 	init_string(&eval_error_string, "eval error");
+	make_static(&eval_error_string);
 }
