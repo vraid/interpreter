@@ -11,6 +11,7 @@
 #include "delist.h"
 #include "call.h"
 #include "symbols.h"
+#include "bignums.h"
 
 object read_add_to_list_proc;
 object read_list_value_proc;
@@ -92,7 +93,7 @@ char is_valid_number(object* string) {
 	int i;
 	char* str = string_value(string);
 	for (i = 0; i < string_length(string); i++) {
-		if (!is_digit(str[i])) return 0;
+		if (!(is_digit(str[i]) || ((i == 0) && (str[0] == '-') && (string_length(string) > 1)))) return 0;
 	}
 	return 1;
 }
@@ -163,19 +164,74 @@ object* read_nonstring(object* args, object* cont) {
 	return symbol(string_value(string), cont);
 }
 
+object read_bignum_proc;
+
+object* read_bignum(object* args, object* cont) {
+	object* num;
+	object* index;
+	object* string;
+	delist_3(args, &num, &index, &string);
+
+	long i = fixnum_value(index);
+	if (i == string_length(string)) {
+		return call_cont(cont, num);
+	}
+	else {
+		object next_index;
+		init_fixnum(&next_index, fixnum_value(index) + 1);
+		
+		object digit;
+		init_fixnum(&digit, string_value(string)[i] - '0');
+		object ls[1];
+		init_list_1(ls, &digit);
+		
+		object read_args[2];
+		init_list_2(read_args, &next_index, string);
+		object read_call;
+		init_call(&read_call, &read_bignum_proc, read_args, cont);
+		object read_cont;
+		init_cont(&read_cont, &read_call);
+		
+		object add_args[1];
+		init_list_1(add_args, ls);
+		object add_call;
+		init_call(&add_call, &bignum_add_signless_proc, add_args, &read_cont);
+		object add_cont;
+		init_cont(&add_cont, &add_call);
+		
+		object multiply_args[2];
+		init_list_2(multiply_args, ten(), num);
+		object multiply_call;
+		init_call(&multiply_call, &bignum_multiply_digit_proc, multiply_args, &add_cont);
+		
+		return perform_call(&multiply_call);
+	}
+}
+
 object* read_number(object* args, object* cont) {
 	object* string;
 	delist_1(args, &string);
 	
 	if (is_valid_number(string)) {
-		object number;
-		init_fixnum(&number, string_to_int(string_value(string)));
-		object list_cell;
-		init_list_1(&list_cell, &number);
-		object num;
-		init_bignum(&num, 1, &list_cell);
+		int sign = string_value(string)[0] == '-' ? -1 : 1;
 		
-		return call_cont(cont, &num);
+		int i = (sign == 1) ? 0 : 1;
+		object index;
+		init_fixnum(&index, i);
+		
+		object make_args[1];
+		init_list_1(make_args, sign_object(sign));
+		object make_call;
+		init_call(&make_call, &make_bignum_proc, make_args, cont);
+		object make_cont;
+		init_cont(&make_cont, &make_call);
+		
+		object read_args[3];
+		init_list_3(read_args, bignum_zero_list(), &index, string);
+		object read_call;
+		init_call(&read_call, &read_bignum_proc, read_args, &make_cont);
+		
+		return perform_call(&read_call);
 	}
 	else {
 		return throw_error(cont, "invalid number");
@@ -237,7 +293,7 @@ object* read_value(object* args, object* cont) {
 		else if (is_hash_char(c)) {
 			primitive = &read_hashed_proc;
 		}
-		else if (is_digit(c)) {
+		else if (is_digit(c) || ((c == '-') && (strlen(str) > 1))) {
 			primitive = &read_number_proc;
 		}
 		else {
@@ -380,5 +436,6 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&read_string_proc, &read_string);
 	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
 	init_primitive_procedure(&read_number_proc, &read_number);
+	init_primitive_procedure(&read_bignum_proc, &read_bignum);
 	init_primitive_procedure(&read_hashed_proc, &read_hashed);
 }

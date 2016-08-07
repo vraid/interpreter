@@ -53,8 +53,6 @@ object* remove_leading_zeroes_and_reverse(object* args, object* cont) {
 	return perform_call(&remove_zeroes_call);
 }
 
-object bignum_add_digits_proc;
-
 object* bignum_add_digits(object* args, object* cont) {
 	object* a;
 	object* b;
@@ -87,8 +85,6 @@ object* bignum_add_digits(object* args, object* cont) {
 	}
 	return call_cont(cont, digits);
 }
-
-object bignum_add_signless_proc;
 
 object* bignum_add_signless(object* args, object* cont) {
 	object* a;
@@ -361,8 +357,6 @@ object* bignum_multiply_add(object* args, object* cont) {
 	
 	return perform_call(&add_call);
 }
-
-object bignum_multiply_digit_proc;
 
 object* bignum_multiply_digit(object* args, object* cont) {
 	object* a_num;

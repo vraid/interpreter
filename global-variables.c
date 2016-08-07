@@ -241,6 +241,10 @@ object* sign_object(int sign) {
 	}
 }
 
+object* ten(void) {
+	return &_ten;
+}
+
 object* bignum_zero_list(void) {
 	return &_bignum_zero_list;
 }

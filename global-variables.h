@@ -40,6 +40,7 @@ object* zero(void);
 object* one(void);
 object* negative_one(void);
 object* sign_object(int sign);
+object* ten(void);
 
 object* bignum_zero_list(void);
 object* bignum_zero(void);

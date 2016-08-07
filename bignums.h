@@ -7,9 +7,12 @@
 
 object make_bignum_proc;
 object bignum_add_proc;
+object bignum_add_digits_proc;
+object bignum_add_signless_proc;
 object bignum_subtract_proc;
 object bignum_subtract_one_proc;
 object bignum_multiply_proc;
+object bignum_multiply_digit_proc;
 object bignum_divide_proc;
 object bignum_greatest_common_divisor_proc;
 object bignum_to_decimal_proc;
