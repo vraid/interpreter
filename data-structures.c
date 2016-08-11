@@ -24,7 +24,7 @@ void init_type_names(void) {
 	type_names[type_string] = "string";
 	type_names[type_symbol] = "symbol";
 	type_names[type_fixnum] = "fixnum";
-	type_names[type_bignum] = "bignum";
+	type_names[type_integer] = "integer";
 	type_names[type_struct_definition] = "struct definition";
 	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
@@ -80,8 +80,8 @@ char is_symbol(object* obj) {
 char is_fixnum(object* obj) {
 	return is_type(type_fixnum, obj);
 }
-char is_bignum(object* obj) {
-	return is_type(type_bignum, obj);
+char is_integer(object* obj) {
+	return is_type(type_integer, obj);
 }
 char is_list(object* obj) {
 	return is_type(type_list, obj);
@@ -174,13 +174,13 @@ long fixnum_value(object* obj) {
 	check_type(type_fixnum, obj);
 	return obj->data.fixnum.value;
 }
-int bignum_sign(object* obj) {
-	check_type(type_bignum, obj);
-	return obj->data.bignum.sign;
+int integer_sign(object* obj) {
+	check_type(type_integer, obj);
+	return obj->data.integer.sign;
 }
-object* bignum_digits(object* obj) {
-	check_type(type_bignum, obj);
-	return obj->data.bignum.digits;
+object* integer_digits(object* obj) {
+	check_type(type_integer, obj);
+	return obj->data.integer.digits;
 }
 
 object* list_first(object* ls) {

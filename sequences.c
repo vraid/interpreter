@@ -6,7 +6,7 @@
 #include "object-init.h"
 #include "base-util.h"
 #include "list-util.h"
-#include "bignums.h"
+#include "integers.h"
 #include "vectors.h"
 #include "streams.h"
 #include "delist.h"
@@ -82,7 +82,7 @@ object* take_rest_second(object* args, object* cont) {
 	object* sequence;
 	delist_3(args, &count, &last, &sequence);
 	
-	if (is_zero_bignum(count) || is_empty_sequence(sequence)) {
+	if (is_zero_integer(count) || is_empty_sequence(sequence)) {
 		return call_discarding_cont(cont);
 	}
 	else {
@@ -118,7 +118,7 @@ object* take_rest(object* args, object* cont) {
 	object dec_args[1];
 	init_list_1(dec_args, count);
 	object dec_call;
-	init_call(&dec_call, &bignum_subtract_one_proc, dec_args, &rest_cont);
+	init_call(&dec_call, &integer_subtract_one_proc, dec_args, &rest_cont);
 	
 	return perform_call(&dec_call);
 }
@@ -145,7 +145,7 @@ object* take(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	if (is_zero_bignum(count) || is_empty_sequence(sequence)) {
+	if (is_zero_integer(count) || is_empty_sequence(sequence)) {
 		return call_cont(cont, empty_list());
 	}
 	else {
@@ -164,7 +164,7 @@ object* drop_single_second(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	if (is_zero_bignum(count) || is_empty_sequence(sequence)) {
+	if (is_zero_integer(count) || is_empty_sequence(sequence)) {
 		return call_cont(cont, sequence);
 	}
 	else {
@@ -199,7 +199,7 @@ object* drop_single(object* args, object* cont) {
 	object dec_args[1];
 	init_list_1(dec_args, count);
 	object dec_call;
-	init_call(&dec_call, &bignum_subtract_one_proc, dec_args, &drop_cont);
+	init_call(&dec_call, &integer_subtract_one_proc, dec_args, &drop_cont);
 	
 	return perform_call(&dec_call);
 }

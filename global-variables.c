@@ -27,12 +27,12 @@ object _zero;
 object _one;
 object _negative_one;
 object _ten;
-object _bignum_zero_list;
-object _bignum_zero;
-object _bignum_one_list;
-object _bignum_one;
-object _bignum_ten_list;
-object _bignum_ten;
+object _integer_zero_list;
+object _integer_zero;
+object _integer_one_list;
+object _integer_one;
+object _integer_ten_list;
+object _integer_ten;
 
 object _end_cont;
 object end_proc;
@@ -112,23 +112,23 @@ void init_global_variables(void) {
 	init_static_fixnum(&_negative_one, -1);
 	init_static_fixnum(&_ten, 10);
 	
-	init_list_1(&_bignum_zero_list, zero());
-	make_static(&_bignum_zero_list);
+	init_list_1(&_integer_zero_list, zero());
+	make_static(&_integer_zero_list);
 
-	init_bignum(&_bignum_zero, 1, &_bignum_zero_list);
-	make_static(&_bignum_zero);
+	init_integer(&_integer_zero, 1, &_integer_zero_list);
+	make_static(&_integer_zero);
 	
-	init_list_1(&_bignum_one_list, one());
-	make_static(&_bignum_one_list);
+	init_list_1(&_integer_one_list, one());
+	make_static(&_integer_one_list);
 
-	init_bignum(&_bignum_one, 1, &_bignum_one_list);
-	make_static(&_bignum_one);
+	init_integer(&_integer_one, 1, &_integer_one_list);
+	make_static(&_integer_one);
 	
-	init_list_1(&_bignum_ten_list, &_ten);
-	make_static(&_bignum_ten_list);
+	init_list_1(&_integer_ten_list, &_ten);
+	make_static(&_integer_ten_list);
 
-	init_bignum(&_bignum_ten, 1, &_bignum_ten_list);
-	make_static(&_bignum_ten);
+	init_integer(&_integer_ten, 1, &_integer_ten_list);
+	make_static(&_integer_ten);
 	
 	init_primitive_procedure(&end_proc, &end);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
@@ -245,18 +245,18 @@ object* ten(void) {
 	return &_ten;
 }
 
-object* bignum_zero_list(void) {
-	return &_bignum_zero_list;
+object* integer_zero_list(void) {
+	return &_integer_zero_list;
 }
-object* bignum_zero(void) {
-	return &_bignum_zero;
+object* integer_zero(void) {
+	return &_integer_zero;
 }
-object* bignum_one_list(void) {
-	return &_bignum_one_list;
+object* integer_one_list(void) {
+	return &_integer_one_list;
 }
-object* bignum_one(void) {
-	return &_bignum_one;
+object* integer_one(void) {
+	return &_integer_one;
 }
-object* bignum_ten(void) {
-	return &_bignum_ten;
+object* integer_ten(void) {
+	return &_integer_ten;
 }

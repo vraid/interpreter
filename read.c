@@ -11,7 +11,7 @@
 #include "delist.h"
 #include "call.h"
 #include "symbols.h"
-#include "bignums.h"
+#include "integers.h"
 
 object read_add_to_list_proc;
 object read_list_value_proc;
@@ -164,9 +164,9 @@ object* read_nonstring(object* args, object* cont) {
 	return symbol(string_value(string), cont);
 }
 
-object read_bignum_proc;
+object read_integer_proc;
 
-object* read_bignum(object* args, object* cont) {
+object* read_integer(object* args, object* cont) {
 	object* num;
 	object* index;
 	object* string;
@@ -188,21 +188,21 @@ object* read_bignum(object* args, object* cont) {
 		object read_args[2];
 		init_list_2(read_args, &next_index, string);
 		object read_call;
-		init_call(&read_call, &read_bignum_proc, read_args, cont);
+		init_call(&read_call, &read_integer_proc, read_args, cont);
 		object read_cont;
 		init_cont(&read_cont, &read_call);
 		
 		object add_args[1];
 		init_list_1(add_args, ls);
 		object add_call;
-		init_call(&add_call, &bignum_add_signless_proc, add_args, &read_cont);
+		init_call(&add_call, &integer_add_signless_proc, add_args, &read_cont);
 		object add_cont;
 		init_cont(&add_cont, &add_call);
 		
 		object multiply_args[2];
 		init_list_2(multiply_args, ten(), num);
 		object multiply_call;
-		init_call(&multiply_call, &bignum_multiply_digit_proc, multiply_args, &add_cont);
+		init_call(&multiply_call, &integer_multiply_digit_proc, multiply_args, &add_cont);
 		
 		return perform_call(&multiply_call);
 	}
@@ -222,14 +222,14 @@ object* read_number(object* args, object* cont) {
 		object make_args[1];
 		init_list_1(make_args, sign_object(sign));
 		object make_call;
-		init_call(&make_call, &make_bignum_proc, make_args, cont);
+		init_call(&make_call, &make_integer_proc, make_args, cont);
 		object make_cont;
 		init_cont(&make_cont, &make_call);
 		
 		object read_args[3];
-		init_list_3(read_args, bignum_zero_list(), &index, string);
+		init_list_3(read_args, integer_zero_list(), &index, string);
 		object read_call;
-		init_call(&read_call, &read_bignum_proc, read_args, &make_cont);
+		init_call(&read_call, &read_integer_proc, read_args, &make_cont);
 		
 		return perform_call(&read_call);
 	}
@@ -436,6 +436,6 @@ void init_read_procedures(void) {
 	init_primitive_procedure(&read_string_proc, &read_string);
 	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
 	init_primitive_procedure(&read_number_proc, &read_number);
-	init_primitive_procedure(&read_bignum_proc, &read_bignum);
+	init_primitive_procedure(&read_integer_proc, &read_integer);
 	init_primitive_procedure(&read_hashed_proc, &read_hashed);
 }

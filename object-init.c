@@ -23,14 +23,14 @@ void init_fixnum(object* obj, long value) {
 	obj->data.fixnum.value = value;
 }
 
-void init_bignum(object* obj, int sign, object* digits) {
-	init_object(location_stack, type_bignum, obj);
-	obj->data.bignum.sign = sign;
-	obj->data.bignum.digits = digits;
+void init_integer(object* obj, int sign, object* digits) {
+	init_object(location_stack, type_integer, obj);
+	obj->data.integer.sign = sign;
+	obj->data.integer.digits = digits;
 }
 
-void init_positive_bignum(object* obj, object* digits) {
-	init_bignum(obj, 1, digits);
+void init_positive_integer(object* obj, object* digits) {
+	init_integer(obj, 1, digits);
 }
 
 void init_symbol(object* obj, object* name) {

@@ -7,7 +7,7 @@
 #include "delist.h"
 #include "object-init.h"
 #include "vectors.h"
-#include "bignums.h"
+#include "integers.h"
 
 object print_sequence_element_proc;
 object print_first_sequence_element_proc;
@@ -185,9 +185,9 @@ object* print_struct(object* args, object* cont) {
 	}
 }
 
-object print_bignum_digits_proc;
+object print_integer_digits_proc;
 
-object* print_bignum_digits(object* args, object* cont) {
+object* print_integer_digits(object* args, object* cont) {
 	object* digits;
 	delist_1(args, &digits);
 	
@@ -199,23 +199,23 @@ object* print_bignum_digits(object* args, object* cont) {
 	return call_discarding_cont(cont);
 }
 
-object print_bignum_proc;
+object print_integer_proc;
 
-object* print_bignum(object* args, object* cont) {
+object* print_integer(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
-	if ((bignum_sign(num) == -1) && !is_zero_bignum(num)) {
+	if ((integer_sign(num) == -1) && !is_zero_integer(num)) {
 		printf("-");
 	}
 	
 	object print_call;
-	init_call(&print_call, &print_bignum_digits_proc, empty_list(), cont);
+	init_call(&print_call, &print_integer_digits_proc, empty_list(), cont);
 	object print_cont;
 	init_cont(&print_cont, &print_call);
 	
 	object call;
-	init_call(&call, &bignum_to_decimal_proc, args, &print_cont);
+	init_call(&call, &integer_to_decimal_proc, args, &print_cont);
 	
 	return perform_call(&call);
 }
@@ -254,8 +254,8 @@ object* print_value(object* args, object* cont) {
 		case type_fixnum:
 			printf("%ld", fixnum_value(obj));
 			break;
-		case type_bignum:
-			return print_bignum(args, cont);
+		case type_integer:
+			return print_integer(args, cont);
 			break;
 		case type_struct_instance:
 			return print_struct(args, cont);
@@ -303,6 +303,6 @@ void init_print_procedures(void) {
 	init_primitive_procedure(&print_first_stream_element_proc, &print_first_stream_element);
 	
 	init_primitive_procedure(&print_struct_proc, &print_struct);
-	init_primitive_procedure(&print_bignum_proc, &print_bignum);
-	init_primitive_procedure(&print_bignum_digits_proc, &print_bignum_digits);
+	init_primitive_procedure(&print_integer_proc, &print_integer);
+	init_primitive_procedure(&print_integer_digits_proc, &print_integer_digits);
 }

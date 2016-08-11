@@ -90,8 +90,8 @@ void traverse_symbol(target_space space, object* obj, object_location location) 
 	move_if_necessary(space, &obj->data.symbol.name, location);
 }
 
-void traverse_bignum(target_space space, object* obj, object_location location) {
-	move_if_necessary(space, &obj->data.bignum.digits, location);
+void traverse_integer(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.integer.digits, location);
 }
 
 void traverse_list(target_space space, object* obj, object_location location) {
@@ -167,7 +167,7 @@ typedef void (traversal)(target_space space, object* obj, object_location locati
 traversal* traversal_function(object* obj) {
 	switch (obj->type) {
 		case type_symbol: return &traverse_symbol;
-		case type_bignum: return &traverse_bignum;
+		case type_integer: return &traverse_integer;
 		case type_list: return &traverse_list;
 		case type_stream: return &traverse_stream;
 		case type_vector: return &traverse_vector;

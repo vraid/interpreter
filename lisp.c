@@ -13,7 +13,7 @@
 #include "sequences.h"
 #include "streams.h"
 #include "strings.h"
-#include "bignums.h"
+#include "integers.h"
 #include "list-util.h"
 #include "vectors.h"
 #include "base-util.h"
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 	init_sequence_procedures();
 	init_stream_procedures();
 	init_string_procedures();
-	init_bignum_procedures();
+	init_integer_procedures();
 	init_list_util_procedures();
 	init_vector_procedures();
 	init_base_util_procedures();

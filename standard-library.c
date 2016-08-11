@@ -10,7 +10,7 @@
 #include "print.h"
 #include "base-util.h"
 #include "list-util.h"
-#include "bignums.h"
+#include "integers.h"
 #include "sequences.h"
 #include "environments.h"
 #include "global-variables.h"
@@ -56,10 +56,10 @@ object* function_is_symbol(object* args, object* cont) {
 	return is_of_type(type_symbol, args, cont);
 }
 
-object is_bignum_proc;
+object is_integer_proc;
 
-object* function_is_bignum(object* args, object* cont) {
-	return is_of_type(type_bignum, args, cont);
+object* function_is_integer(object* args, object* cont) {
+	return is_of_type(type_integer, args, cont);
 }
 
 object is_list_proc;
@@ -119,12 +119,12 @@ object* function_add(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "+ on non-number");
 	}
 	
 	object call;
-	init_call(&call, &bignum_add_proc, args, cont);
+	init_call(&call, &integer_add_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -134,12 +134,12 @@ object* function_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 		
-	if (!is_bignum(a)) {
+	if (!is_integer(a)) {
 		return throw_error(cont, "negative on non-number");
 	}
 	
 	object num;
-	init_bignum(&num, -1 * bignum_sign(a), bignum_digits(a));
+	init_integer(&num, -1 * integer_sign(a), integer_digits(a));
 	return call_cont(cont, &num); 
 }
 
@@ -150,14 +150,14 @@ object* function_subtract(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "- on non-number");
 	}
 	
 	object call_args[2];
 	init_list_2(call_args, b, a);
 	object call;
-	init_call(&call, &bignum_subtract_proc, call_args, cont);
+	init_call(&call, &integer_subtract_proc, call_args, cont);
 	return perform_call(&call);
 }
 
@@ -168,12 +168,12 @@ object* function_subtract_by(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "subtract-by on non-number");
 	}
 	
 	object call;
-	init_call(&call, &bignum_subtract_proc, args, cont);
+	init_call(&call, &integer_subtract_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -184,12 +184,12 @@ object* function_multiply(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "* on non-number");
 	}
 	
 	object call;
-	init_call(&call, &bignum_multiply_proc, args, cont);
+	init_call(&call, &integer_multiply_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -209,10 +209,10 @@ object* function_quotient(object* args, object* cont) {
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
 	
-	if (!(is_bignum(divisor) && is_bignum(dividend))) {
+	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "quotient on non-number");
 	}
-	if (is_zero_bignum(divisor)) {
+	if (is_zero_integer(divisor)) {
 		return throw_error(cont, "divide by zero (quotient)");
 	}
 	
@@ -222,7 +222,7 @@ object* function_quotient(object* args, object* cont) {
 	init_cont(&next_cont, &next_call);
 	
 	object call;
-	init_call(&call, &bignum_divide_proc, args, &next_cont);
+	init_call(&call, &integer_divide_proc, args, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -243,10 +243,10 @@ object* function_remainder(object* args, object* cont) {
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
 	
-	if (!(is_bignum(divisor) && is_bignum(dividend))) {
+	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "remainder on non-number");
 	}
-	if (is_zero_bignum(divisor)) {
+	if (is_zero_integer(divisor)) {
 		return throw_error(cont, "divide by zero (remainder)");
 	}
 	
@@ -256,7 +256,7 @@ object* function_remainder(object* args, object* cont) {
 	init_cont(&next_cont, &next_call);
 	
 	object call;
-	init_call(&call, &bignum_divide_proc, args, &next_cont);
+	init_call(&call, &integer_divide_proc, args, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -272,11 +272,11 @@ object* modulo_continued(object* args, object* cont) {
 	object* remainder;
 	delist_2(ls, &quotient, &remainder);
 	
-	if (is_negative_bignum(remainder)) {
+	if (is_negative_integer(remainder)) {
 		object add_args[2];
 		init_list_2(add_args, remainder, divisor);
 		object add_call;
-		init_call(&add_call, &bignum_add_proc, add_args, cont);
+		init_call(&add_call, &integer_add_proc, add_args, cont);
 		
 		return perform_call(&add_call);
 	}
@@ -292,10 +292,10 @@ object* function_modulo(object* args, object* cont) {
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
 	
-	if (!(is_bignum(divisor) && is_bignum(dividend))) {
+	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "modulo on non-number");
 	}
-	if (!is_positive_bignum(divisor)) {
+	if (!is_positive_integer(divisor)) {
 		return throw_error(cont, "modulo with nonpositive base");
 	}
 	
@@ -307,7 +307,7 @@ object* function_modulo(object* args, object* cont) {
 	init_cont(&next_cont, &next_call);
 	
 	object call;
-	init_call(&call, &bignum_divide_proc, args, &next_cont);
+	init_call(&call, &integer_divide_proc, args, &next_cont);
 	
 	return perform_call(&call);
 }
@@ -319,12 +319,12 @@ object* function_gcd(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "gcd on non-number");
 	}
 	
 	object gcd_call;
-	init_call(&gcd_call, &bignum_greatest_common_divisor_proc, args, cont);
+	init_call(&gcd_call, &integer_greatest_common_divisor_proc, args, cont);
 	
 	return perform_call(&gcd_call);
 }
@@ -336,11 +336,11 @@ object* function_numeric_equality(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "= on non-number");
 	}
 	
-	return call_cont(cont, boolean(0 == compare_signed_bignums(a, b)));
+	return call_cont(cont, boolean(0 == compare_signed_integers(a, b)));
 }
 
 object greater_proc;
@@ -350,11 +350,11 @@ object* function_greater(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "> on non-number");
 	}
 	
-	return call_cont(cont, boolean(1 == compare_signed_bignums(a, b)));
+	return call_cont(cont, boolean(1 == compare_signed_integers(a, b)));
 }
 
 object greater_or_equal_proc;
@@ -364,11 +364,11 @@ object* function_greater_or_equal(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, ">= on non-number");
 	}
 	
-	return call_cont(cont, boolean(-1 != compare_signed_bignums(a, b)));
+	return call_cont(cont, boolean(-1 != compare_signed_integers(a, b)));
 }
 
 object less_proc;
@@ -378,11 +378,11 @@ object* function_less(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "< on non-number");
 	}
 	
-	return call_cont(cont, boolean(-1 == compare_signed_bignums(a, b)));
+	return call_cont(cont, boolean(-1 == compare_signed_integers(a, b)));
 }
 
 object less_or_equal_proc;
@@ -392,11 +392,11 @@ object* function_less_or_equal(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_bignum(a) && is_bignum(b))) {
+	if (!(is_integer(a) && is_integer(b))) {
 		return throw_error(cont, "<= on non-number");
 	}
 	
-	return call_cont(cont, boolean(1 != compare_signed_bignums(a, b)));
+	return call_cont(cont, boolean(1 != compare_signed_integers(a, b)));
 }
 
 object display_proc;
@@ -477,7 +477,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("false?", 1, &is_false_proc, &function_is_false);
 	init_and_bind_primitive("true?", 1, &is_true_proc, &function_is_true);
 	init_and_bind_primitive("symbol?", 1, &is_symbol_proc, &function_is_symbol);
-	init_and_bind_primitive("number?", 1, &is_bignum_proc, &function_is_bignum);
+	init_and_bind_primitive("number?", 1, &is_integer_proc, &function_is_integer);
 	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
 	init_and_bind_primitive("vector?", 1, &is_vector_proc, &function_is_vector);
 	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);

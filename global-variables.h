@@ -42,8 +42,8 @@ object* negative_one(void);
 object* sign_object(int sign);
 object* ten(void);
 
-object* bignum_zero_list(void);
-object* bignum_zero(void);
-object* bignum_one_list(void);
-object* bignum_one(void);
-object* bignum_ten(void);
+object* integer_zero_list(void);
+object* integer_zero(void);
+object* integer_one_list(void);
+object* integer_one(void);
+object* integer_ten(void);
