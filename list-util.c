@@ -125,7 +125,7 @@ object* unzip_2_step(object* args, object* cont) {
 // full stack allocation, may fail on large lists
 // should be changed to allocate in steps for large lists
 
-object* list_append_multiple(object* lists, int list_count, object* cont) {
+object* list_append_multiple(object* lists, object* cont) {
 	object* last = empty_list();
 	object* first = last;
 	char is_first = 1;
@@ -169,7 +169,7 @@ object* list_append(object* args, object* cont) {
 		return call_cont(cont, list_first(lists));
 	}
 	else {
-		return list_append_multiple(lists, list_count, cont);
+		return list_append_multiple(lists, cont);
 	}
 }
 
