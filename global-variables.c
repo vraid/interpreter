@@ -103,9 +103,9 @@ void init_global_variables(void) {
 	_quote_symbol = make_static_symbol("quote");
 	
 	init_string(dash_string(), "-");
-	_dash_string.location = location_static;
+	make_static(&_dash_string);
 	init_string(question_mark_string(), "?");
-	_question_mark_string.location = location_static;
+	make_static(&_question_mark_string);
 	
 	init_static_fixnum(&_zero, 0);
 	init_static_fixnum(&_one, 1);

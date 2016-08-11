@@ -32,13 +32,13 @@ object* make_static_symbol(char* name) {
 	if (is_no_object(obj)) {
 		object* string = &static_symbol_names[static_symbol_count];
 		init_string(string, name);
-		string->location = location_static;
+		make_static(string);
 		obj = &static_symbols[static_symbol_count];
 		init_symbol(obj, string);
-		obj->location = location_static;
+		make_static(obj);
 		object* ls = &static_symbol_cells[static_symbol_count];
 		init_list_cell(ls, obj, symbol_list);
-		ls->location = location_static;
+		make_static(ls);
 		symbol_list = ls;
 		static_symbol_count++;
 	}

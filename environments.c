@@ -26,9 +26,9 @@ object* add_static_binding(object* value, char* name) {
 	object* binding = &static_bindings[static_binding_count];
 	object* cell = &static_binding_cell[static_binding_count];
 	init_binding(binding, symbol, value);
-	binding->location = location_static;
+	make_static(binding);
 	init_list_cell(cell, binding, static_environment()->data.environment.bindings);
-	cell->location = location_static;
+	make_static(cell);
 	static_environment()->data.environment.bindings = cell;
 	static_binding_count++;
 	return binding;
@@ -110,7 +110,7 @@ object* find_in_environment(object* env, object* symbol, char return_placeholder
 
 void init_environment_procedures(void) {
 	init_environment(&_static_environment, empty_list());
-	_static_environment.location = location_static;
+	make_static(&_static_environment);
 	
 	init_primitive(&extend_environment, &extend_environment_proc);
 	init_primitive(&bind_values, &bind_values_proc);
