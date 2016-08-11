@@ -94,6 +94,11 @@ void traverse_integer(target_space space, object* obj, object_location location)
 	move_if_necessary(space, &obj->data.integer.digits, location);
 }
 
+void traverse_fraction(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.fraction.numerator, location);
+	move_if_necessary(space, &obj->data.fraction.denominator, location);
+}
+
 void traverse_list(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.first, location);
 	move_if_necessary(space, &obj->data.list.rest, location);
@@ -168,6 +173,7 @@ traversal* traversal_function(object* obj) {
 	switch (obj->type) {
 		case type_symbol: return &traverse_symbol;
 		case type_integer: return &traverse_integer;
+		case type_fraction: return &traverse_fraction;
 		case type_list: return &traverse_list;
 		case type_stream: return &traverse_stream;
 		case type_vector: return &traverse_vector;

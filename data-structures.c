@@ -83,6 +83,9 @@ char is_fixnum(object* obj) {
 char is_integer(object* obj) {
 	return is_type(type_integer, obj);
 }
+char is_fraction(object* obj) {
+	return is_type(type_fraction, obj);
+}
 char is_list(object* obj) {
 	return is_type(type_list, obj);
 }
@@ -181,6 +184,14 @@ int integer_sign(object* obj) {
 object* integer_digits(object* obj) {
 	check_type(type_integer, obj);
 	return obj->data.integer.digits;
+}
+object* fraction_numerator(object* obj) {
+	check_type(type_fraction, obj);
+	return obj->data.fraction.numerator;
+}
+object* fraction_denominator(object* obj) {
+	check_type(type_fraction, obj);
+	return obj->data.fraction.denominator;
 }
 
 object* list_first(object* ls) {

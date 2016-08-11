@@ -29,6 +29,12 @@ void init_integer(object* obj, int sign, object* digits) {
 	obj->data.integer.digits = digits;
 }
 
+void init_fraction(object* obj, object* numerator, object* denominator) {
+	init_object(location_stack, type_fraction, obj);
+	obj->data.fraction.numerator = numerator;
+	obj->data.fraction.denominator = denominator;
+}
+
 void init_positive_integer(object* obj, object* digits) {
 	init_integer(obj, 1, digits);
 }
