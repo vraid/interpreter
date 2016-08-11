@@ -292,17 +292,17 @@ object* print_value(object* args, object* cont) {
 }
 
 void init_print_procedures(void) {
-	init_primitive_procedure(&print_proc, &print_value);
-	init_primitive_procedure(&print_newline_proc, &print_newline);
-	init_primitive_procedure(&print_sequence_element_proc, &print_sequence_element);
-	init_primitive_procedure(&print_first_sequence_element_proc, &print_first_sequence_element);
-	init_primitive_procedure(&print_sequence_proc, &print_sequence);
-	init_primitive_procedure(&print_sequence_end_proc, &print_sequence_end);
+	init_primitive(&print_value, &print_proc);
+	init_primitive(&print_newline, &print_newline_proc);
+	init_primitive(&print_sequence_element, &print_sequence_element_proc);
+	init_primitive(&print_first_sequence_element, &print_first_sequence_element_proc);
+	init_primitive(&print_sequence, &print_sequence_proc);
+	init_primitive(&print_sequence_end, &print_sequence_end_proc);
 	
-	init_primitive_procedure(&print_stream_element_proc, &print_stream_element);
-	init_primitive_procedure(&print_first_stream_element_proc, &print_first_stream_element);
+	init_primitive(&print_stream_element, &print_stream_element_proc);
+	init_primitive(&print_first_stream_element, &print_first_stream_element_proc);
 	
-	init_primitive_procedure(&print_struct_proc, &print_struct);
-	init_primitive_procedure(&print_integer_proc, &print_integer);
-	init_primitive_procedure(&print_integer_digits_proc, &print_integer_digits);
+	init_primitive(&print_struct, &print_struct_proc);
+	init_primitive(&print_integer, &print_integer_proc);
+	init_primitive(&print_integer_digits, &print_integer_digits_proc);
 }

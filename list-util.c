@@ -232,12 +232,12 @@ object* unzip_2(object* args, object* cont) {
 }
 
 void init_list_util_procedures(void) {
-	init_primitive_procedure(&make_list_proc, &make_list);
-	init_primitive_procedure(&add_to_list_proc, &add_to_list);
-	init_primitive_procedure(&return_list_proc, &return_list);
-	init_primitive_procedure(&reverse_list_proc, &reverse_list);
-	init_primitive_procedure(&list_append_proc, &list_append);
-	init_primitive_procedure(&list_append_first_reversed_proc, &list_append_first_reversed);
-	init_primitive_procedure(&unzip_2_proc, &unzip_2);
-	init_primitive_procedure(&unzip_2_step_proc, &unzip_2_step);
+	init_primitive(&make_list, &make_list_proc);
+	init_primitive(&add_to_list, &add_to_list_proc);
+	init_primitive(&return_list, &return_list_proc);
+	init_primitive(&reverse_list, &reverse_list_proc);
+	init_primitive(&list_append, &list_append_proc);
+	init_primitive(&list_append_first_reversed, &list_append_first_reversed_proc);
+	init_primitive(&unzip_2, &unzip_2_proc);
+	init_primitive(&unzip_2_step, &unzip_2_step_proc);
 }

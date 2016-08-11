@@ -140,12 +140,12 @@ object* repl_print_entry(object* args, object* cont) {
 }
 
 void init_repl_procedures(void) {
-	init_primitive_procedure(&repl_read_entry_proc, &repl_read_entry);
-	init_primitive_procedure(&repl_eval_entry_proc, &repl_eval_entry);
-	init_primitive_procedure(&repl_print_or_read_proc, &repl_print_or_read);
-	init_primitive_procedure(&repl_print_entry_proc, &repl_print_entry);
+	init_primitive(&repl_read_entry, &repl_read_entry_proc);
+	init_primitive(&repl_eval_entry, &repl_eval_entry_proc);
+	init_primitive(&repl_print_or_read, &repl_print_or_read_proc);
+	init_primitive(&repl_print_entry, &repl_print_entry_proc);
 	
-	init_primitive_procedure(&repl_error_proc, &repl_error);
+	init_primitive(&repl_error, &repl_error_proc);
 	
 	init_string(&read_error_string, "read error");
 	make_static(&read_error_string);

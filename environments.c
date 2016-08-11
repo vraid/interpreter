@@ -112,7 +112,7 @@ void init_environment_procedures(void) {
 	init_environment(&_static_environment, empty_list());
 	_static_environment.location = location_static;
 	
-	init_primitive_procedure(&extend_environment_proc, &extend_environment);
-	init_primitive_procedure(&bind_values_proc, &bind_values);
-	init_primitive_procedure(&bind_single_value_proc, &bind_single_value);
+	init_primitive(&extend_environment, &extend_environment_proc);
+	init_primitive(&bind_values, &bind_values_proc);
+	init_primitive(&bind_single_value, &bind_single_value_proc);
 }

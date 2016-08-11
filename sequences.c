@@ -297,14 +297,14 @@ object* next_iterator(object* next, object* current) {
 }
 
 void init_sequence_procedures(void) {
-	init_primitive_procedure(&first_proc, &first);
-	init_primitive_procedure(&rest_proc, &rest);
-	init_primitive_procedure(&take_proc, &take);
-	init_primitive_procedure(&take_first_proc, &take_first);
-	init_primitive_procedure(&take_single_proc, &take_single);
-	init_primitive_procedure(&take_rest_proc, &take_rest);
-	init_primitive_procedure(&take_rest_second_proc, &take_rest_second);
-	init_primitive_procedure(&drop_proc, &drop);
-	init_primitive_procedure(&drop_single_proc, &drop_single);
-	init_primitive_procedure(&drop_single_second_proc, &drop_single_second);
+	init_primitive(&first, &first_proc);
+	init_primitive(&rest, &rest_proc);
+	init_primitive(&take, &take_proc);
+	init_primitive(&take_first, &take_first_proc);
+	init_primitive(&take_single, &take_single_proc);
+	init_primitive(&take_rest, &take_rest_proc);
+	init_primitive(&take_rest_second, &take_rest_second_proc);
+	init_primitive(&drop, &drop_proc);
+	init_primitive(&drop_single, &drop_single_proc);
+	init_primitive(&drop_single_second, &drop_single_second_proc);
 }

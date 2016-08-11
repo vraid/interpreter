@@ -1276,43 +1276,43 @@ void init_base_syntax_procedures(void) {
 	add_syntax("fold", syntax_fold, &fold);
 	add_syntax("filter", syntax_filter, &filter);
 	
-	init_primitive_procedure(&update_delay_proc, &update_delay);
-	init_primitive_procedure(&eval_force_proc, &eval_force);
+	init_primitive(&update_delay, &update_delay_proc);
+	init_primitive(&eval_force, &eval_force_proc);
 	
-	init_primitive_procedure(&let_bind_proc, &let_bind);
+	init_primitive(&let_bind, &let_bind_proc);
 
-	init_primitive_procedure(&letrec_bind_proc, &letrec_bind);
-	init_primitive_procedure(&letrec_eval_single_proc, &letrec_eval_single);
+	init_primitive(&letrec_bind, &letrec_bind_proc);
+	init_primitive(&letrec_eval_single, &letrec_eval_single_proc);
 	
-	init_primitive_procedure(&rec_one_proc, &rec_one);
-	init_primitive_procedure(&rec_two_proc, &rec_two);
-	init_primitive_procedure(&rec_three_proc, &rec_three);
+	init_primitive(&rec_one, &rec_one_proc);
+	init_primitive(&rec_two, &rec_two_proc);
+	init_primitive(&rec_three, &rec_three_proc);
 
-	init_primitive_procedure(&bind_value_proc, &bind_value);
-	init_primitive_procedure(&eval_if_proc, &eval_if);
+	init_primitive(&bind_value, &bind_value_proc);
+	init_primitive(&eval_if, &eval_if_proc);
 	
-	init_primitive_procedure(&eval_and_proc, &eval_and);
-	init_primitive_procedure(&eval_or_proc, &eval_or);
+	init_primitive(&eval_and, &eval_and_proc);
+	init_primitive(&eval_or, &eval_or_proc);
 	
-	init_primitive_procedure(&bind_placeholder_proc, &bind_placeholder);
-	init_primitive_procedure(&bind_placeholders_proc, &bind_placeholders);
+	init_primitive(&bind_placeholder, &bind_placeholder_proc);
+	init_primitive(&bind_placeholders, &bind_placeholders_proc);
 
-	init_primitive_procedure(&bind_continued_proc, &bind_continued);
-	init_primitive_procedure(&update_binding_proc, &update_binding);
+	init_primitive(&bind_continued, &bind_continued_proc);
+	init_primitive(&update_binding, &update_binding_proc);
 	
-	init_primitive_procedure(&start_curry_proc, &start_curry);
-	init_primitive_procedure(&curry_one_proc, &curry_one);
+	init_primitive(&start_curry, &start_curry_proc);
+	init_primitive(&curry_one, &curry_one_proc);
 	
-	init_primitive_procedure(&start_apply_proc, &start_apply);
+	init_primitive(&start_apply, &start_apply_proc);
 	
-	init_primitive_procedure(&map_single_proc, &map_single);
-	init_primitive_procedure(&map_start_proc, &map_start);
+	init_primitive(&map_single, &map_single_proc);
+	init_primitive(&map_start, &map_start_proc);
 	
-	init_primitive_procedure(&filter_start_proc, &filter_start);
-	init_primitive_procedure(&filter_first_proc, &filter_first);
-	init_primitive_procedure(&filter_single_proc, &filter_single);
-	init_primitive_procedure(&add_or_discard_filtered_proc, &add_or_discard_filtered);
+	init_primitive(&filter_start, &filter_start_proc);
+	init_primitive(&filter_first, &filter_first_proc);
+	init_primitive(&filter_single, &filter_single_proc);
+	init_primitive(&add_or_discard_filtered, &add_or_discard_filtered_proc);
 	
-	init_primitive_procedure(&fold_start_proc, &fold_start);
-	init_primitive_procedure(&fold_single_proc, &fold_single);
+	init_primitive(&fold_start, &fold_start_proc);
+	init_primitive(&fold_single, &fold_single_proc);
 }

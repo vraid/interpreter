@@ -71,6 +71,6 @@ object* list_to_vector(object* args, object* cont) {
 }
 
 void init_vector_procedures(void) {
-	init_primitive_procedure(&vector_to_list_proc, &vector_to_list);
-	init_primitive_procedure(&list_to_vector_proc, list_to_vector);
+	init_primitive(&vector_to_list, &vector_to_list_proc);
+	init_primitive(&list_to_vector, &list_to_vector_proc);
 }

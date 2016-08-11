@@ -83,6 +83,6 @@ object* symbol_to_string(object* args, object* cont) {
 void init_symbols(void) {
 	symbol_list = empty_list();
 	static_symbol_count = 0;
-	init_primitive_procedure(&string_to_symbol_proc, &string_to_symbol);
-	init_primitive_procedure(&symbol_to_string_proc, &symbol_to_string);
+	init_primitive(&string_to_symbol, &string_to_symbol_proc);
+	init_primitive(&symbol_to_string, &symbol_to_string_proc);
 }

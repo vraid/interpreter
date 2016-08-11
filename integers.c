@@ -863,38 +863,38 @@ object* integer_to_string(object* args, object* cont) {
 }
 
 void init_integer_procedures(void) {
-	init_primitive_procedure(&make_integer_proc, &make_integer);
-	init_primitive_procedure(&integer_add_proc, &integer_add);
-	init_primitive_procedure(&integer_add_signless_proc, &integer_add_signless);
-	init_primitive_procedure(&integer_add_with_sign_proc, &integer_add_with_sign);
-	init_primitive_procedure(&integer_add_digits_proc, &integer_add_digits);
+	init_primitive(&make_integer, &make_integer_proc);
+	init_primitive(&integer_add, &integer_add_proc);
+	init_primitive(&integer_add_signless, &integer_add_signless_proc);
+	init_primitive(&integer_add_with_sign, &integer_add_with_sign_proc);
+	init_primitive(&integer_add_digits, &integer_add_digits_proc);
 	
-	init_primitive_procedure(&remove_leading_zeroes_proc, &remove_leading_zeroes);
-	init_primitive_procedure(&remove_leading_zeroes_and_reverse_proc, &remove_leading_zeroes_and_reverse);
+	init_primitive(&remove_leading_zeroes, &remove_leading_zeroes_proc);
+	init_primitive(&remove_leading_zeroes_and_reverse, &remove_leading_zeroes_and_reverse_proc);
 	
-	init_primitive_procedure(&integer_subtract_proc, &integer_subtract);
-	init_primitive_procedure(&integer_subtract_with_sign_proc, &integer_subtract_with_sign);
-	init_primitive_procedure(&integer_subtract_digits_proc, &integer_subtract_digits);
-	init_primitive_procedure(&integer_subtract_one_proc, &integer_subtract_one);
+	init_primitive(&integer_subtract, &integer_subtract_proc);
+	init_primitive(&integer_subtract_with_sign, &integer_subtract_with_sign_proc);
+	init_primitive(&integer_subtract_digits, &integer_subtract_digits_proc);
+	init_primitive(&integer_subtract_one, &integer_subtract_one_proc);
 
-	init_primitive_procedure(&integer_multiply_proc, &integer_multiply);
-	init_primitive_procedure(&integer_multiply_reversed_proc, &integer_multiply_reversed);
-	init_primitive_procedure(&integer_multiply_digits_proc, &integer_multiply_digits);
-	init_primitive_procedure(&integer_multiply_digit_proc, &integer_multiply_digit);
-	init_primitive_procedure(&integer_multiply_add_proc, &integer_multiply_add);
+	init_primitive(&integer_multiply, &integer_multiply_proc);
+	init_primitive(&integer_multiply_reversed, &integer_multiply_reversed_proc);
+	init_primitive(&integer_multiply_digits, &integer_multiply_digits_proc);
+	init_primitive(&integer_multiply_digit, &integer_multiply_digit_proc);
+	init_primitive(&integer_multiply_add, &integer_multiply_add_proc);
 	
-	init_primitive_procedure(&integer_divide_proc, &integer_divide);
-	init_primitive_procedure(&integer_make_division_result_proc, &integer_make_division_result);
-	init_primitive_procedure(&integer_divide_one_proc, &integer_divide_one);
-	init_primitive_procedure(&integer_perform_division_proc, &integer_perform_division);
-	init_primitive_procedure(&integer_adjust_dividend_proc, &integer_adjust_dividend);
+	init_primitive(&integer_divide, &integer_divide_proc);
+	init_primitive(&integer_make_division_result, &integer_make_division_result_proc);
+	init_primitive(&integer_divide_one, &integer_divide_one_proc);
+	init_primitive(&integer_perform_division, &integer_perform_division_proc);
+	init_primitive(&integer_adjust_dividend, &integer_adjust_dividend_proc);
 	
-	init_primitive_procedure(&integer_greatest_common_divisor_proc, &integer_greatest_common_divisor);
-	init_primitive_procedure(&integer_gcd_step_proc, &integer_gcd_step);
+	init_primitive(&integer_greatest_common_divisor, &integer_greatest_common_divisor_proc);
+	init_primitive(&integer_gcd_step, &integer_gcd_step_proc);
 	
-	init_primitive_procedure(&integer_to_new_base_proc, &integer_to_new_base);
-	init_primitive_procedure(&integer_digits_to_new_base_proc, &integer_digits_to_new_base);
-	init_primitive_procedure(&integer_to_decimal_proc, &integer_to_decimal);
-	init_primitive_procedure(&decimal_to_string_proc, &decimal_to_string);
-	init_primitive_procedure(&integer_to_string_proc, &integer_to_string);
+	init_primitive(&integer_to_new_base, &integer_to_new_base_proc);
+	init_primitive(&integer_digits_to_new_base, &integer_digits_to_new_base_proc);
+	init_primitive(&integer_to_decimal, &integer_to_decimal_proc);
+	init_primitive(&decimal_to_string, &decimal_to_string_proc);
+	init_primitive(&integer_to_string, &integer_to_string_proc);
 }

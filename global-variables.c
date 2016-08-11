@@ -130,7 +130,7 @@ void init_global_variables(void) {
 	init_integer(&_integer_ten, 1, &_integer_ten_list);
 	make_static(&_integer_ten);
 	
-	init_primitive_procedure(&end_proc, &end);
+	init_primitive(&end, &end_proc);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
 	init_cont(end_cont(), &end_call);
 }

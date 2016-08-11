@@ -256,14 +256,14 @@ object* eval_stream_rest(object* args, object* cont) {
 }
 
 void init_stream_procedures(void) {
-	init_primitive_procedure(&make_stream_proc, &make_stream);
-	init_primitive_procedure(&stream_map_proc, &stream_map);
-	init_primitive_procedure(&stream_fold_proc, &stream_fold);
-	init_primitive_procedure(&stream_fold_two_proc, &stream_fold_two);
-	init_primitive_procedure(&stream_fold_three_proc, &stream_fold_three);
-	init_primitive_procedure(&stream_filter_proc, &stream_filter);
-	init_primitive_procedure(&stream_filter_build_proc, &stream_filter_build);
-	init_primitive_procedure(&stream_filter_func_eval_proc, &stream_filter_func_eval);
-	init_primitive_procedure(&stream_filter_rest_eval_proc, &stream_filter_rest_eval);
-	init_primitive_procedure(&eval_stream_rest_proc, &eval_stream_rest);
+	init_primitive(&make_stream, &make_stream_proc);
+	init_primitive(&stream_map, &stream_map_proc);
+	init_primitive(&stream_fold, &stream_fold_proc);
+	init_primitive(&stream_fold_two, &stream_fold_two_proc);
+	init_primitive(&stream_fold_three, &stream_fold_three_proc);
+	init_primitive(&stream_filter, &stream_filter_proc);
+	init_primitive(&stream_filter_build, &stream_filter_build_proc);
+	init_primitive(&stream_filter_func_eval, &stream_filter_func_eval_proc);
+	init_primitive(&stream_filter_rest_eval, &stream_filter_rest_eval_proc);
+	init_primitive(&eval_stream_rest, &eval_stream_rest_proc);
 }

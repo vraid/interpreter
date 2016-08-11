@@ -23,6 +23,6 @@ object* identity(object* args, object* cont) {
 }
 
 void init_base_util_procedures(void) {
-	init_primitive_procedure(&quote_object_proc, &quote_object);
-	init_primitive_procedure(&identity_proc, &identity);
+	init_primitive(&quote_object, &quote_object_proc);
+	init_primitive(&identity, &identity_proc);
 }

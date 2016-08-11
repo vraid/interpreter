@@ -426,16 +426,16 @@ object* read_list_start(object* args, object* cont) {
 }
 
 void init_read_procedures(void) {
-	init_primitive_procedure(&read_value_proc, &read_value);
-	init_primitive_procedure(&read_add_to_list_proc, &read_add_to_list);
-	init_primitive_procedure(&read_list_value_proc, &read_list_value);
-	init_primitive_procedure(&read_list_proc, &read_list);
-	init_primitive_procedure(&start_list_proc, &start_list);
-	init_primitive_procedure(&read_finish_list_proc, &read_finish_list);
-	init_primitive_procedure(&read_list_start_proc, &read_list_start);
-	init_primitive_procedure(&read_string_proc, &read_string);
-	init_primitive_procedure(&read_nonstring_proc, &read_nonstring);
-	init_primitive_procedure(&read_number_proc, &read_number);
-	init_primitive_procedure(&read_integer_proc, &read_integer);
-	init_primitive_procedure(&read_hashed_proc, &read_hashed);
+	init_primitive(&read_value, &read_value_proc);
+	init_primitive(&read_add_to_list, &read_add_to_list_proc);
+	init_primitive(&read_list_value, &read_list_value_proc);
+	init_primitive(&read_list, &read_list_proc);
+	init_primitive(&start_list, &start_list_proc);
+	init_primitive(&read_finish_list, &read_finish_list_proc);
+	init_primitive(&read_list_start, &read_list_start_proc);
+	init_primitive(&read_string, &read_string_proc);
+	init_primitive(&read_nonstring, &read_nonstring_proc);
+	init_primitive(&read_number, &read_number_proc);
+	init_primitive(&read_integer, &read_integer_proc);
+	init_primitive(&read_hashed, &read_hashed_proc);
 }

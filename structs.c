@@ -342,16 +342,16 @@ object* define_struct(object* args, object* cont) {
 }
 
 void init_struct_procedures(void) {
-	init_primitive_procedure(&make_struct_proc, &make_struct);
-	init_primitive_procedure(&add_struct_constructor_proc, &add_struct_constructor);
-	init_primitive_procedure(&add_struct_constructor_next_proc, &add_struct_constructor_next);
-	init_primitive_procedure(&struct_access_proc, &struct_access);
-	init_primitive_procedure(&define_field_accessors_proc, &define_field_accessors);
-	init_primitive_procedure(&define_field_accessor_proc, &define_field_accessor);
-	init_primitive_procedure(&make_field_accessor_proc, &make_field_accessor);
-	init_primitive_procedure(&struct_is_type_proc, &struct_is_type_func);
-	init_primitive_procedure(&bind_struct_is_type_proc, &bind_struct_is_type);
-	init_primitive_procedure(&define_struct_is_type_proc, &define_struct_is_type);
-	init_primitive_procedure(&define_struct_proc, &define_struct);
-	init_primitive_procedure(&define_struct_next_proc, &define_struct_next);
+	init_primitive(&make_struct, &make_struct_proc);
+	init_primitive(&add_struct_constructor, &add_struct_constructor_proc);
+	init_primitive(&add_struct_constructor_next, &add_struct_constructor_next_proc);
+	init_primitive(&struct_access, &struct_access_proc);
+	init_primitive(&define_field_accessors, &define_field_accessors_proc);
+	init_primitive(&define_field_accessor, &define_field_accessor_proc);
+	init_primitive(&make_field_accessor, &make_field_accessor_proc);
+	init_primitive(&struct_is_type_func, &struct_is_type_proc);
+	init_primitive(&bind_struct_is_type, &bind_struct_is_type_proc);
+	init_primitive(&define_struct_is_type, &define_struct_is_type_proc);
+	init_primitive(&define_struct, &define_struct_proc);
+	init_primitive(&define_struct_next, &define_struct_next_proc);
 }

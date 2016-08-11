@@ -321,20 +321,20 @@ object* eval(object* args, object* cont) {
 }
 
 void init_eval_procedures(void) {
-	init_primitive_procedure(&eval_proc, &eval);
-	init_primitive_procedure(&eval_with_environment_proc, &eval_with_environment);
-	init_primitive_procedure(&eval_identity_proc, &eval_identity);
-	init_primitive_procedure(&eval_symbol_proc, &eval_symbol);
-	init_primitive_procedure(&eval_list_proc, &eval_list);
-	init_primitive_procedure(&eval_list_rest_proc, &eval_list_rest);
-	init_primitive_procedure(&eval_syntax_proc, &eval_syntax);
-	init_primitive_procedure(&eval_primitive_procedure_proc, &eval_primitive_procedure);
-	init_primitive_procedure(&eval_primitive_procedure_call_proc, &eval_primitive_procedure_call);
+	init_primitive(&eval, &eval_proc);
+	init_primitive(&eval_with_environment, &eval_with_environment_proc);
+	init_primitive(&eval_identity, &eval_identity_proc);
+	init_primitive(&eval_symbol, &eval_symbol_proc);
+	init_primitive(&eval_list, &eval_list_proc);
+	init_primitive(&eval_list_rest, &eval_list_rest_proc);
+	init_primitive(&eval_syntax, &eval_syntax_proc);
+	init_primitive(&eval_primitive_procedure, &eval_primitive_procedure_proc);
+	init_primitive(&eval_primitive_procedure_call, &eval_primitive_procedure_call_proc);
 	
-	init_primitive_procedure(&eval_function_proc, &eval_function);
-	init_primitive_procedure(&eval_function_call_proc, &eval_function_call);
+	init_primitive(&eval_function, &eval_function_proc);
+	init_primitive(&eval_function_call, &eval_function_call_proc);
 	
-	init_primitive_procedure(&eval_list_elements_proc, &eval_list_elements);
-	init_primitive_procedure(&eval_list_elements_first_proc, &eval_list_elements_first);
-	init_primitive_procedure(&eval_list_elements_rest_proc, &eval_list_elements_rest);
+	init_primitive(&eval_list_elements, &eval_list_elements_proc);
+	init_primitive(&eval_list_elements_first, &eval_list_elements_first_proc);
+	init_primitive(&eval_list_elements_rest, &eval_list_elements_rest_proc);
 }

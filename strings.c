@@ -37,5 +37,5 @@ object* string_append(object* args, object* cont) {
 }
 
 void init_string_procedures(void) {
-	init_primitive_procedure(&string_append_proc, &string_append);
+	init_primitive(&string_append, &string_append_proc);
 }

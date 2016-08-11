@@ -86,11 +86,6 @@ void init_syntax(object* obj, primitive_proc* proc) {
 	obj->data.syntax.proc = proc;
 }
 
-void init_primitive_procedure(object* obj, primitive_proc* proc) {
-	init_object(location_static, type_primitive_procedure, obj);
-	obj->data.primitive_procedure.proc = proc;
-}
-
 void init_function(object* obj, object* environment, object* parameters, object* body) {
 	init_object(location_stack, type_function, obj);
 	obj->data.function.environment = environment;
@@ -133,6 +128,15 @@ void init_delay(object* obj, object* value, object* environment) {
 	obj->data.delay.value = value;
 	obj->data.delay.environment = environment;
 	obj->data.delay.evaluated = 0;
+}
+
+void init_primitive_procedure(object* obj, primitive_proc* proc) {
+	init_object(location_static, type_primitive_procedure, obj);
+	obj->data.primitive_procedure.proc = proc;
+}
+
+void init_primitive(primitive_proc* proc, object* obj) {
+	init_primitive_procedure(obj, proc);
 }
 
 void init_list_cell(object* obj, object* first, object* rest) {

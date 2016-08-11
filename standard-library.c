@@ -446,13 +446,13 @@ void bind_primitive(char* name, int arity, object* obj) {
 	primitive_count++;
 }
 
-void bind_and_save_primitive(char* name, int arity, object* obj, object** saved) {
+void bind_and_save_primitive(char* name, int arity, object** saved, object* obj) {
 	*saved = &primitive_functions[primitive_count];
 	bind_primitive(name, arity, obj);
 }
 
-void init_and_bind_primitive(char* name, int arity, object* obj, primitive_proc* proc) {
-	init_primitive_procedure(obj, proc);
+void init_and_bind_primitive(char* name, int arity, primitive_proc* proc, object* obj) {
+	init_primitive(proc, obj);
 	bind_primitive(name, arity, obj);
 }
 
@@ -473,39 +473,39 @@ void init_standard_functions(void) {
 	}
 	generic_arg_list[generic_args_max] = &argcells[generic_args_max]-1;
 	
-	init_and_bind_primitive("boolean?", 1, &is_boolean_proc, &function_is_boolean);
-	init_and_bind_primitive("false?", 1, &is_false_proc, &function_is_false);
-	init_and_bind_primitive("true?", 1, &is_true_proc, &function_is_true);
-	init_and_bind_primitive("symbol?", 1, &is_symbol_proc, &function_is_symbol);
-	init_and_bind_primitive("number?", 1, &is_integer_proc, &function_is_integer);
-	init_and_bind_primitive("list?", 1, &is_list_proc, &function_is_list);
-	init_and_bind_primitive("vector?", 1, &is_vector_proc, &function_is_vector);
-	init_and_bind_primitive("function?", 1, &is_function_proc, &function_is_function);
-	init_and_bind_primitive("identical?", 2, &is_identical_proc, &function_is_identical);
-	init_and_bind_primitive("link", 2, &cons_proc, &function_cons);
+	init_and_bind_primitive("boolean?", 1, &function_is_boolean, &is_boolean_proc);
+	init_and_bind_primitive("false?", 1, &function_is_false, &is_false_proc);
+	init_and_bind_primitive("true?", 1, &function_is_true, &is_true_proc);
+	init_and_bind_primitive("symbol?", 1, &function_is_symbol, &is_symbol_proc);
+	init_and_bind_primitive("number?", 1, &function_is_integer, &is_integer_proc);
+	init_and_bind_primitive("list?", 1, &function_is_list, &is_list_proc);
+	init_and_bind_primitive("vector?", 1, &function_is_vector, &is_vector_proc);
+	init_and_bind_primitive("function?", 1, &function_is_function, &is_function_proc);
+	init_and_bind_primitive("identical?", 2, &function_is_identical, &is_identical_proc);
+	init_and_bind_primitive("link", 2, &function_cons, &cons_proc);
 	bind_primitive("append", 1, &list_append_proc);
 	bind_primitive("first", 1, &first_proc);
 	bind_primitive("rest", 1, &rest_proc);
-	init_and_bind_primitive("+", 2, &add_proc, &function_add);
-	init_and_bind_primitive("negative", 1, &negative_proc, &function_negative);
-	init_and_bind_primitive("-", 2, &subtract_proc, &function_subtract);
-	init_and_bind_primitive("subtract-by", 2, &subtract_by_proc, &function_subtract_by);
-	init_and_bind_primitive("*", 2, &multiply_proc, &function_multiply);
-	init_and_bind_primitive("quotient", 2, &quotient_proc, &function_quotient);
-	init_primitive_procedure(&quotient_continued_proc, &quotient_continued);
-	init_and_bind_primitive("remainder", 2, &remainder_proc, &function_remainder);
-	init_primitive_procedure(&remainder_continued_proc, &remainder_continued);
-	init_and_bind_primitive("modulo", 2, &modulo_proc, &function_modulo);
-	init_primitive_procedure(&modulo_continued_proc, &modulo_continued);
-	init_and_bind_primitive("gcd", 2, &gcd_proc, &function_gcd);
-	init_and_bind_primitive("=", 2, &numeric_equality_proc, &function_numeric_equality);
-	init_and_bind_primitive(">", 2, &greater_proc, &function_greater);
-	init_and_bind_primitive(">=", 2, &greater_or_equal_proc, &function_greater_or_equal);
-	init_and_bind_primitive("<", 2, &less_proc, &function_less);
-	init_and_bind_primitive("<=", 2, &less_or_equal_proc, &function_less_or_equal);
+	init_and_bind_primitive("+", 2, &function_add, &add_proc);
+	init_and_bind_primitive("negative", 1, &function_negative, &negative_proc);
+	init_and_bind_primitive("-", 2, &function_subtract, &subtract_proc);
+	init_and_bind_primitive("subtract-by", 2, &function_subtract_by, &subtract_by_proc);
+	init_and_bind_primitive("*", 2, &function_multiply, &multiply_proc);
+	init_and_bind_primitive("quotient", 2, &function_quotient, &quotient_proc);
+	init_primitive(&quotient_continued, &quotient_continued_proc);
+	init_and_bind_primitive("remainder", 2, &function_remainder, &remainder_proc);
+	init_primitive(&remainder_continued, &remainder_continued_proc);
+	init_and_bind_primitive("modulo", 2, &function_modulo, &modulo_proc);
+	init_primitive(&modulo_continued, &modulo_continued_proc);
+	init_and_bind_primitive("gcd", 2, &function_gcd, &gcd_proc);
+	init_and_bind_primitive("=", 2, &function_numeric_equality, &numeric_equality_proc);
+	init_and_bind_primitive(">", 2, &function_greater, &greater_proc);
+	init_and_bind_primitive(">=", 2, &function_greater_or_equal, &greater_or_equal_proc);
+	init_and_bind_primitive("<", 2, &function_less, &less_proc);
+	init_and_bind_primitive("<=", 2, &function_less_or_equal, &less_or_equal_proc);
 	bind_primitive("identity", 1, &identity_proc);
 	add_static_binding(empty_stream(), "empty-stream");
 	bind_primitive("take", 2, &take_proc);
 	bind_primitive("drop", 2, &drop_proc);
-	bind_and_save_primitive("symbol->string", 1, &symbol_to_string_proc, &symbol_to_string_func);
+	bind_and_save_primitive("symbol->string", 1, &symbol_to_string_func, &symbol_to_string_proc);
 }
