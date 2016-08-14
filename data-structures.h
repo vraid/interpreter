@@ -160,6 +160,7 @@ char is_symbol(object* obj);
 char is_fixnum(object* obj);
 char is_integer(object* obj);
 char is_fraction(object* obj);
+char is_exact_real(object* obj);
 char is_list(object* obj);
 char is_stream(object* obj);
 char is_sequence(object* obj);

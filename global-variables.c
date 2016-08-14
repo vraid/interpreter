@@ -232,6 +232,7 @@ object* negative_one(void) {
 }
 object* sign_object(int sign) {
 	switch (sign) {
+		case 0: return zero();
 		case 1: return one();
 		case -1: return negative_one();
 		default: {

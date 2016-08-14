@@ -86,6 +86,9 @@ char is_integer(object* obj) {
 char is_fraction(object* obj) {
 	return is_type(type_fraction, obj);
 }
+char is_exact_real(object* obj) {
+	return is_integer(obj) || is_fraction(obj);
+}
 char is_list(object* obj) {
 	return is_type(type_list, obj);
 }

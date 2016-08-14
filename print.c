@@ -220,6 +220,48 @@ object* print_integer(object* args, object* cont) {
 	return perform_call(&call);
 }
 
+object print_fraction_denominator_proc;
+
+object* print_fraction_denominator(object* args, object* cont) {
+	object* denom;
+	delist_1(args, &denom);
+	
+	if (is_one_integer(denom)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		printf("/");
+		object print_call;
+		init_call(&print_call, &print_integer_proc, args, cont);
+		
+		return perform_call(&print_call);
+	}
+}
+
+object print_fraction_proc;
+
+object* print_fraction(object* args, object* cont) {
+	object* fraction;
+	delist_1(args, &fraction);
+	
+	object* num = fraction_numerator(fraction);
+	object* denom = fraction_denominator(fraction);
+	
+	object denom_args[1];
+	init_list_1(denom_args, denom);
+	object denom_call;
+	init_call(&denom_call, &print_fraction_denominator_proc, denom_args, cont);
+	object denom_cont;
+	init_discarding_cont(&denom_cont, &denom_call);
+	
+	object num_args[1];
+	init_list_1(num_args, num);
+	object num_call;
+	init_call(&num_call, &print_integer_proc, num_args, &denom_cont);
+	
+	return perform_call(&num_call);
+}
+
 object* print_newline(object* args, object* cont) {
 	printf("\n");
 	return call_discarding_cont(cont);
@@ -256,6 +298,9 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_integer:
 			return print_integer(args, cont);
+			break;
+		case type_fraction:
+			return print_fraction(args, cont);
 			break;
 		case type_struct_instance:
 			return print_struct(args, cont);
@@ -305,4 +350,7 @@ void init_print_procedures(void) {
 	init_primitive(&print_struct, &print_struct_proc);
 	init_primitive(&print_integer, &print_integer_proc);
 	init_primitive(&print_integer_digits, &print_integer_digits_proc);
+	
+	init_primitive(&print_fraction, &print_fraction_proc);
+	init_primitive(&print_fraction_denominator, &print_fraction_denominator_proc);
 }

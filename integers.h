@@ -14,13 +14,18 @@ object integer_subtract_one_proc;
 object integer_multiply_proc;
 object integer_multiply_digit_proc;
 object integer_divide_proc;
+object integer_quotient_proc;
+object integer_remainder_proc;
 object integer_greatest_common_divisor_proc;
 object integer_to_decimal_proc;
 object integer_to_string_proc;
 
 int compare_signed_integers(object* a, object* b);
+char digits_have_value(int value, object* digits);
 char is_zero_integer(object* a);
+char is_one_integer(object* a);
 char is_positive_integer(object* a);
 char is_negative_integer(object* a);
+char integers_have_different_signs(object* a, object* b);
 
 void init_integer_procedures(void);

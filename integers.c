@@ -12,15 +12,24 @@ object* first_or_zero(object* ls) {
 	return is_empty_list(ls) ? zero() : list_first(ls);
 }
 
+char integers_have_different_signs(object* a, object* b) {
+	return integer_sign(a) != integer_sign(b);
+}
+
 object* make_integer(object* args, object* cont) {
 	object* digits;
 	object* sign;
 	delist_2(args, &digits, &sign);
 	
-	object num;
-	init_integer(&num, fixnum_value(sign), digits);
-	
-	return call_cont(cont, &num);
+	if (digits_have_value(0, digits)) {
+		return call_cont(cont, integer_zero());
+	}
+	else {
+		object num;
+		init_integer(&num, fixnum_value(sign), digits);
+		
+		return call_cont(cont, &num);
+	}
 }
 
 object remove_leading_zeroes_proc;
@@ -239,9 +248,20 @@ int signum(long a) {
 	else return 0;
 }
 
+char digits_have_value(int value, object* digits) {
+	return is_empty_list(list_rest(digits)) && (value == fixnum_value(list_first(digits)));
+}
+
+char is_one_value_integer(int value, object* a) {
+	return digits_have_value(value, integer_digits(a));
+}
+
 char is_zero_integer(object* a) {
-	object* digits = integer_digits(a);
-	return is_empty_list(list_rest(digits)) && (0 == fixnum_value(list_first(digits)));
+	return is_one_value_integer(0, a);
+}
+
+char is_one_integer(object* a) {
+	return is_positive_integer(a) && is_one_value_integer(1, a);
 }
 
 char is_positive_integer(object* a) {
@@ -689,6 +709,57 @@ object* integer_gcd_step(object* args, object* cont) {
 	}
 }
 
+
+object integer_quotient_continued_proc;
+
+object* integer_quotient_continued(object* args, object* cont) {
+	object* ls;
+	delist_1(args, &ls);
+	
+	return call_cont(cont, list_first(ls));
+}
+
+object* integer_quotient(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	object next_call;
+	init_call(&next_call, &integer_quotient_continued_proc, empty_list(), cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object call;
+	init_call(&call, &integer_divide_proc, args, &next_cont);
+	
+	return perform_call(&call);
+}
+
+object integer_remainder_continued_proc;
+
+object* integer_remainder_continued(object* args, object* cont) {
+	object* ls;
+	delist_1(args, &ls);
+	
+	return call_cont(cont, list_ref(1, ls));
+}
+
+object* integer_remainder(object* args, object* cont) {
+	object* divisor;
+	object* dividend;
+	delist_2(args, &divisor, &dividend);
+	
+	object next_call;
+	init_call(&next_call, &integer_remainder_continued_proc, empty_list(), cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object call;
+	init_call(&call, &integer_divide_proc, args, &next_cont);
+	
+	return perform_call(&call);
+}
+
 object* integer_greatest_common_divisor(object* args, object* cont) {
 	object* a;
 	object* b;
@@ -699,15 +770,15 @@ object* integer_greatest_common_divisor(object* args, object* cont) {
 	object b_pos;
 	init_positive_integer(&b_pos, integer_digits(b));
 	
-	int compare = compare_unsigned_integers(a, b);
+	int compare = compare_unsigned_integers(&a_pos, &b_pos);
 	
 	if (compare == 0) {
-		return call_cont(cont, a);
+		return call_cont(cont, &a_pos);
 	}
 	else {
 		char a_smaller = (compare == -1);
-		object* smaller = a_smaller ? a : b;
-		object* larger = a_smaller ? b : a;
+		object* smaller = a_smaller ? &a_pos : &b_pos;
+		object* larger = a_smaller ? &b_pos : &a_pos;
 		
 		object quot_rem[2];
 		init_list_2(quot_rem, integer_zero(), smaller);
@@ -888,6 +959,11 @@ void init_integer_procedures(void) {
 	init_primitive(&integer_divide_one, &integer_divide_one_proc);
 	init_primitive(&integer_perform_division, &integer_perform_division_proc);
 	init_primitive(&integer_adjust_dividend, &integer_adjust_dividend_proc);
+	
+	init_primitive(&integer_quotient, &integer_quotient_proc);
+	init_primitive(&integer_quotient_continued, &integer_quotient_continued_proc);
+	init_primitive(&integer_remainder, &integer_remainder_proc);
+	init_primitive(&integer_remainder_continued, &integer_remainder_continued_proc);
 	
 	init_primitive(&integer_greatest_common_divisor, &integer_greatest_common_divisor_proc);
 	init_primitive(&integer_gcd_step, &integer_gcd_step_proc);

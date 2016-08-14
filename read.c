@@ -12,6 +12,7 @@
 #include "call.h"
 #include "symbols.h"
 #include "integers.h"
+#include "fractions.h"
 
 object read_add_to_list_proc;
 object read_list_value_proc;
@@ -219,10 +220,17 @@ object* read_number(object* args, object* cont) {
 		object index;
 		init_fixnum(&index, i);
 		
+		object fraction_args[1];
+		init_list_1(fraction_args, integer_one());
+		object fraction_call;
+		init_call(&fraction_call, &make_fraction_proc, fraction_args, cont);
+		object fraction_cont;
+		init_cont(&fraction_cont, &fraction_call);
+		
 		object make_args[1];
 		init_list_1(make_args, sign_object(sign));
 		object make_call;
-		init_call(&make_call, &make_integer_proc, make_args, cont);
+		init_call(&make_call, &make_integer_proc, make_args, &fraction_cont);
 		object make_cont;
 		init_cont(&make_cont, &make_call);
 		
