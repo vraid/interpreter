@@ -46,6 +46,7 @@ void init_location_names(void) {
 	location_name[location_none] = "no location";
 	location_name[location_stack] = "stack";
 	location_name[location_heap] = "heap";
+	location_name[location_semistatic] = "semistatic";
 	location_name[location_static] = "static";
 	location_name[location_moved] = "moved";
 }

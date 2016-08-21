@@ -32,6 +32,7 @@ typedef enum {
 	location_none,
 	location_stack,
 	location_heap,
+	location_semistatic,
 	location_static,
 	location_moved,
 	location_count} object_location;
