@@ -258,6 +258,9 @@ object* integer_one_list(void) {
 object* integer_one(void) {
 	return &_integer_one;
 }
+object* integer_ten_list(void) {
+	return &_integer_ten_list;
+}
 object* integer_ten(void) {
 	return &_integer_ten;
 }

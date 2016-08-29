@@ -7,6 +7,10 @@ void make_static(object* obj) {
 	obj->location = location_static;
 }
 
+void make_semistatic(object* obj) {
+	obj->location = location_semistatic;
+}
+
 void init_object(object_location loc, object_type t, object* obj) {
 	obj->type = t;
 	obj->location = loc;

@@ -3,6 +3,7 @@
 #include "data-structures.h"
 
 void make_static(object* obj);
+void make_semistatic(object* obj);
 void init_object(object_location loc, object_type t, object* obj);
 void init_string(object* obj, char* value);
 void init_fixnum(object* obj, long value);

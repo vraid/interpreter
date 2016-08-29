@@ -7,6 +7,7 @@
 #include "call.h"
 #include "delist.h"
 #include "list-util.h"
+#include "workspace.h"
 
 object* first_or_zero(object* ls) {
 	return is_empty_list(ls) ? zero() : list_first(ls);
@@ -92,6 +93,7 @@ object* integer_add_digits(object* args, object* cont) {
 		a = list_rest_or_empty(a);
 		b = list_rest_or_empty(b);
 	}
+	
 	return call_cont(cont, digits);
 }
 
@@ -360,93 +362,113 @@ object* integer_subtract(object* args, object* cont) {
 	}
 }
 
-object integer_multiply_add_proc;
+void workspace_digit_addition(object* target, object* addend, long addend_length) {
+	long carry = 0;
+	long i = 0;
+	while ((i < addend_length) || (carry > 0)) {
+		long total = carry + fixnum_value(&target[i]);
+		if (i < addend_length) total += fixnum_value(&addend[i]);
 
-object* integer_multiply_add(object* args, object* cont) {
+		carry = total >= integer_base ? 1 : 0;
+		total -= carry * integer_base;
+
+		target[i].data.fixnum.value = total;
+		i++;
+	} 
+}
+
+void workspace_digit_multiplication(object* target, long scalar, object* digits, long digit_count) {
+	long carry = 0;
+	long i = 0;
+	while ((i < digit_count) || (carry > 0)) {
+		long product = (i >= digit_count) ? 0 : scalar * fixnum_value(&digits[i]);
+		product += carry;
+		
+		long result_value = product & (integer_base - 1);
+		carry = product >> integer_base_bits;
+		
+		target[i].data.fixnum.value = result_value;
+		i++;
+	}
+}
+
+void workspace_raise_digits(object* digits, long digit_count) {
+	long i;
+	for (i = digit_count-1; i >= 0; i--) {
+		digits[i].data.fixnum.value = (i == 0) ? 0 : fixnum_value(&digits[i-1]);
+	}
+}
+
+void workspace_zero_digits(object* digits, long digit_count) {
+	long i;
+	for (i = 0; i < digit_count; i++) {
+		digits[i].data.fixnum.value = 0;
+	}
+}
+
+void workspace_list_to_array(object* target, object* list) {
+	long i = 0;
+	while (!is_empty_list(list)) {
+		target[i].data.fixnum.value = fixnum_value(list_first(list));
+		list = list_rest(list);
+		i++;
+	}
+}
+
+object* integer_multiply_digits(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
 	
-	object b_shifted;
-	init_list_cell(&b_shifted, zero(), b);
+	long a_length = list_length(a);
+	long b_length = list_length(b);
 	
-	object add_args[2];
-	init_list_2(add_args, a, &b_shifted);
-	object add_call;
-	init_call(&add_call, &integer_add_signless_proc, add_args, cont);
+	long result_digit_count = a_length + b_length;
+	long single_digit_count = a_length + 1;
+	long combined_count = result_digit_count + a_length + single_digit_count;
 	
-	return perform_call(&add_call);
-}
-
-object* integer_multiply_digit(object* args, object* cont) {
-	object* a_num;
-	object* b;
-	delist_2(args, &a_num, &b);
+	set_workspace_min_size(sizeof(object) * combined_count);
 	
-	object* b_num;
-	long carry = 0;
+	object* workspace_p = (object*)workspace();
 	
-	object* digits = empty_list();
+	object* result = workspace_p;
+	object* a_digits = workspace_p + result_digit_count;
+	object* single_result = workspace_p + (result_digit_count + a_length);
 	
-	while (!(is_empty_list(b) && (carry == 0))) {
-		b_num = first_or_zero(b);
-		
-		long product = fixnum_value(a_num) * fixnum_value(b_num) + carry;
-		long result_value = product & (integer_base - 1);
-		carry = product >> integer_base_bits;
-		
-		object* num = alloca(sizeof(object));
-		init_fixnum(num, result_value);
-		
-		object* cell = alloca(sizeof(object));
-		init_list_cell(cell, num, digits);
-
-		digits = cell;
-		
-		b = list_rest_or_empty(b);
+	long i;
+	for (i = 0; i < combined_count; i++) {
+		object* obj = workspace_p + i;
+		init_fixnum(obj, 0);
+		make_semistatic(obj);
 	}
+	
+	workspace_list_to_array(a_digits, a);
+	
+	while (!is_empty_list(b)) {
+		workspace_zero_digits(single_result, single_digit_count);
+		workspace_digit_multiplication(single_result, fixnum_value(list_first(b)), a_digits, a_length);
 		
+		workspace_raise_digits(result, result_digit_count);
+		workspace_digit_addition(result, single_result, single_digit_count);
+		
+		b = list_rest(b);
+	}
+	
+	object* ls = empty_list();
+	for (i = 0; i < result_digit_count; i++) {
+		object* num = alloca(sizeof(object));
+		init_fixnum(num, fixnum_value(&result[i]));
+		object* cell = alloca(sizeof(object));
+		init_list_cell(cell, num, ls);
+		ls = cell;
+	}
+
 	object reverse_args[1];
-	init_list_1(reverse_args, digits);
+	init_list_1(reverse_args, ls); 
 	object reverse_call;
 	init_call(&reverse_call, &remove_leading_zeroes_and_reverse_proc, reverse_args, cont);
 	
 	return perform_call(&reverse_call);
-}
-
-object integer_multiply_digits_proc;
-
-object* integer_multiply_digits(object* args, object* cont) {
-	object* result;
-	object* a;
-	object* b;
-	delist_3(args, &result, &a, &b);
-	
-	if (is_empty_list(b)) {
-		return call_cont(cont, result);
-	}
-	else {
-		object next_args[2];
-		init_list_2(next_args, a, list_rest(b));
-		object next_call;
-		init_call(&next_call, &integer_multiply_digits_proc, next_args, cont);
-		object next_cont;
-		init_cont(&next_cont, &next_call);
-		
-		object add_args[1];
-		init_list_1(add_args, result);
-		object add_call;
-		init_call(&add_call, &integer_multiply_add_proc, add_args, &next_cont);
-		object add_cont;
-		init_cont(&add_cont, &add_call);
-		
-		object multiply_args[2];
-		init_list_2(multiply_args, list_first(b), a);
-		object multiply_call;
-		init_call(&multiply_call, &integer_multiply_digit_proc, multiply_args, &add_cont);
-		
-		return perform_call(&multiply_call);
-	}
 }
 
 object integer_multiply_reversed_proc;
@@ -456,8 +478,8 @@ object* integer_multiply_reversed(object* args, object* cont) {
 	object* a;
 	delist_2(args, &reversed, &a);
 	
-	object multiply_args[3];
-	init_list_3(multiply_args, integer_zero_list(), a, reversed);
+	object multiply_args[2];
+	init_list_2(multiply_args, a, reversed);
 	object multiply_call;
 	init_call(&multiply_call, &integer_multiply_digits_proc, multiply_args, cont);
 	
@@ -709,7 +731,6 @@ object* integer_gcd_step(object* args, object* cont) {
 	}
 }
 
-
 object integer_quotient_continued_proc;
 
 object* integer_quotient_continued(object* args, object* cont) {
@@ -949,10 +970,8 @@ void init_integer_procedures(void) {
 	init_primitive(&integer_subtract_one, &integer_subtract_one_proc);
 
 	init_primitive(&integer_multiply, &integer_multiply_proc);
-	init_primitive(&integer_multiply_reversed, &integer_multiply_reversed_proc);
 	init_primitive(&integer_multiply_digits, &integer_multiply_digits_proc);
-	init_primitive(&integer_multiply_digit, &integer_multiply_digit_proc);
-	init_primitive(&integer_multiply_add, &integer_multiply_add_proc);
+	init_primitive(&integer_multiply_reversed, &integer_multiply_reversed_proc);
 	
 	init_primitive(&integer_divide, &integer_divide_proc);
 	init_primitive(&integer_make_division_result, &integer_make_division_result_proc);

@@ -19,6 +19,7 @@
 #include "vectors.h"
 #include "base-util.h"
 #include "memory-handling.h"
+#include "workspace.h"
 #include "base-syntax.h"
 #include "read.h"
 #include "eval.h"
@@ -49,6 +50,7 @@ int main(int argc, char** argv) {
 	init_standard_functions();	
 	init_base_syntax_procedures();
 	init_memory_spaces();
+	init_workspace();
 	
 	object* environment = static_environment();
 	

@@ -12,7 +12,7 @@ object integer_add_signless_proc;
 object integer_subtract_proc;
 object integer_subtract_one_proc;
 object integer_multiply_proc;
-object integer_multiply_digit_proc;
+object integer_multiply_digits_proc;
 object integer_divide_proc;
 object integer_quotient_proc;
 object integer_remainder_proc;

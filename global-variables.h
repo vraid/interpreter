@@ -46,4 +46,5 @@ object* integer_zero_list(void);
 object* integer_zero(void);
 object* integer_one_list(void);
 object* integer_one(void);
+object* integer_ten_list(void);
 object* integer_ten(void);

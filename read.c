@@ -201,9 +201,9 @@ object* read_integer(object* args, object* cont) {
 		init_cont(&add_cont, &add_call);
 		
 		object multiply_args[2];
-		init_list_2(multiply_args, ten(), num);
+		init_list_2(multiply_args, num, integer_ten_list());
 		object multiply_call;
-		init_call(&multiply_call, &integer_multiply_digit_proc, multiply_args, &add_cont);
+		init_call(&multiply_call, &integer_multiply_digits_proc, multiply_args, &add_cont);
 		
 		return perform_call(&multiply_call);
 	}
