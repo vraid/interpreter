@@ -33,6 +33,93 @@ object* make_integer(object* args, object* cont) {
 	}
 }
 
+void workspace_raise_digits(object* digits, long digit_count) {
+	long i;
+	for (i = digit_count-1; i >= 0; i--) {
+		digits[i].data.fixnum.value = (i == 0) ? 0 : fixnum_value(&digits[i-1]);
+	}
+}
+
+void workspace_zero_digits(object* digits, long digit_count) {
+	long i;
+	for (i = 0; i < digit_count; i++) {
+		digits[i].data.fixnum.value = 0;
+	}
+}
+
+void workspace_list_to_array(object* target, object* list) {
+	long i = 0;
+	while (!is_empty_list(list)) {
+		target[i].data.fixnum.value = fixnum_value(list_first(list));
+		list = list_rest(list);
+		i++;
+	}
+}
+
+void workspace_digit_addition(object* target, object* addend, long addend_length) {
+	long carry = 0;
+	long i = 0;
+	while ((i < addend_length) || (carry > 0)) {
+		long total = carry + fixnum_value(&target[i]);
+		if (i < addend_length) total += fixnum_value(&addend[i]);
+
+		carry = total >= integer_base ? 1 : 0;
+		total -= carry * integer_base;
+
+		target[i].data.fixnum.value = total;
+		i++;
+	} 
+}
+
+// subtrahend must be <= target. to subtract a larger number, put arguments in reverse order and reverse the sign
+void workspace_digit_subtraction(object* minuend, long minuend_length, object* subtrahend, long subtrahend_length) {
+	long carry = 0;
+	long i;
+	
+	for (i = 0; i < minuend_length; i++) {
+		long min = fixnum_value(&minuend[i]);
+		long sub = i < subtrahend_length ? fixnum_value(&subtrahend[i]) : 0; 
+		
+		long n = min - sub - carry;
+		carry = 0;
+		if (n < 0) {
+			carry = 1;
+			n += integer_base;
+		}
+		
+		minuend[i].data.fixnum.value = n;
+	}
+}
+
+void workspace_scalar_digit_multiplication(object* target, long scalar, object* digits, long digit_count) {
+	long carry = 0;
+	long i = 0;
+	while ((i < digit_count) || (carry > 0)) {
+		long product = (i >= digit_count) ? 0 : scalar * fixnum_value(&digits[i]);
+		product += carry;
+		
+		long result_value = product & (integer_base - 1);
+		carry = product >> integer_base_bits;
+		
+		target[i].data.fixnum.value = result_value;
+		i++;
+	}
+}
+
+void workspace_digit_multiplication(object* target, long target_count,
+                                    object* partial_space, long partial_count,
+                                    object* a, long a_count,
+                                    object* b, long b_count) {
+	int i;
+	for (i = 0; i < b_count; i++) {
+		long a_digit = fixnum_value(&b[i]);
+		workspace_zero_digits(partial_space, partial_count);
+		workspace_scalar_digit_multiplication(partial_space, a_digit, a, a_count);
+		workspace_raise_digits(target, target_count);
+		workspace_digit_addition(target, partial_space, partial_count);
+	}
+}
+
 object remove_leading_zeroes_proc;
 
 object* remove_leading_zeroes(object* args, object* cont) {
@@ -359,93 +446,6 @@ object* integer_subtract(object* args, object* cont) {
 			
 			return perform_call(&subtract_call);
 		}
-	}
-}
-
-void workspace_raise_digits(object* digits, long digit_count) {
-	long i;
-	for (i = digit_count-1; i >= 0; i--) {
-		digits[i].data.fixnum.value = (i == 0) ? 0 : fixnum_value(&digits[i-1]);
-	}
-}
-
-void workspace_zero_digits(object* digits, long digit_count) {
-	long i;
-	for (i = 0; i < digit_count; i++) {
-		digits[i].data.fixnum.value = 0;
-	}
-}
-
-void workspace_list_to_array(object* target, object* list) {
-	long i = 0;
-	while (!is_empty_list(list)) {
-		target[i].data.fixnum.value = fixnum_value(list_first(list));
-		list = list_rest(list);
-		i++;
-	}
-}
-
-void workspace_digit_addition(object* target, object* addend, long addend_length) {
-	long carry = 0;
-	long i = 0;
-	while ((i < addend_length) || (carry > 0)) {
-		long total = carry + fixnum_value(&target[i]);
-		if (i < addend_length) total += fixnum_value(&addend[i]);
-
-		carry = total >= integer_base ? 1 : 0;
-		total -= carry * integer_base;
-
-		target[i].data.fixnum.value = total;
-		i++;
-	} 
-}
-
-// subtrahend must be <= target. to subtract a larger number, put arguments in reverse order and reverse the sign
-void workspace_digit_subtraction(object* minuend, long minuend_length, object* subtrahend, long subtrahend_length) {
-	long carry = 0;
-	long i;
-	
-	for (i = 0; i < minuend_length; i++) {
-		long min = fixnum_value(&minuend[i]);
-		long sub = i < subtrahend_length ? fixnum_value(&subtrahend[i]) : 0; 
-		
-		long n = min - sub - carry;
-		carry = 0;
-		if (n < 0) {
-			carry = 1;
-			n += integer_base;
-		}
-		
-		minuend[i].data.fixnum.value = n;
-	}
-}
-
-void workspace_scalar_digit_multiplication(object* target, long scalar, object* digits, long digit_count) {
-	long carry = 0;
-	long i = 0;
-	while ((i < digit_count) || (carry > 0)) {
-		long product = (i >= digit_count) ? 0 : scalar * fixnum_value(&digits[i]);
-		product += carry;
-		
-		long result_value = product & (integer_base - 1);
-		carry = product >> integer_base_bits;
-		
-		target[i].data.fixnum.value = result_value;
-		i++;
-	}
-}
-
-void workspace_digit_multiplication(object* target, long target_count,
-                                    object* partial_space, long partial_count,
-                                    object* a, long a_count,
-                                    object* b, long b_count) {
-	int i;
-	for (i = 0; i < b_count; i++) {
-		long a_digit = fixnum_value(&b[i]);
-		workspace_zero_digits(partial_space, partial_count);
-		workspace_scalar_digit_multiplication(partial_space, a_digit, a, a_count);
-		workspace_raise_digits(target, target_count);
-		workspace_digit_addition(target, partial_space, partial_count);
 	}
 }
 
