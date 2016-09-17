@@ -362,36 +362,6 @@ object* integer_subtract(object* args, object* cont) {
 	}
 }
 
-void workspace_digit_addition(object* target, object* addend, long addend_length) {
-	long carry = 0;
-	long i = 0;
-	while ((i < addend_length) || (carry > 0)) {
-		long total = carry + fixnum_value(&target[i]);
-		if (i < addend_length) total += fixnum_value(&addend[i]);
-
-		carry = total >= integer_base ? 1 : 0;
-		total -= carry * integer_base;
-
-		target[i].data.fixnum.value = total;
-		i++;
-	} 
-}
-
-void workspace_digit_multiplication(object* target, long scalar, object* digits, long digit_count) {
-	long carry = 0;
-	long i = 0;
-	while ((i < digit_count) || (carry > 0)) {
-		long product = (i >= digit_count) ? 0 : scalar * fixnum_value(&digits[i]);
-		product += carry;
-		
-		long result_value = product & (integer_base - 1);
-		carry = product >> integer_base_bits;
-		
-		target[i].data.fixnum.value = result_value;
-		i++;
-	}
-}
-
 void workspace_raise_digits(object* digits, long digit_count) {
 	long i;
 	for (i = digit_count-1; i >= 0; i--) {
@@ -415,6 +385,70 @@ void workspace_list_to_array(object* target, object* list) {
 	}
 }
 
+void workspace_digit_addition(object* target, object* addend, long addend_length) {
+	long carry = 0;
+	long i = 0;
+	while ((i < addend_length) || (carry > 0)) {
+		long total = carry + fixnum_value(&target[i]);
+		if (i < addend_length) total += fixnum_value(&addend[i]);
+
+		carry = total >= integer_base ? 1 : 0;
+		total -= carry * integer_base;
+
+		target[i].data.fixnum.value = total;
+		i++;
+	} 
+}
+
+// subtrahend must be <= target. to subtract a larger number, put arguments in reverse order and reverse the sign
+void workspace_digit_subtraction(object* minuend, long minuend_length, object* subtrahend, long subtrahend_length) {
+	long carry = 0;
+	long i;
+	
+	for (i = 0; i < minuend_length; i++) {
+		long min = fixnum_value(&minuend[i]);
+		long sub = i < subtrahend_length ? fixnum_value(&subtrahend[i]) : 0; 
+		
+		long n = min - sub - carry;
+		carry = 0;
+		if (n < 0) {
+			carry = 1;
+			n += integer_base;
+		}
+		
+		minuend[i].data.fixnum.value = n;
+	}
+}
+
+void workspace_scalar_digit_multiplication(object* target, long scalar, object* digits, long digit_count) {
+	long carry = 0;
+	long i = 0;
+	while ((i < digit_count) || (carry > 0)) {
+		long product = (i >= digit_count) ? 0 : scalar * fixnum_value(&digits[i]);
+		product += carry;
+		
+		long result_value = product & (integer_base - 1);
+		carry = product >> integer_base_bits;
+		
+		target[i].data.fixnum.value = result_value;
+		i++;
+	}
+}
+
+void workspace_digit_multiplication(object* target, long target_count,
+                                    object* partial_space, long partial_count,
+                                    object* a, long a_count,
+                                    object* b, long b_count) {
+	int i;
+	for (i = 0; i < b_count; i++) {
+		long a_digit = fixnum_value(&b[i]);
+		workspace_zero_digits(partial_space, partial_count);
+		workspace_scalar_digit_multiplication(partial_space, a_digit, a, a_count);
+		workspace_raise_digits(target, target_count);
+		workspace_digit_addition(target, partial_space, partial_count);
+	}
+}
+
 object* integer_multiply_digits(object* args, object* cont) {
 	object* a;
 	object* b;
@@ -425,7 +459,7 @@ object* integer_multiply_digits(object* args, object* cont) {
 	
 	long result_digit_count = a_length + b_length;
 	long single_digit_count = a_length + 1;
-	long combined_count = result_digit_count + a_length + single_digit_count;
+	long combined_count = result_digit_count + a_length + b_length + single_digit_count;
 	
 	set_workspace_min_size(sizeof(object) * combined_count);
 	
@@ -433,7 +467,8 @@ object* integer_multiply_digits(object* args, object* cont) {
 	
 	object* result = workspace_p;
 	object* a_digits = workspace_p + result_digit_count;
-	object* single_result = workspace_p + (result_digit_count + a_length);
+	object* b_digits = workspace_p + (result_digit_count + a_length);
+	object* single_result = workspace_p + (result_digit_count + a_length + b_length);
 	
 	long i;
 	for (i = 0; i < combined_count; i++) {
@@ -443,16 +478,12 @@ object* integer_multiply_digits(object* args, object* cont) {
 	}
 	
 	workspace_list_to_array(a_digits, a);
-	
-	while (!is_empty_list(b)) {
-		workspace_zero_digits(single_result, single_digit_count);
-		workspace_digit_multiplication(single_result, fixnum_value(list_first(b)), a_digits, a_length);
-		
-		workspace_raise_digits(result, result_digit_count);
-		workspace_digit_addition(result, single_result, single_digit_count);
-		
-		b = list_rest(b);
-	}
+	workspace_list_to_array(b_digits, b);
+
+	workspace_digit_multiplication(result, result_digit_count,
+                                  single_result, single_digit_count,
+                                  a_digits, a_length,
+                                  b_digits, b_length);
 	
 	object* ls = empty_list();
 	for (i = 0; i < result_digit_count; i++) {
