@@ -120,6 +120,78 @@ void workspace_digit_multiplication(object* target, long target_count,
 	}
 }
 
+int signum(long a) {
+	if (a > 0) return 1;
+	else if (a < 0) return -1;
+	else return 0;
+}
+
+char digits_have_value(int value, object* digits) {
+	return is_empty_list(list_rest(digits)) && (value == fixnum_value(list_first(digits)));
+}
+
+char is_one_value_integer(int value, object* a) {
+	return digits_have_value(value, integer_digits(a));
+}
+
+char is_zero_integer(object* a) {
+	return is_one_value_integer(0, a);
+}
+
+char is_one_integer(object* a) {
+	return is_positive_integer(a) && is_one_value_integer(1, a);
+}
+
+char is_positive_integer(object* a) {
+	return (integer_sign(a) == 1) && !is_zero_integer(a);
+}
+
+char is_negative_integer(object* a) {
+	return (integer_sign(a) == -1) && !is_zero_integer(a);
+}
+
+int compare_unsigned_integers(object* a, object* b) {
+	int compare = 0;
+	
+	object* as = integer_digits(a);
+	object* bs = integer_digits(b);
+	
+	while (!is_empty_list(as) && !is_empty_list(bs)) {
+		int c = signum(fixnum_value(list_first(as)) - fixnum_value(list_first(bs)));
+		if (c != 0) {
+			compare = c;
+		}
+		as = list_rest(as);
+		bs = list_rest(bs);
+	}
+	char a_empty = is_empty_list(as);
+	char b_empty = is_empty_list(bs);
+	if (a_empty && !b_empty) {
+		compare = -1;
+	}
+	else if (b_empty && !a_empty) {
+		compare = 1;
+	}
+	return compare;
+}
+
+int compare_signed_integers(object* a, object* b) {
+	if (is_zero_integer(a) && is_zero_integer(b)) {
+		return 0;
+	}
+	else {
+		int a_sign = integer_sign(a);
+		int b_sign = integer_sign(b);
+		
+		if (a_sign == b_sign) {
+			return a_sign * compare_unsigned_integers(a, b);
+		}
+		else {
+			return (a_sign == 1) ? 1 : -1;
+		}
+	}
+}
+
 object remove_leading_zeroes_proc;
 
 object* remove_leading_zeroes(object* args, object* cont) {
@@ -329,78 +401,6 @@ object* integer_subtract_with_sign(object* args, object* cont) {
 	init_call(&subtract_call, &integer_subtract_digits_proc, subtract_args, &trim_cont);
 	
 	return perform_call(&subtract_call);
-}
-
-int signum(long a) {
-	if (a > 0) return 1;
-	else if (a < 0) return -1;
-	else return 0;
-}
-
-char digits_have_value(int value, object* digits) {
-	return is_empty_list(list_rest(digits)) && (value == fixnum_value(list_first(digits)));
-}
-
-char is_one_value_integer(int value, object* a) {
-	return digits_have_value(value, integer_digits(a));
-}
-
-char is_zero_integer(object* a) {
-	return is_one_value_integer(0, a);
-}
-
-char is_one_integer(object* a) {
-	return is_positive_integer(a) && is_one_value_integer(1, a);
-}
-
-char is_positive_integer(object* a) {
-	return (integer_sign(a) == 1) && !is_zero_integer(a);
-}
-
-char is_negative_integer(object* a) {
-	return (integer_sign(a) == -1) && !is_zero_integer(a);
-}
-
-int compare_unsigned_integers(object* a, object* b) {
-	int compare = 0;
-	
-	object* as = integer_digits(a);
-	object* bs = integer_digits(b);
-	
-	while (!is_empty_list(as) && !is_empty_list(bs)) {
-		int c = signum(fixnum_value(list_first(as)) - fixnum_value(list_first(bs)));
-		if (c != 0) {
-			compare = c;
-		}
-		as = list_rest(as);
-		bs = list_rest(bs);
-	}
-	char a_empty = is_empty_list(as);
-	char b_empty = is_empty_list(bs);
-	if (a_empty && !b_empty) {
-		compare = -1;
-	}
-	else if (b_empty && !a_empty) {
-		compare = 1;
-	}
-	return compare;
-}
-
-int compare_signed_integers(object* a, object* b) {
-	if (is_zero_integer(a) && is_zero_integer(b)) {
-		return 0;
-	}
-	else {
-		int a_sign = integer_sign(a);
-		int b_sign = integer_sign(b);
-		
-		if (a_sign == b_sign) {
-			return a_sign * compare_unsigned_integers(a, b);
-		}
-		else {
-			return (a_sign == 1) ? 1 : -1;
-		}
-	}
 }
 
 object* integer_subtract(object* args, object* cont) {
