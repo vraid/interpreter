@@ -59,9 +59,11 @@ void init_data_structure_names(void) {
 void check_type(object_type type, object* obj) {
 	if (obj->type >= type_count) {
 		fprintf(stderr, "type out of range at %p, expected %s\n", (void*)obj, type_name(type));
+		exit(1);
 	}
 	if (obj->type != type) {
 		fprintf(stderr, "faulty type at %p: expected %s, got %s\n", (void*)obj, type_name(type), object_type_name(obj));
+		exit(1);
 	}
 	return;
 }

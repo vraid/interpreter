@@ -33,52 +33,116 @@ object* make_integer(object* args, object* cont) {
 	}
 }
 
-void workspace_raise_digits(object* digits, long digit_count) {
+int signum(long a) {
+	if (a > 0) return 1;
+	else if (a < 0) return -1;
+	else return 0;
+}
+
+typedef struct {
+	long length;
+	long* digits;
+} workspace_digits;
+
+void workspace_allocate_digits(workspace_digits* a, long length) {
+	a->length = length;
+	long* digits = (long*)workspace_allocate(sizeof(long) * length);
 	long i;
-	for (i = digit_count-1; i >= 0; i--) {
-		digits[i].data.fixnum.value = (i == 0) ? 0 : fixnum_value(&digits[i-1]);
+	for (i = 0; i < length; i++) {
+		digits[i] = 0;
+	}
+	a->digits = digits;
+}
+
+void workspace_raise_digits(workspace_digits a, long power) {
+	long i;
+	for (i = a.length-1; i >= 0; i--) {
+		a.digits[i] = (i < power) ? 0 : a.digits[i-power];
 	}
 }
 
-void workspace_zero_digits(object* digits, long digit_count) {
+long workspace_highest_digit_index(workspace_digits a) {
 	long i;
-	for (i = 0; i < digit_count; i++) {
-		digits[i].data.fixnum.value = 0;
+	for (i = a.length - 1; i >= 0; i--) {
+		if (a.digits[i] > 0) {
+			return i;
+		}
+	}
+	return 0;
+}
+
+int workspace_compare_digits(workspace_digits a, workspace_digits b) {
+	long a_first = workspace_highest_digit_index(a);
+	long b_first = workspace_highest_digit_index(b);
+	
+	if (a_first != b_first) {
+		return signum(a_first - b_first);
+	}
+	else {
+		long i;
+		for (i = a_first; i >= 0; i--) {
+			long diff = a.digits[i] - b.digits[i];
+			if (diff != 0) {
+				return signum(diff);
+			}
+		}
+	}
+	return 0;
+}
+
+void workspace_zero_digits(workspace_digits a) {
+	long i;
+	for (i = 0; i < a.length; i++) {
+		a.digits[i] = 0;
 	}
 }
 
-void workspace_list_to_array(object* target, object* list) {
+void print_workspace_digits(workspace_digits a, char endline) {
+	long last = workspace_highest_digit_index(a);
+	long i;
+	for (i = 0; i <= last; i++) {
+		printf("%ld, ", a.digits[i]);
+	}
+	if (endline) printf("\n");
+}
+
+char workspace_digits_are_zero(workspace_digits a) {
+	return (workspace_highest_digit_index(a) == 0) && (a.digits[0] == 0);
+}
+
+void workspace_list_to_array(workspace_digits target, object* list) {
 	long i = 0;
 	while (!is_empty_list(list)) {
-		target[i].data.fixnum.value = fixnum_value(list_first(list));
+		target.digits[i] = fixnum_value(list_first(list));
 		list = list_rest(list);
 		i++;
 	}
 }
 
-void workspace_digit_addition(object* target, object* addend, long addend_length) {
+// destructive addition
+
+void workspace_destructive_addition(workspace_digits target, workspace_digits addend) {
 	long carry = 0;
 	long i = 0;
-	while ((i < addend_length) || (carry > 0)) {
-		long total = carry + fixnum_value(&target[i]);
-		if (i < addend_length) total += fixnum_value(&addend[i]);
+	while ((i < addend.length) || (carry > 0)) {
+		long total = carry + target.digits[i];
+		if (i < addend.length) total += addend.digits[i];
 
 		carry = total >= integer_base ? 1 : 0;
 		total -= carry * integer_base;
 
-		target[i].data.fixnum.value = total;
+		target.digits[i] = total;
 		i++;
 	} 
 }
 
-// subtrahend must be <= target. to subtract a larger number, put arguments in reverse order and reverse the sign
-void workspace_digit_subtraction(object* minuend, long minuend_length, object* subtrahend, long subtrahend_length) {
+void workspace_subtraction(workspace_digits target, workspace_digits minuend, workspace_digits subtrahend) {
 	long carry = 0;
-	long i;
+	long i = 0;
 	
-	for (i = 0; i < minuend_length; i++) {
-		long min = fixnum_value(&minuend[i]);
-		long sub = i < subtrahend_length ? fixnum_value(&subtrahend[i]) : 0; 
+	while ((i < minuend.length) || (carry > 0)) {
+		long min = minuend.digits[i];
+		long sub = i < subtrahend.length ? subtrahend.digits[i] : 0; 
 		
 		long n = min - sub - carry;
 		carry = 0;
@@ -87,43 +151,59 @@ void workspace_digit_subtraction(object* minuend, long minuend_length, object* s
 			n += integer_base;
 		}
 		
-		minuend[i].data.fixnum.value = n;
+		target.digits[i] = n;
+		i++;
 	}
 }
 
-void workspace_scalar_digit_multiplication(object* target, long scalar, object* digits, long digit_count) {
+// subtrahend must be <= target. to subtract a larger number, put arguments in reverse order and reverse the sign
+void workspace_destructive_subtraction(workspace_digits target, workspace_digits subtrahend) {
 	long carry = 0;
 	long i = 0;
-	while ((i < digit_count) || (carry > 0)) {
-		long product = (i >= digit_count) ? 0 : scalar * fixnum_value(&digits[i]);
+	
+	while ((i < subtrahend.length) || (carry > 0)) {
+		long min = target.digits[i];
+		long sub = i < subtrahend.length ? subtrahend.digits[i] : 0; 
+		
+		long n = min - sub - carry;
+		carry = 0;
+		if (n < 0) {
+			carry = 1;
+			n += integer_base;
+		}
+		
+		target.digits[i] = n;
+		i++;
+	}
+}
+
+void workspace_scalar_multiplication(workspace_digits target, long scalar, workspace_digits a) {
+	long carry = 0;
+	long i = 0;
+	while ((i < a.length) || (carry > 0)) {
+		long product = (i >= a.length) ? 0 : scalar * a.digits[i];
 		product += carry;
 		
 		long result_value = product & (integer_base - 1);
 		carry = product >> integer_base_bits;
 		
-		target[i].data.fixnum.value = result_value;
+		target.digits[i] = result_value;
 		i++;
 	}
 }
 
-void workspace_digit_multiplication(object* target, long target_count,
-                                    object* partial_space, long partial_count,
-                                    object* a, long a_count,
-                                    object* b, long b_count) {
-	int i;
-	for (i = 0; i < b_count; i++) {
-		long a_digit = fixnum_value(&b[i]);
-		workspace_zero_digits(partial_space, partial_count);
-		workspace_scalar_digit_multiplication(partial_space, a_digit, a, a_count);
-		workspace_raise_digits(target, target_count);
-		workspace_digit_addition(target, partial_space, partial_count);
+void workspace_multiplication(workspace_digits target,
+                              workspace_digits partial_space,
+                              workspace_digits a,
+                              workspace_digits b) {
+	long i;
+	for (i = b.length - 1; i >= 0; i--) {
+		long b_digit = b.digits[i];
+		workspace_zero_digits(partial_space);
+		workspace_scalar_multiplication(partial_space, b_digit, a);
+		workspace_raise_digits(target, 1);
+		workspace_destructive_addition(target, partial_space);
 	}
-}
-
-int signum(long a) {
-	if (a > 0) return 1;
-	else if (a < 0) return -1;
-	else return 0;
 }
 
 char digits_have_value(int value, object* digits) {
@@ -457,64 +537,41 @@ object* integer_multiply_digits(object* args, object* cont) {
 	long a_length = list_length(a);
 	long b_length = list_length(b);
 	
-	long result_digit_count = a_length + b_length;
-	long single_digit_count = a_length + 1;
-	long combined_count = result_digit_count + a_length + b_length + single_digit_count;
+	long result_length = a_length + b_length;
+	long temporary_length = result_length;
+	long combined_count = result_length + a_length + b_length + temporary_length;
 	
-	set_workspace_min_size(sizeof(object) * combined_count);
+	reset_workspace(sizeof(long) * combined_count);
 	
-	object* workspace_p = (object*)workspace();
+	workspace_digits result;
+	workspace_allocate_digits(&result, result_length);
 	
-	object* result = workspace_p;
-	object* a_digits = workspace_p + result_digit_count;
-	object* b_digits = workspace_p + (result_digit_count + a_length);
-	object* single_result = workspace_p + (result_digit_count + a_length + b_length);
+	workspace_digits a_digits;
+	workspace_allocate_digits(&a_digits, a_length);
 	
-	long i;
-	for (i = 0; i < combined_count; i++) {
-		object* obj = workspace_p + i;
-		init_fixnum(obj, 0);
-		make_semistatic(obj);
-	}
+	workspace_digits b_digits;
+	workspace_allocate_digits(&b_digits, b_length);
+
+	workspace_digits temporary;
+	workspace_allocate_digits(&temporary, temporary_length);
 	
 	workspace_list_to_array(a_digits, a);
 	workspace_list_to_array(b_digits, b);
-
-	workspace_digit_multiplication(result, result_digit_count,
-                                  single_result, single_digit_count,
-                                  a_digits, a_length,
-                                  b_digits, b_length);
 	
+	workspace_multiplication(result, temporary, a_digits, b_digits);
+	
+	long last = workspace_highest_digit_index(result);
 	object* ls = empty_list();
-	for (i = 0; i < result_digit_count; i++) {
+	long i;
+	for (i = last; i >= 0; i--) {
 		object* num = alloca(sizeof(object));
-		init_fixnum(num, fixnum_value(&result[i]));
+		init_fixnum(num, result.digits[i]);
 		object* cell = alloca(sizeof(object));
 		init_list_cell(cell, num, ls);
 		ls = cell;
 	}
-
-	object reverse_args[1];
-	init_list_1(reverse_args, ls); 
-	object reverse_call;
-	init_call(&reverse_call, &remove_leading_zeroes_and_reverse_proc, reverse_args, cont);
 	
-	return perform_call(&reverse_call);
-}
-
-object integer_multiply_reversed_proc;
-
-object* integer_multiply_reversed(object* args, object* cont) {
-	object* reversed;
-	object* a;
-	delist_2(args, &reversed, &a);
-	
-	object multiply_args[2];
-	init_list_2(multiply_args, a, reversed);
-	object multiply_call;
-	init_call(&multiply_call, &integer_multiply_digits_proc, multiply_args, cont);
-	
-	return perform_call(&multiply_call);
+	return call_cont(cont, ls);
 }
 
 object* integer_multiply(object* args, object* cont) {
@@ -533,146 +590,169 @@ object* integer_multiply(object* args, object* cont) {
 	object make_cont;
 	init_cont(&make_cont, &make_call);
 	
-	object multiply_args[1];
-	init_list_1(multiply_args, b_digits);
-	object multiply_call;
-	init_call(&multiply_call, &integer_multiply_reversed_proc, multiply_args, &make_cont);
-	object multiply_cont;
-	init_cont(&multiply_cont, &multiply_call);
-	
-	object reverse_args[1];
-	init_list_1(reverse_args, a_digits);
-	object reverse_call;
-	init_call(&reverse_call, &reverse_list_proc, reverse_args, &multiply_cont);
-	
-	return perform_call(&reverse_call);
-}
-
-object integer_divide_one_proc;
-
-object* integer_divide_one(object* args, object* cont) {
-	object* divisor;
-	object* dividend;
-	delist_2(args, &divisor, &dividend);
-	
-	object* divisor_digits = integer_digits(divisor);
-	long divisor_first = 0; 
-	long power = 1;
-	
-	while (!is_empty_list(divisor_digits)) {
-		divisor_first = fixnum_value(list_first(divisor_digits));
-		divisor_digits = list_rest(divisor_digits);
-		power--;
-	}
-	
-	object* dividend_digits = integer_digits(dividend);
-	long dividend_first = fixnum_value(list_first(dividend_digits));
-	long dividend_second = 0;
-
-	dividend_digits = list_rest(dividend_digits);
-
-	while (!is_empty_list(dividend_digits)) {
-		dividend_second = dividend_first;
-		dividend_first = fixnum_value(list_first(dividend_digits));
-		dividend_digits = list_rest(dividend_digits);
-		power++;
-	}
-	
-	if (dividend_first < divisor_first) {
-		dividend_first = dividend_second + dividend_first * integer_base;
-		power--;
-	}
-	
-	long result = dividend_first / divisor_first;
-	
-	object num;
-	init_fixnum(&num, result);
-	object first_cell;
-	init_list_cell(&first_cell, &num, empty_list());
-	object* digits = &first_cell;
-	int i;
-	for (i = power; i > 0; i--) {
-		object* next_cell = alloca(sizeof(object));
-		init_list_cell(next_cell, zero(), digits);
-		digits = next_cell;
-	}
-	
-	object bign;
-	init_positive_integer(&bign, digits);
-	
-	return call_cont(cont, &bign);
-}
-
-object integer_perform_division_proc;
-object integer_adjust_dividend_proc;
-
-object* integer_adjust_dividend(object* args, object* cont) {
-	object* quotient;
-	object* divisor;
-	object* dividend;
-	delist_3(args, &quotient, &divisor, &dividend);
-	
-	object continue_call;
-	init_call(&continue_call, &integer_perform_division_proc, args, cont);
-	object continue_cont;
-	init_cont(&continue_cont, &continue_call);
-	
-	object subtract_args[1];
-	init_list_1(subtract_args, dividend);
-	object subtract_call;
-	init_call(&subtract_call, &integer_subtract_proc, subtract_args, &continue_cont);
-	object subtract_cont;
-	init_cont(&subtract_cont, &subtract_call);
-	
 	object multiply_args[2];
-	init_list_2(multiply_args, quotient, divisor);
+	init_list_2(multiply_args, a_digits, b_digits);
 	object multiply_call;
-	init_call(&multiply_call, &integer_multiply_proc, multiply_args, &subtract_cont);
+	init_call(&multiply_call, &integer_multiply_digits_proc, multiply_args, &make_cont);
 	
 	return perform_call(&multiply_call);
 }
 
+object integer_perform_division_proc;
+
 object* integer_perform_division(object* args, object* cont) {
-	object* difference;
-	object* quotient;
-	object* divisor;
-	object* dividend;
-	delist_4(args, &difference, &quotient, &divisor, &dividend);
+	object* divisor_num;
+	object* dividend_num;
+	delist_2(args, &divisor_num, &dividend_num);
 	
-	char difference_positive = integer_sign(difference) == 1;
-	
-	int compare = compare_unsigned_integers(divisor, difference);
-	
-	if (is_zero_integer(difference) || (compare == 1 && difference_positive)) {
+	if (is_one_integer(divisor_num)) {
 		object ls[2];
-		init_list_2(ls, quotient, difference);
-		
+		init_list_2(ls, dividend_num, integer_zero());
+	
 		return call_cont(cont, ls);
 	}
-	else {
-		object* adjust_quotient_proc = difference_positive ? &integer_add_proc : &integer_subtract_proc;
+	
+	long divisor_length = list_length(integer_digits(divisor_num));
+	long dividend_length = list_length(integer_digits(dividend_num));
+	long quotient_length = dividend_length;
+	long temporary_length = dividend_length;
+	long remainder_length = dividend_length;
+	long intermediate_quotient_length = quotient_length;
+	long intermediate_result_length = dividend_length + 1;
+	long combined_length = divisor_length + dividend_length + quotient_length + temporary_length + remainder_length +
+	                       intermediate_quotient_length + intermediate_result_length;
+	
+	reset_workspace(sizeof(long) * combined_length);
+	
+	workspace_digits divisor;
+	workspace_allocate_digits(&divisor, divisor_length);
+	
+	workspace_digits dividend;
+	workspace_allocate_digits(&dividend, dividend_length);
+	
+	workspace_digits quotient;
+	workspace_allocate_digits(&quotient, quotient_length);
+	
+	workspace_digits temporary;
+	workspace_allocate_digits(&temporary, temporary_length);
+	
+	workspace_digits remainder;
+	workspace_allocate_digits(&remainder, remainder_length);
+	
+	workspace_digits intermediate_quotient;
+	workspace_allocate_digits(&intermediate_quotient, intermediate_quotient_length);
+	
+	workspace_digits intermediate_result;
+	workspace_allocate_digits(&intermediate_result, intermediate_result_length);
+	
+	workspace_list_to_array(divisor, integer_digits(divisor_num));
+	workspace_list_to_array(dividend, integer_digits(dividend_num));
+	workspace_list_to_array(remainder, integer_digits(dividend_num));
+	
+	workspace_digits zero_digit;
+	zero_digit.length = 1;
+	long z = 0;
+	zero_digit.digits = &z;
+	
+	int remainder_sign = workspace_compare_digits(dividend, zero_digit);
+	
+	int compare = workspace_compare_digits(remainder, divisor);
+	
+	while ((compare >= 0) || (remainder_sign == -1)) {
 		
-		object difference_args[2];
-		init_list_2(difference_args, divisor, dividend);
-		object difference_call;
-		init_call(&difference_call, &integer_adjust_dividend_proc, difference_args, cont);
-		object difference_cont;
-		init_cont(&difference_cont, &difference_call);
+		if (compare >= 0) {
+			long divisor_power = workspace_highest_digit_index(divisor);
+			long divisor_first = divisor.digits[divisor_power];
+			long remainder_power = workspace_highest_digit_index(remainder);
+			long remainder_first = remainder.digits[remainder_power];
+			long remainder_second = (remainder_power == 0) ? 0 : remainder.digits[remainder_power-1];
+			long remainder_value = remainder_first;
+			
+			if (divisor_first > remainder_first) {
+				remainder_value = remainder_second + remainder_first * integer_base;
+				remainder_power--;
+			}
+			
+			long power_difference = remainder_power - divisor_power;
+			
+			workspace_zero_digits(intermediate_quotient);
+			intermediate_quotient.digits[0] = remainder_value / divisor_first;
+			workspace_raise_digits(intermediate_quotient, power_difference);
+			
+			// adjust quotient
+			if (remainder_sign == 1) {
+				workspace_destructive_addition(quotient, intermediate_quotient);
+			}
+			else {
+				workspace_destructive_subtraction(quotient, intermediate_quotient);
+			}
+		}
+		// remainder negative and abs(remainder) less than divisor
+		else if (remainder_sign == -1) {
+			workspace_digits one_digit;
+			one_digit.length = 1;
+			long o = 1;
+			one_digit.digits = &o;
+			workspace_destructive_subtraction(quotient, one_digit);
+		}
+		else {
+			printf("incorrect condition\n");
+			exit(1);
+		}
 		
-		object quotient_args[1];
-		init_list_1(quotient_args, quotient);
-		object quotient_call;
-		init_call(&quotient_call, adjust_quotient_proc, quotient_args, &difference_cont);
-		object quotient_cont;
-		init_cont(&quotient_cont, &quotient_call);
+		// set intermediate to divisor * quotient
 		
-		object divide_args[2];
-		init_list_2(divide_args, divisor, difference);
-		object divide_call;
-		init_call(&divide_call, &integer_divide_one_proc, divide_args, &quotient_cont);
+		workspace_zero_digits(intermediate_result);
+		workspace_multiplication(intermediate_result, temporary, divisor, quotient);
 		
-		return perform_call(&divide_call);
+		remainder_sign = workspace_compare_digits(dividend, intermediate_result);
+		
+		workspace_zero_digits(remainder);
+		
+		// set remainder to dividend - intermediate result
+		if (remainder_sign == 1) {
+			workspace_subtraction(remainder, dividend, intermediate_result);
+		}
+		else {
+			workspace_subtraction(remainder, intermediate_result, dividend);
+		}
+		
+		compare = workspace_compare_digits(remainder, divisor);
 	}
+	
+	int last = workspace_highest_digit_index(quotient);
+	
+	object* quotient_digits = empty_list();
+	long i;
+	for (i = last; i >= 0; i--) {
+		object* num = alloca(sizeof(object));
+		init_fixnum(num, quotient.digits[i]);
+		object* cell = alloca(sizeof(object));
+		init_list_cell(cell, num, quotient_digits);
+		quotient_digits = cell;
+	}
+	
+	object* quotient_num = alloca(sizeof(object));
+	init_integer(quotient_num, 1, quotient_digits);
+	
+	last = workspace_highest_digit_index(remainder);
+	
+	object* remainder_digits = empty_list();
+	for (i = last; i >= 0; i--) {
+		object* num = alloca(sizeof(object));
+		init_fixnum(num, remainder.digits[i]);
+		object* cell = alloca(sizeof(object));
+		init_list_cell(cell, num, remainder_digits);
+		remainder_digits = cell;
+	}
+	
+	object* remainder_num = alloca(sizeof(object));
+	init_integer(remainder_num, 1, remainder_digits);
+	
+	object ls[2];
+	init_list_2(ls, quotient_num, remainder_num);
+	
+	return call_cont(cont, ls);
 }
 
 object integer_make_division_result_proc;
@@ -722,8 +802,8 @@ object* integer_divide(object* args, object* cont) {
 	object result_cont;
 	init_cont(&result_cont, &result_call);
 	
-	object divide_args[4];
-	init_list_4(divide_args, &positive_dividend, integer_zero(), &positive_divisor, &positive_dividend);
+	object divide_args[2];
+	init_list_2(divide_args, &positive_divisor, &positive_dividend);
 	object divide_call;
 	init_call(&divide_call, &integer_perform_division_proc, divide_args, &result_cont);
 	
@@ -1002,13 +1082,10 @@ void init_integer_procedures(void) {
 
 	init_primitive(&integer_multiply, &integer_multiply_proc);
 	init_primitive(&integer_multiply_digits, &integer_multiply_digits_proc);
-	init_primitive(&integer_multiply_reversed, &integer_multiply_reversed_proc);
 	
 	init_primitive(&integer_divide, &integer_divide_proc);
 	init_primitive(&integer_make_division_result, &integer_make_division_result_proc);
-	init_primitive(&integer_divide_one, &integer_divide_one_proc);
 	init_primitive(&integer_perform_division, &integer_perform_division_proc);
-	init_primitive(&integer_adjust_dividend, &integer_adjust_dividend_proc);
 	
 	init_primitive(&integer_quotient, &integer_quotient_proc);
 	init_primitive(&integer_quotient_continued, &integer_quotient_continued_proc);
