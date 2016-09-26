@@ -173,7 +173,7 @@ object* read_integer(object* args, object* cont) {
 	object* string;
 	delist_3(args, &num, &index, &string);
 
-	long i = fixnum_value(index);
+	fixnum_type i = fixnum_value(index);
 	if (i == string_length(string)) {
 		return call_cont(cont, num);
 	}

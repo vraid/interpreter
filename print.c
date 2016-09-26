@@ -192,7 +192,7 @@ object* print_integer_digits(object* args, object* cont) {
 	delist_1(args, &digits);
 	
 	while (!is_empty_list(digits)) {
-		printf("%ld", fixnum_value(list_first(digits)));
+		printf("%lld", fixnum_value(list_first(digits)));
 		digits = list_rest(digits);
 	}
 	
@@ -294,7 +294,7 @@ object* print_value(object* args, object* cont) {
 			}
 			break;
 		case type_fixnum:
-			printf("%ld", fixnum_value(obj));
+			printf("%lld", fixnum_value(obj));
 			break;
 		case type_integer:
 			return print_integer(args, cont);

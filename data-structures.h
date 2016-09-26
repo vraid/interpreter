@@ -49,6 +49,8 @@ typedef enum {
 
 typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
+typedef long long fixnum_type;
+
 typedef struct object {
 	object_location location;
 	object_type type;
@@ -67,7 +69,7 @@ typedef struct object {
 			struct object* name;
 		} symbol;
 		struct {
-			long value;
+			fixnum_type value;
 		} fixnum;
 		struct {
 			struct object* digits;
@@ -189,7 +191,7 @@ char* string_value(object* obj);
 object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
 
-long fixnum_value(object* obj);
+fixnum_type fixnum_value(object* obj);
 int integer_sign(object* obj);
 object* integer_digits(object* obj);
 object* fraction_numerator(object* obj);

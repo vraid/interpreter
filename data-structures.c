@@ -179,7 +179,7 @@ FILE* file_port_file(object* obj) {
 	return obj->data.file_port.file;
 }
 
-long fixnum_value(object* obj) {
+fixnum_type fixnum_value(object* obj) {
 	check_type(type_fixnum, obj);
 	return obj->data.fixnum.value;
 }

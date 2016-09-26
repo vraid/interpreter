@@ -33,7 +33,7 @@ object* make_integer(object* args, object* cont) {
 	}
 }
 
-int signum(long a) {
+int signum(fixnum_type a) {
 	if (a > 0) return 1;
 	else if (a < 0) return -1;
 	else return 0;
@@ -41,12 +41,12 @@ int signum(long a) {
 
 typedef struct {
 	long length;
-	long* digits;
+	fixnum_type* digits;
 } workspace_digits;
 
 void workspace_allocate_digits(workspace_digits* a, long length) {
 	a->length = length;
-	long* digits = (long*)workspace_allocate(sizeof(long) * length);
+	fixnum_type* digits = (fixnum_type*)workspace_allocate(sizeof(fixnum_type) * length);
 	long i;
 	for (i = 0; i < length; i++) {
 		digits[i] = 0;
@@ -81,7 +81,7 @@ int workspace_compare_digits(workspace_digits a, workspace_digits b) {
 	else {
 		long i;
 		for (i = a_first; i >= 0; i--) {
-			long diff = a.digits[i] - b.digits[i];
+			fixnum_type diff = a.digits[i] - b.digits[i];
 			if (diff != 0) {
 				return signum(diff);
 			}
@@ -101,7 +101,7 @@ void print_workspace_digits(workspace_digits a, char endline) {
 	long last = workspace_highest_digit_index(a);
 	long i;
 	for (i = 0; i <= last; i++) {
-		printf("%ld, ", a.digits[i]);
+		printf("%lld, ", a.digits[i]);
 	}
 	if (endline) printf("\n");
 }
@@ -122,10 +122,10 @@ void workspace_list_to_array(workspace_digits target, object* list) {
 // destructive addition
 
 void workspace_destructive_addition(workspace_digits target, workspace_digits addend) {
-	long carry = 0;
+	fixnum_type carry = 0;
 	long i = 0;
 	while ((i < addend.length) || (carry > 0)) {
-		long total = carry + target.digits[i];
+		fixnum_type total = carry + target.digits[i];
 		if (i < addend.length) total += addend.digits[i];
 
 		carry = total >= integer_base ? 1 : 0;
@@ -137,14 +137,14 @@ void workspace_destructive_addition(workspace_digits target, workspace_digits ad
 }
 
 void workspace_subtraction(workspace_digits target, workspace_digits minuend, workspace_digits subtrahend) {
-	long carry = 0;
+	fixnum_type carry = 0;
 	long i = 0;
 	
 	while ((i < minuend.length) || (carry > 0)) {
-		long min = minuend.digits[i];
-		long sub = i < subtrahend.length ? subtrahend.digits[i] : 0; 
+		fixnum_type min = minuend.digits[i];
+		fixnum_type sub = i < subtrahend.length ? subtrahend.digits[i] : 0; 
 		
-		long n = min - sub - carry;
+		fixnum_type n = min - sub - carry;
 		carry = 0;
 		if (n < 0) {
 			carry = 1;
@@ -158,14 +158,14 @@ void workspace_subtraction(workspace_digits target, workspace_digits minuend, wo
 
 // subtrahend must be <= target. to subtract a larger number, put arguments in reverse order and reverse the sign
 void workspace_destructive_subtraction(workspace_digits target, workspace_digits subtrahend) {
-	long carry = 0;
+	fixnum_type carry = 0;
 	long i = 0;
 	
 	while ((i < subtrahend.length) || (carry > 0)) {
-		long min = target.digits[i];
-		long sub = i < subtrahend.length ? subtrahend.digits[i] : 0; 
+		fixnum_type min = target.digits[i];
+		fixnum_type sub = i < subtrahend.length ? subtrahend.digits[i] : 0; 
 		
-		long n = min - sub - carry;
+		fixnum_type n = min - sub - carry;
 		carry = 0;
 		if (n < 0) {
 			carry = 1;
@@ -177,14 +177,14 @@ void workspace_destructive_subtraction(workspace_digits target, workspace_digits
 	}
 }
 
-void workspace_scalar_multiplication(workspace_digits target, long scalar, workspace_digits a) {
-	long carry = 0;
+void workspace_scalar_multiplication(workspace_digits target, fixnum_type scalar, workspace_digits a) {
+	fixnum_type carry = 0;
 	long i = 0;
 	while ((i < a.length) || (carry > 0)) {
-		long product = (i >= a.length) ? 0 : scalar * a.digits[i];
+		fixnum_type product = (i >= a.length) ? 0 : scalar * a.digits[i];
 		product += carry;
 		
-		long result_value = product & (integer_base - 1);
+		fixnum_type result_value = product & (integer_base - 1);
 		carry = product >> integer_base_bits;
 		
 		target.digits[i] = result_value;
@@ -198,7 +198,7 @@ void workspace_multiplication(workspace_digits target,
                               workspace_digits b) {
 	long i;
 	for (i = b.length - 1; i >= 0; i--) {
-		long b_digit = b.digits[i];
+		fixnum_type b_digit = b.digits[i];
 		workspace_zero_digits(partial_space);
 		workspace_scalar_multiplication(partial_space, b_digit, a);
 		workspace_raise_digits(target, 1);
@@ -206,11 +206,11 @@ void workspace_multiplication(workspace_digits target,
 	}
 }
 
-char digits_have_value(int value, object* digits) {
+char digits_have_value(fixnum_type value, object* digits) {
 	return is_empty_list(list_rest(digits)) && (value == fixnum_value(list_first(digits)));
 }
 
-char is_one_value_integer(int value, object* a) {
+char is_one_value_integer(fixnum_type value, object* a) {
 	return digits_have_value(value, integer_digits(a));
 }
 
@@ -308,13 +308,13 @@ object* integer_add_digits(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	object* digits = empty_list();
-	long carry = 0;
+	fixnum_type carry = 0;
 	
 	while (!(is_empty_list(a) && is_empty_list(b) && (carry == 0))) {
 		object* anum = first_or_zero(a);
 		object* bnum = first_or_zero(b);
 		
-		long n = fixnum_value(anum) + fixnum_value(bnum) + carry;
+		fixnum_type n = fixnum_value(anum) + fixnum_value(bnum) + carry;
 		carry = 0;
 		if (n >= integer_base) {
 			carry = 1;
@@ -422,13 +422,13 @@ object* integer_subtract_digits(object* args, object* cont) {
 	delist_2(args, &subtrahend, &minuend);
 	
 	object* digits = empty_list();
-	long carry = 0;
+	fixnum_type carry = 0;
 	
 	while (!is_empty_list(minuend)) {
 		object* minuend_first = first_or_zero(minuend);
 		object* subtrahend_first = first_or_zero(subtrahend);
 		
-		long n = fixnum_value(minuend_first) - fixnum_value(subtrahend_first) - carry;
+		fixnum_type n = fixnum_value(minuend_first) - fixnum_value(subtrahend_first) - carry;
 		carry = 0;
 		if (n < 0) {
 			carry = 1;
@@ -541,7 +541,7 @@ object* integer_multiply_digits(object* args, object* cont) {
 	long temporary_length = result_length;
 	long combined_count = result_length + a_length + b_length + temporary_length;
 	
-	reset_workspace(sizeof(long) * combined_count);
+	reset_workspace(sizeof(fixnum_type) * combined_count);
 	
 	workspace_digits result;
 	workspace_allocate_digits(&result, result_length);
@@ -622,7 +622,7 @@ object* integer_perform_division(object* args, object* cont) {
 	long combined_length = divisor_length + dividend_length + quotient_length + temporary_length + remainder_length +
 	                       intermediate_quotient_length + intermediate_result_length;
 	
-	reset_workspace(sizeof(long) * combined_length);
+	reset_workspace(sizeof(fixnum_type) * combined_length);
 	
 	workspace_digits divisor;
 	workspace_allocate_digits(&divisor, divisor_length);
@@ -651,7 +651,7 @@ object* integer_perform_division(object* args, object* cont) {
 	
 	workspace_digits zero_digit;
 	zero_digit.length = 1;
-	long z = 0;
+	fixnum_type z = 0;
 	zero_digit.digits = &z;
 	
 	int remainder_sign = workspace_compare_digits(dividend, zero_digit);
@@ -662,11 +662,11 @@ object* integer_perform_division(object* args, object* cont) {
 		
 		if (compare >= 0) {
 			long divisor_power = workspace_highest_digit_index(divisor);
-			long divisor_first = divisor.digits[divisor_power];
+			fixnum_type divisor_first = divisor.digits[divisor_power];
 			long remainder_power = workspace_highest_digit_index(remainder);
-			long remainder_first = remainder.digits[remainder_power];
-			long remainder_second = (remainder_power == 0) ? 0 : remainder.digits[remainder_power-1];
-			long remainder_value = remainder_first;
+			fixnum_type remainder_first = remainder.digits[remainder_power];
+			fixnum_type remainder_second = (remainder_power == 0) ? 0 : remainder.digits[remainder_power-1];
+			fixnum_type remainder_value = remainder_first;
 			
 			if (divisor_first > remainder_first) {
 				remainder_value = remainder_second + remainder_first * integer_base;
@@ -691,7 +691,7 @@ object* integer_perform_division(object* args, object* cont) {
 		else if (remainder_sign == -1) {
 			workspace_digits one_digit;
 			one_digit.length = 1;
-			long o = 1;
+			fixnum_type o = 1;
 			one_digit.digits = &o;
 			workspace_destructive_subtraction(quotient, one_digit);
 		}
@@ -720,7 +720,7 @@ object* integer_perform_division(object* args, object* cont) {
 		compare = workspace_compare_digits(remainder, divisor);
 	}
 	
-	int last = workspace_highest_digit_index(quotient);
+	long last = workspace_highest_digit_index(quotient);
 	
 	object* quotient_digits = empty_list();
 	long i;
