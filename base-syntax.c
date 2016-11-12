@@ -368,12 +368,18 @@ object* letrec_bind(object* args, object* cont) {
 	
 	object* names = list_first(names_values);
 	
-	object bind_args[2];
-	init_list_2(bind_args, environment, names);
-	object bind_call;
-	init_call(&bind_call, &bind_placeholders_proc, bind_args, cont);
-	
-	return perform_call(&bind_call);
+	object* dup = find_duplicate(names);
+	if (!is_false(dup)) {
+		return throw_error(cont, "duplicate binding");
+	}
+	else {
+		object bind_args[2];
+		init_list_2(bind_args, environment, names);
+		object bind_call;
+		init_call(&bind_call, &bind_placeholders_proc, bind_args, cont);
+		
+		return perform_call(&bind_call);
+	}
 }
 
 object* letrec(object* args, object* cont) {
@@ -522,10 +528,16 @@ object* lambda(object* args, object* cont) {
 	object* body;
 	delist_2(syntax, &parameters, &body);
 	
-	object function;
-	init_function(&function, environment, parameters, body);
-	
-	return call_cont(cont, &function);
+	object* dup = find_duplicate(parameters);
+	if (!is_false(dup)) {
+		return throw_error(cont, "duplicate parameter");
+	}
+	else {
+		object function;
+		init_function(&function, environment, parameters, body);
+		
+		return call_cont(cont, &function);
+	}
 }
 
 object curry_one_proc;
