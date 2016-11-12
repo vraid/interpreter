@@ -26,6 +26,36 @@ object* list_ref(int n, object* ls) {
 	return list_first(ls);
 }
 
+object* find_duplicate(object* a) {
+	while (!is_empty_list(a)) {
+		object* obj = list_first(a);
+		object* b = list_rest(a);
+		while (!is_empty_list(b)) {
+			if (obj == list_first(b)) {
+				return obj;
+			}
+			b = list_rest(b);
+		}
+		a = list_rest(a);
+	}
+	return false();
+}
+
+object* find_duplicate_2(object* a, object* b) {
+	while (!is_empty_list(a)) {
+		object* obj = list_first(a);
+		object* ls = b;
+		while (!is_empty_list(ls)) {
+			if (obj == list_first(ls)) {
+				return obj;
+			}
+			ls = list_rest(ls);
+		}
+		a = list_rest(a);
+	}
+	return false();
+}
+
 object return_list_proc;
 
 object* return_list(object* args, object* cont) {
