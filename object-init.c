@@ -39,6 +39,10 @@ void init_fraction(object* obj, object* numerator, object* denominator) {
 	obj->data.fraction.denominator = denominator;
 }
 
+void init_integral_fraction(object* obj, object* numerator) {
+	init_fraction(obj, numerator, integer_one());
+}
+
 void init_positive_integer(object* obj, object* digits) {
 	init_integer(obj, 1, digits);
 }

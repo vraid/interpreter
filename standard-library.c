@@ -12,6 +12,7 @@
 #include "list-util.h"
 #include "integers.h"
 #include "fractions.h"
+#include "numbers.h"
 #include "sequences.h"
 #include "environments.h"
 #include "global-variables.h"
@@ -60,15 +61,21 @@ object* function_is_symbol(object* args, object* cont) {
 object is_integer_proc;
 
 object* function_is_integer(object* args, object* cont) {
-	object* a;
-	delist_1(args, &a);
-	
-	return call_cont(cont, boolean(is_type(type_fraction, a) && is_integral_fraction(a)));
+	return is_of_type(type_integer, args, cont);
 }
 
 object is_fraction_proc;
 
 object* function_is_fraction(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	return call_cont(cont, boolean(is_exact_real(a)));
+}
+
+object is_true_fraction_proc;
+
+object* function_is_true_fraction(object* args, object* cont) {
 	return is_of_type(type_fraction, args, cont);
 }
 
@@ -149,12 +156,12 @@ object* function_add(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "+ on non-number");
 	}
 	
 	object call;
-	init_call(&call, &fraction_add_proc, args, cont);
+	init_call(&call, &number_add_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -163,20 +170,26 @@ object negative_proc;
 object* function_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
+	
+	if (is_integer(a)) {
+		object num;
+		init_integer(&num, - 1 * integer_sign(a), integer_digits(a));
+		return call_cont(cont, &num);
+	}
+	else if (is_fraction(a)) {
+		object* numerator = fraction_numerator(a);
 		
-	if (!is_fraction(a)) {
+		object num;
+		init_integer(&num, -1 * integer_sign(numerator), integer_digits(numerator));
+		
+		object fraction;
+		init_fraction(&fraction, &num, fraction_denominator(a));
+		
+		return call_cont(cont, &fraction);
+	}
+	else {
 		return throw_error(cont, "negative on non-number");
 	}
-	
-	object* numerator = fraction_numerator(a);
-	
-	object num;
-	init_integer(&num, -1 * integer_sign(numerator), integer_digits(numerator));
-	
-	object fraction;
-	init_fraction(&fraction, &num, fraction_denominator(a));
-	
-	return call_cont(cont, &fraction); 
 }
 
 object subtract_proc;
@@ -186,14 +199,14 @@ object* function_subtract(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "- on non-number");
 	}
 	
 	object call_args[2];
 	init_list_2(call_args, b, a);
 	object call;
-	init_call(&call, &fraction_subtract_proc, call_args, cont);
+	init_call(&call, &number_subtract_proc, call_args, cont);
 	return perform_call(&call);
 }
 
@@ -204,12 +217,12 @@ object* function_subtract_by(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "subtract-by on non-number");
 	}
 	
 	object call;
-	init_call(&call, &fraction_subtract_proc, args, cont);
+	init_call(&call, &number_subtract_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -220,12 +233,12 @@ object* function_multiply(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "* on non-number");
 	}
 	
 	object call;
-	init_call(&call, &fraction_multiply_proc, args, cont);
+	init_call(&call, &number_multiply_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -236,14 +249,14 @@ object* function_divide(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "/ on non-number");
 	}
 	
 	object call_args[2];
 	init_list_2(call_args, b, a);
 	object call;
-	init_call(&call, &fraction_divide_proc, call_args, cont);
+	init_call(&call, &number_divide_proc, call_args, cont);
 	return perform_call(&call);
 }
 
@@ -254,12 +267,12 @@ object* function_divide_by(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "divide-by on non-number");
 	}
 	
 	object call;
-	init_call(&call, &fraction_divide_proc, args, cont);
+	init_call(&call, &number_divide_proc, args, cont);
 	return perform_call(&call);
 }
 
@@ -270,15 +283,15 @@ object* function_quotient(object* args, object* cont) {
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
 	
-	if (!(is_fraction(divisor) && is_fraction(dividend))) {
+	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "quotient on non-number");
 	}
-	if (is_zero_fraction(divisor)) {
-		return throw_error(cont, "divide by zero (quotient)");
+	if (is_zero_integer(divisor)) {
+		return throw_error(cont, "division by zero (quotient)");
 	}
 	
 	object call;
-	init_call(&call, &fraction_quotient_proc, args, cont);
+	init_call(&call, &integer_quotient_proc, args, cont);
 	
 	return perform_call(&call);
 }
@@ -290,15 +303,15 @@ object* function_remainder(object* args, object* cont) {
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
 	
-	if (!(is_fraction(divisor) && is_fraction(dividend))) {
+	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "remainder on non-number");
 	}
-	if (is_zero_fraction(divisor)) {
-		return throw_error(cont, "divide by zero (remainder)");
+	if (is_zero_integer(divisor)) {
+		return throw_error(cont, "division by zero (remainder)");
 	}
 	
 	object call;
-	init_call(&call, &fraction_remainder_proc, args, cont);
+	init_call(&call, &integer_remainder_proc, args, cont);
 	
 	return perform_call(&call);
 }
@@ -314,7 +327,7 @@ object* modulo_continued(object* args, object* cont) {
 	object* remainder;
 	delist_2(ls, &quotient, &remainder);
 	
-	if (is_negative_integer(remainder)) {
+	if (is_negative(remainder)) {
 		object add_args[2];
 		init_list_2(add_args, remainder, divisor);
 		object add_call;
@@ -335,9 +348,9 @@ object* function_modulo(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	if (!(is_integer(divisor) && is_integer(dividend))) {
-		return throw_error(cont, "modulo on non-number");
+		return throw_error(cont, "modulo on non-integer");
 	}
-	if (!is_positive_integer(divisor)) {
+	else if (!is_positive(divisor)) {
 		return throw_error(cont, "modulo with nonpositive base");
 	}
 	
@@ -362,7 +375,7 @@ object* function_gcd(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_integer(a) && is_integer(b))) {
-		return throw_error(cont, "gcd on non-number");
+		return throw_error(cont, "gcd on non-integer");
 	}
 	
 	object gcd_call;
@@ -380,7 +393,7 @@ object* compare_numbers(object* nums, object* result, object* cont) {
 	init_cont(&eq_cont, &eq_call);
 	
 	object comp_call;
-	init_call(&comp_call, &fraction_compare_proc, nums, &eq_cont);
+	init_call(&comp_call, &number_compare_proc, nums, &eq_cont);
 	
 	return perform_call(&comp_call);
 }
@@ -392,7 +405,7 @@ object* function_numeric_equality(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "= on non-number");
 	}
 	
@@ -406,8 +419,8 @@ object* function_greater(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
-		return throw_error(cont, "> on non-number");
+	if (!(is_exact_real(a) && is_exact_real(b))) {
+		return throw_error(cont, "> on non-real");
 	}
 	
 	return compare_numbers(args, one(), cont);
@@ -420,7 +433,7 @@ object* function_less(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_exact_real(a) && is_exact_real(b))) {
 		return throw_error(cont, "< on non-number");
 	}
 	
@@ -434,7 +447,7 @@ object* function_greater_or_equal(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_exact_real(a) && is_exact_real(b))) {
 		return throw_error(cont, ">= on non-number");
 	}
 	
@@ -452,7 +465,7 @@ object* function_less_or_equal(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_fraction(a) && is_fraction(b))) {
+	if (!(is_exact_real(a) && is_exact_real(b))) {
 		return throw_error(cont, "<= on non-number");
 	}
 	
@@ -542,7 +555,8 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("true?", 1, &function_is_true, &is_true_proc);
 	init_and_bind_primitive("symbol?", 1, &function_is_symbol, &is_symbol_proc);
 	init_and_bind_primitive("integer?", 1, &function_is_integer, &is_integer_proc);
-	init_and_bind_primitive("rational?", 1, &function_is_fraction, &is_fraction_proc);
+	init_and_bind_primitive("fraction?", 1, &function_is_fraction, &is_fraction_proc);
+	init_and_bind_primitive("true-fraction?", 1, &function_is_true_fraction, &is_true_fraction_proc);
 	bind_primitive("number?", 1, &is_fraction_proc);
 	init_and_bind_primitive("list?", 1, &function_is_list, &is_list_proc);
 	init_and_bind_primitive("vector?", 1, &function_is_vector, &is_vector_proc);

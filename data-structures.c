@@ -25,6 +25,7 @@ void init_type_names(void) {
 	type_names[type_symbol] = "symbol";
 	type_names[type_fixnum] = "fixnum";
 	type_names[type_integer] = "integer";
+	type_names[type_fraction] = "fraction";
 	type_names[type_struct_definition] = "struct definition";
 	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
@@ -88,9 +89,6 @@ char is_integer(object* obj) {
 }
 char is_fraction(object* obj) {
 	return is_type(type_fraction, obj);
-}
-char is_exact_real(object* obj) {
-	return is_integer(obj) || is_fraction(obj);
 }
 char is_list(object* obj) {
 	return is_type(type_list, obj);

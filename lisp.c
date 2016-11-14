@@ -15,6 +15,7 @@
 #include "strings.h"
 #include "integers.h"
 #include "fractions.h"
+#include "numbers.h"
 #include "list-util.h"
 #include "vectors.h"
 #include "base-util.h"
@@ -39,6 +40,7 @@ int main(int argc, char** argv) {
 	init_string_procedures();
 	init_integer_procedures();
 	init_fraction_procedures();
+	init_number_procedures();
 	init_list_util_procedures();
 	init_vector_procedures();
 	init_base_util_procedures();

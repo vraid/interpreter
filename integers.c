@@ -223,10 +223,12 @@ char is_one_integer(object* a) {
 }
 
 char is_positive_integer(object* a) {
+	check_type(type_integer, a);
 	return (integer_sign(a) == 1) && !is_zero_integer(a);
 }
 
 char is_negative_integer(object* a) {
+	check_type(type_integer, a);
 	return (integer_sign(a) == -1) && !is_zero_integer(a);
 }
 
@@ -269,6 +271,20 @@ int compare_signed_integers(object* a, object* b) {
 		else {
 			return (a_sign == 1) ? 1 : -1;
 		}
+	}
+}
+
+object* integer_compare(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (integers_have_different_signs(a, b)) {
+		return call_cont(cont, (integer_sign(a) == 1) ? one() : negative_one());
+	}
+	else {
+		char c = compare_unsigned_integers(a, b);
+		return call_cont(cont, sign_object(c * integer_sign(a)));
 	}
 }
 
@@ -1067,6 +1083,7 @@ object* integer_to_string(object* args, object* cont) {
 
 void init_integer_procedures(void) {
 	init_primitive(&make_integer, &make_integer_proc);
+	init_primitive(&integer_compare, &integer_compare_proc);
 	init_primitive(&integer_add, &integer_add_proc);
 	init_primitive(&integer_add_signless, &integer_add_signless_proc);
 	init_primitive(&integer_add_with_sign, &integer_add_with_sign_proc);

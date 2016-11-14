@@ -10,12 +10,9 @@
 #include "eval.h"
 #include "integers.h"
 
-char is_zero_fraction(object* obj) {
-	return is_zero_integer(fraction_numerator(obj));
-}
-
-char is_integral_fraction(object* obj) {
-	return is_one_integer(fraction_denominator(obj));
+char is_positive_fraction(object* obj) {
+	check_type(type_fraction, obj);
+	return is_positive_integer(fraction_numerator(obj));
 }
 
 object* make_fraction(object* args, object* cont) {
@@ -23,20 +20,26 @@ object* make_fraction(object* args, object* cont) {
 	object* denominator;
 	delist_2(args, &numerator, &denominator);
 	
-	object fraction;
-	init_fraction(&fraction, numerator, denominator);
-	
-	return call_cont(cont, &fraction);
+	if (is_zero_integer(numerator)) {
+		return call_cont(cont, integer_zero());
+	}
+	else if (is_one_integer(denominator)) {
+		return call_cont(cont, numerator);
+	}
+	else {
+		object fraction;
+		init_fraction(&fraction, numerator, denominator);
+		
+		return call_cont(cont, &fraction);
+	}
 }
-
-object make_integral_fraction_proc;
 
 object* make_integral_fraction(object* args, object* cont) {
 	object* numerator;
 	delist_1(args, &numerator);
 	
 	object fraction;
-	init_fraction(&fraction, numerator, integer_one());
+	init_integral_fraction(&fraction, numerator);
 	
 	return call_cont(cont, &fraction);
 }
@@ -233,7 +236,7 @@ object* fraction_quotient_remainder_three(object* args, object* cont) {
 	delist_2(quot_rem, &quotient, &remainder);
 	
 	object quot_list[2];
-	init_list_2(quot_list, &make_integral_fraction_proc, quotient);
+	init_list_2(quot_list, &make_integer_proc, quotient);
 	object rem_list[3];
 	init_list_3(rem_list, &fraction_make_and_reduce_proc, remainder, denominator_product);
 	object result_list[2];
@@ -362,30 +365,23 @@ object* fraction_compare(object* args, object* cont) {
 	object* a_num = fraction_numerator(a);
 	object* b_num = fraction_numerator(b);
 	
-	if (is_integral_fraction(a) && is_integral_fraction(b)) {
-		int comp = compare_signed_integers(a_num, b_num);
-		
-		return call_cont(cont, sign_object(comp));
+	if (integers_have_different_signs(a_num, b_num)) {
+		return call_cont(cont, (integer_sign(a_num) == 1) ? one() : negative_one());
 	}
 	else {
-		if (integers_have_different_signs(a_num, b_num)) {
-			return call_cont(cont, (integer_sign(a_num) == 1) ? one() : negative_one());
-		}
-		else {
-			object a_list[3];
-			init_list_3(a_list, &integer_multiply_proc, a_num, fraction_denominator(b));
-			object b_list[3];
-			init_list_3(b_list, &integer_multiply_proc, b_num, fraction_denominator(a));
-			object compare_list[3];
-			init_list_3(compare_list, &fraction_compare_proc, a_list, b_list);
-			
-			object eval_args[2];
-			init_list_2(eval_args, empty_environment(), compare_list);
-			object eval_call;
-			init_call(&eval_call, &eval_with_environment_proc, eval_args, cont);
-			
-			return perform_call(&eval_call);
-		}
+		object a_list[3];
+		init_list_3(a_list, &integer_multiply_proc, a_num, fraction_denominator(b));
+		object b_list[3];
+		init_list_3(b_list, &integer_multiply_proc, b_num, fraction_denominator(a));
+		object compare_list[3];
+		init_list_3(compare_list, &integer_compare_proc, a_list, b_list);
+		
+		object eval_args[2];
+		init_list_2(eval_args, empty_environment(), compare_list);
+		object eval_call;
+		init_call(&eval_call, &eval_with_environment_proc, eval_args, cont);
+		
+		return perform_call(&eval_call);
 	}
 }
 

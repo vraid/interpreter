@@ -6,6 +6,7 @@
 #define integer_base 1073741824
 
 object make_integer_proc;
+object integer_compare_proc;
 object integer_add_proc;
 object integer_add_digits_proc;
 object integer_add_signless_proc;
@@ -19,6 +20,8 @@ object integer_remainder_proc;
 object integer_greatest_common_divisor_proc;
 object integer_to_decimal_proc;
 object integer_to_string_proc;
+
+object* integer_add(object* args, object* cont);
 
 int compare_signed_integers(object* a, object* b);
 char digits_have_value(long long value, object* digits);
