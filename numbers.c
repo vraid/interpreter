@@ -18,10 +18,10 @@ char is_exact_real(object* obj) {
 	return is_integer(obj) || is_fraction(obj);
 }
 char is_positive(object* obj) {
-	return (is_fraction(obj) && is_positive_fraction(obj)) || (is_integer(obj) && is_positive_integer(obj));
+	return (is_fraction(obj) && fraction_is_positive(obj)) || (is_integer(obj) && integer_is_positive(obj));
 }
 char is_negative(object* obj) {
-	return !(is_positive(obj) || is_zero_integer(obj));
+	return !(is_positive(obj) || integer_is_zero(obj));
 }
 
 object* equalize_types(object* integer_proc, object* fraction_proc, object* args, object* cont) {

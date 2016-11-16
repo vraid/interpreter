@@ -25,10 +25,10 @@ object* integer_add(object* args, object* cont);
 
 int compare_signed_integers(object* a, object* b);
 char digits_have_value(long long value, object* digits);
-char is_zero_integer(object* a);
-char is_one_integer(object* a);
-char is_positive_integer(object* a);
-char is_negative_integer(object* a);
+char integer_is_zero(object* a);
+char integer_is_one(object* a);
+char integer_is_positive(object* a);
+char integer_is_negative(object* a);
 char integers_have_different_signs(object* a, object* b);
 
 void init_integer_procedures(void);

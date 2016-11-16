@@ -16,6 +16,6 @@ object fraction_compare_proc;
 
 object* fraction_add(object* args, object* cont);
 
-char is_positive_fraction(object* obj);
+char fraction_is_positive(object* obj);
 
 void init_fraction_procedures(void);

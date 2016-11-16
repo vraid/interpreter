@@ -205,7 +205,7 @@ object* print_integer(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
-	if ((integer_sign(num) == -1) && !is_zero_integer(num)) {
+	if ((integer_sign(num) == -1) && !integer_is_zero(num)) {
 		printf("-");
 	}
 	
@@ -226,7 +226,7 @@ object* print_fraction_denominator(object* args, object* cont) {
 	object* denom;
 	delist_1(args, &denom);
 	
-	if (is_one_integer(denom)) {
+	if (integer_is_one(denom)) {
 		return call_discarding_cont(cont);
 	}
 	else {

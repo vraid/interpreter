@@ -214,22 +214,22 @@ char is_one_value_integer(fixnum_type value, object* a) {
 	return digits_have_value(value, integer_digits(a));
 }
 
-char is_zero_integer(object* a) {
+char integer_is_zero(object* a) {
 	return is_one_value_integer(0, a);
 }
 
-char is_one_integer(object* a) {
-	return is_positive_integer(a) && is_one_value_integer(1, a);
+char integer_is_one(object* a) {
+	return integer_is_positive(a) && is_one_value_integer(1, a);
 }
 
-char is_positive_integer(object* a) {
+char integer_is_positive(object* a) {
 	check_type(type_integer, a);
-	return (integer_sign(a) == 1) && !is_zero_integer(a);
+	return (integer_sign(a) == 1) && !integer_is_zero(a);
 }
 
-char is_negative_integer(object* a) {
+char integer_is_negative(object* a) {
 	check_type(type_integer, a);
-	return (integer_sign(a) == -1) && !is_zero_integer(a);
+	return (integer_sign(a) == -1) && !integer_is_zero(a);
 }
 
 int compare_unsigned_integers(object* a, object* b) {
@@ -258,7 +258,7 @@ int compare_unsigned_integers(object* a, object* b) {
 }
 
 int compare_signed_integers(object* a, object* b) {
-	if (is_zero_integer(a) && is_zero_integer(b)) {
+	if (integer_is_zero(a) && integer_is_zero(b)) {
 		return 0;
 	}
 	else {
@@ -621,7 +621,7 @@ object* integer_perform_division(object* args, object* cont) {
 	object* dividend_num;
 	delist_2(args, &divisor_num, &dividend_num);
 	
-	if (is_one_integer(divisor_num)) {
+	if (integer_is_one(divisor_num)) {
 		object ls[2];
 		init_list_2(ls, dividend_num, integer_zero());
 	
@@ -838,7 +838,7 @@ object* integer_gcd_step(object* args, object* cont) {
 	object* remainder;
 	delist_2(quot_rem, &quotient, &remainder);
 	
-	if (is_zero_integer(remainder)) {
+	if (integer_is_zero(remainder)) {
 		return call_cont(cont, smaller);
 	}
 	else {
@@ -968,7 +968,7 @@ object* integer_digits_to_new_base(object* args, object* cont) {
 	object cell;
 	init_list_cell(&cell, num, last);
 	
-	if (is_zero_integer(quotient)) {
+	if (integer_is_zero(quotient)) {
 		return call_cont(cont, &cell);
 	}
 	else {
@@ -1064,7 +1064,7 @@ object* integer_to_string(object* args, object* cont) {
 	delist_1(args, &number);
 	
 	object* sign = sign_object(integer_sign(number));
-	if (is_zero_integer(number)) {
+	if (integer_is_zero(number)) {
 		sign = sign_object(1);
 	}
 	

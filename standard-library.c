@@ -286,7 +286,7 @@ object* function_quotient(object* args, object* cont) {
 	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "quotient on non-number");
 	}
-	if (is_zero_integer(divisor)) {
+	if (integer_is_zero(divisor)) {
 		return throw_error(cont, "division by zero (quotient)");
 	}
 	
@@ -306,7 +306,7 @@ object* function_remainder(object* args, object* cont) {
 	if (!(is_integer(divisor) && is_integer(dividend))) {
 		return throw_error(cont, "remainder on non-number");
 	}
-	if (is_zero_integer(divisor)) {
+	if (integer_is_zero(divisor)) {
 		return throw_error(cont, "division by zero (remainder)");
 	}
 	

@@ -82,7 +82,7 @@ object* take_rest_second(object* args, object* cont) {
 	object* sequence;
 	delist_3(args, &count, &last, &sequence);
 	
-	if (is_zero_integer(count) || is_empty_sequence(sequence)) {
+	if (integer_is_zero(count) || is_empty_sequence(sequence)) {
 		return call_discarding_cont(cont);
 	}
 	else {
@@ -145,7 +145,7 @@ object* take(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	if (is_zero_integer(count) || is_empty_sequence(sequence)) {
+	if (integer_is_zero(count) || is_empty_sequence(sequence)) {
 		return call_cont(cont, empty_list());
 	}
 	else {
@@ -164,7 +164,7 @@ object* drop_single_second(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	if (is_zero_integer(count) || is_empty_sequence(sequence)) {
+	if (integer_is_zero(count) || is_empty_sequence(sequence)) {
 		return call_cont(cont, sequence);
 	}
 	else {

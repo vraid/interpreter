@@ -10,9 +10,9 @@
 #include "eval.h"
 #include "integers.h"
 
-char is_positive_fraction(object* obj) {
+char fraction_is_positive(object* obj) {
 	check_type(type_fraction, obj);
-	return is_positive_integer(fraction_numerator(obj));
+	return integer_is_positive(fraction_numerator(obj));
 }
 
 object* make_fraction(object* args, object* cont) {
@@ -20,10 +20,10 @@ object* make_fraction(object* args, object* cont) {
 	object* denominator;
 	delist_2(args, &numerator, &denominator);
 	
-	if (is_zero_integer(numerator)) {
+	if (integer_is_zero(numerator)) {
 		return call_cont(cont, integer_zero());
 	}
-	else if (is_one_integer(denominator)) {
+	else if (integer_is_one(denominator)) {
 		return call_cont(cont, numerator);
 	}
 	else {
