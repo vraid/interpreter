@@ -214,8 +214,12 @@ char is_one_value_integer(fixnum_type value, object* a) {
 	return digits_have_value(value, integer_digits(a));
 }
 
+char digits_are_zero(object* ls) {
+	return digits_have_value(0, ls);
+}
+
 char integer_is_zero(object* a) {
-	return is_one_value_integer(0, a);
+	return integer_sign(a) == 0;
 }
 
 char integer_is_one(object* a) {
@@ -224,12 +228,12 @@ char integer_is_one(object* a) {
 
 char integer_is_positive(object* a) {
 	check_type(type_integer, a);
-	return (integer_sign(a) == 1) && !integer_is_zero(a);
+	return integer_sign(a) == 1;
 }
 
 char integer_is_negative(object* a) {
 	check_type(type_integer, a);
-	return (integer_sign(a) == -1) && !integer_is_zero(a);
+	return integer_sign(a) == -1;
 }
 
 int compare_unsigned_integers(object* a, object* b) {
@@ -248,29 +252,23 @@ int compare_unsigned_integers(object* a, object* b) {
 	}
 	char a_empty = is_empty_list(as);
 	char b_empty = is_empty_list(bs);
-	if (a_empty && !b_empty) {
-		compare = -1;
+	if (a_empty && b_empty) {
+		return compare;
 	}
-	else if (b_empty && !a_empty) {
-		compare = 1;
+	else {
+		return a_empty ? -1 : 1;
 	}
-	return compare;
 }
 
 int compare_signed_integers(object* a, object* b) {
-	if (integer_is_zero(a) && integer_is_zero(b)) {
-		return 0;
+	int a_sign = integer_sign(a);
+	int b_sign = integer_sign(b);
+	
+	if (a_sign == b_sign) {
+		return a_sign * compare_unsigned_integers(a, b);
 	}
 	else {
-		int a_sign = integer_sign(a);
-		int b_sign = integer_sign(b);
-		
-		if (a_sign == b_sign) {
-			return a_sign * compare_unsigned_integers(a, b);
-		}
-		else {
-			return (a_sign == 1) ? 1 : -1;
-		}
+		return signum(a_sign - b_sign);
 	}
 }
 
@@ -738,32 +736,45 @@ object* integer_perform_division(object* args, object* cont) {
 	
 	long last = workspace_highest_digit_index(quotient);
 	
-	object* quotient_digits = empty_list();
-	long i;
-	for (i = last; i >= 0; i--) {
-		object* num = alloca(sizeof(object));
-		init_fixnum(num, quotient.digits[i]);
-		object* cell = alloca(sizeof(object));
-		init_list_cell(cell, num, quotient_digits);
-		quotient_digits = cell;
+	object* quotient_num;
+	if (workspace_digits_are_zero(quotient)) {
+		quotient_num = integer_zero();
 	}
-	
-	object* quotient_num = alloca(sizeof(object));
-	init_integer(quotient_num, 1, quotient_digits);
+	else {
+		object* quotient_digits = empty_list();
+		long i;
+		for (i = last; i >= 0; i--) {
+			object* num = alloca(sizeof(object));
+			init_fixnum(num, quotient.digits[i]);
+			object* cell = alloca(sizeof(object));
+			init_list_cell(cell, num, quotient_digits);
+			quotient_digits = cell;
+		}
+		
+		quotient_num = alloca(sizeof(object));
+		init_integer(quotient_num, 1, quotient_digits);
+	}
 	
 	last = workspace_highest_digit_index(remainder);
 	
-	object* remainder_digits = empty_list();
-	for (i = last; i >= 0; i--) {
-		object* num = alloca(sizeof(object));
-		init_fixnum(num, remainder.digits[i]);
-		object* cell = alloca(sizeof(object));
-		init_list_cell(cell, num, remainder_digits);
-		remainder_digits = cell;
+	object* remainder_num;
+	if (workspace_digits_are_zero(remainder)) {
+		remainder_num = integer_zero();
 	}
-	
-	object* remainder_num = alloca(sizeof(object));
-	init_integer(remainder_num, 1, remainder_digits);
+	else {
+		object* remainder_digits = empty_list();
+		long i;
+		for (i = last; i >= 0; i--) {
+			object* num = alloca(sizeof(object));
+			init_fixnum(num, remainder.digits[i]);
+			object* cell = alloca(sizeof(object));
+			init_list_cell(cell, num, remainder_digits);
+			remainder_digits = cell;
+		}
+		
+		remainder_num = alloca(sizeof(object));
+		init_integer(remainder_num, 1, remainder_digits);
+	}
 	
 	object ls[2];
 	init_list_2(ls, quotient_num, remainder_num);
@@ -783,13 +794,29 @@ object* integer_make_division_result(object* args, object* cont) {
 	object* rem;
 	delist_2(quot_rem, &quot, &rem);
 	
-	object quotient;
-	init_integer(&quotient, fixnum_value(quotient_sign), integer_digits(quot));
-	object remainder;
-	init_integer(&remainder, fixnum_value(remainder_sign), integer_digits(rem));
+	object* quot_digits = integer_digits(quot);
+	object* rem_digits = integer_digits(rem);
+	
+	object* quotient;
+	if (digits_are_zero(quot_digits)) {
+		quotient = integer_zero();
+	}
+	else {
+		quotient = alloca(sizeof(object));
+		init_integer(quotient, fixnum_value(quotient_sign), integer_digits(quot));
+	}
+	
+	object* remainder;
+	if (digits_are_zero(rem_digits)) {
+		remainder = integer_zero();
+	}
+	else {
+		remainder = alloca(sizeof(object));
+		init_integer(remainder, fixnum_value(remainder_sign), integer_digits(rem));
+	}
 	
 	object ls[2];
-	init_list_2(ls, &quotient, &remainder);
+	init_list_2(ls, quotient, remainder);
 	
 	return call_cont(cont, ls);
 }
@@ -997,30 +1024,42 @@ object* integer_to_new_base(object* args, object* cont) {
 	object* base;
 	delist_2(args, &num, &base);
 	
-	object next_args[2];
-	init_list_2(next_args, empty_list(), base);
-	object next_call;
-	init_call(&next_call, &integer_digits_to_new_base_proc, next_args, cont);
-	object next_cont;
-	init_cont(&next_cont, &next_call);
-	
-	object divide_args[2];
-	init_list_2(divide_args, base, num);
-	object divide_call;
-	init_call(&divide_call, &integer_divide_proc, divide_args, &next_cont);
-	
-	return perform_call(&divide_call);
+	if (integer_is_zero(num)) {
+		return call_cont(cont, num);
+	}
+	else {
+		object positive_num;
+		init_positive_integer(&positive_num, integer_digits(num));
+		
+		object make_args[1];
+		init_list_1(make_args, sign_object(integer_sign(num)));
+		object make_call;
+		init_call(&make_call, &make_integer_proc, make_args, cont);
+		object make_cont;
+		init_cont(&make_cont, &make_call);
+		
+		object next_args[2];
+		init_list_2(next_args, empty_list(), base);
+		object next_call;
+		init_call(&next_call, &integer_digits_to_new_base_proc, next_args, &make_cont);
+		object next_cont;
+		init_cont(&next_cont, &next_call);
+		
+		object divide_args[2];
+		init_list_2(divide_args, base, num);
+		object divide_call;
+		init_call(&divide_call, &integer_divide_proc, divide_args, &next_cont);
+		
+		return perform_call(&divide_call);
+	}
 }
 
 object* integer_to_decimal(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
-	object positive_num;
-	init_positive_integer(&positive_num, integer_digits(num));
-	
 	object call_args[2];
-	init_list_2(call_args, &positive_num, integer_ten());
+	init_list_2(call_args, num, integer_ten());
 	object call;
 	init_call(&call, &integer_to_new_base_proc, call_args, cont);
 	
@@ -1064,9 +1103,6 @@ object* integer_to_string(object* args, object* cont) {
 	delist_1(args, &number);
 	
 	object* sign = sign_object(integer_sign(number));
-	if (integer_is_zero(number)) {
-		sign = sign_object(1);
-	}
 	
 	object string_args[1];
 	init_list_1(string_args, sign);

@@ -188,8 +188,10 @@ object* print_struct(object* args, object* cont) {
 object print_integer_digits_proc;
 
 object* print_integer_digits(object* args, object* cont) {
-	object* digits;
-	delist_1(args, &digits);
+	object* num;
+	delist_1(args, &num);
+	
+	object* digits = integer_digits(num);
 	
 	while (!is_empty_list(digits)) {
 		printf("%lld", fixnum_value(list_first(digits)));
@@ -205,7 +207,7 @@ object* print_integer(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
-	if ((integer_sign(num) == -1) && !integer_is_zero(num)) {
+	if (integer_sign(num) == -1) {
 		printf("-");
 	}
 	

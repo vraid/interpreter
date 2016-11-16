@@ -1,5 +1,6 @@
 #include "numbers.h"
 
+#include <stdlib.h>
 #include "data-structures.h"
 #include "object-init.h"
 #include "call.h"
@@ -17,11 +18,23 @@ char is_exact_number(object* obj) {
 char is_exact_real(object* obj) {
 	return is_integer(obj) || is_fraction(obj);
 }
+char real_sign(object* obj) {
+	if (is_integer(obj)) {
+		return integer_sign(obj);
+	}
+	else if (is_fraction(obj)) {
+		return fraction_sign(obj);
+	}
+	else {
+		printf("sign of non-real\n");
+		exit(1);
+	}
+}
 char is_positive(object* obj) {
-	return (is_fraction(obj) && fraction_is_positive(obj)) || (is_integer(obj) && integer_is_positive(obj));
+	return real_sign(obj) == 1;
 }
 char is_negative(object* obj) {
-	return !(is_positive(obj) || integer_is_zero(obj));
+	return real_sign(obj) == -1;
 }
 
 object* equalize_types(object* integer_proc, object* fraction_proc, object* args, object* cont) {

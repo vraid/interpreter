@@ -115,7 +115,7 @@ void init_global_variables(void) {
 	init_list_1(&_integer_zero_list, zero());
 	make_static(&_integer_zero_list);
 
-	init_integer(&_integer_zero, 1, &_integer_zero_list);
+	init_integer(&_integer_zero, 0, &_integer_zero_list);
 	make_static(&_integer_zero);
 	
 	init_list_1(&_integer_one_list, one());
