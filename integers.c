@@ -511,7 +511,7 @@ object* integer_subtract(object* args, object* cont) {
 	object* mind = integer_digits(minuend);
 	
 	// addition
-	if (sign_sum == 0) {		
+	if (abs(sign_sum) <= 1) {		
 		object add_args[3];
 		init_list_3(add_args, subd, mind, subsign < 0 ? one() : negative_one());
 		object add_call;
