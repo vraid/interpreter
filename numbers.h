@@ -10,8 +10,13 @@ object number_compare_proc;
 
 char is_number(object* obj);
 char is_exact_number(object* obj);
+char is_exact_complex(object* obj);
 char is_exact_real(object* obj);
+char is_exact_imaginary(object* obj);
 char is_positive(object* obj);
 char is_negative(object* obj);
+char number_is_zero(object* obj);
+object* number_real_part(object* obj);
+object* number_imag_part(object* obj);
 
 void init_number_procedures(void);

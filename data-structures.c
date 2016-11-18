@@ -26,6 +26,7 @@ void init_type_names(void) {
 	type_names[type_fixnum] = "fixnum";
 	type_names[type_integer] = "integer";
 	type_names[type_fraction] = "fraction";
+	type_names[type_complex] = "complex";
 	type_names[type_struct_definition] = "struct definition";
 	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
@@ -89,6 +90,9 @@ char is_integer(object* obj) {
 }
 char is_fraction(object* obj) {
 	return is_type(type_fraction, obj);
+}
+char is_complex(object* obj) {
+	return is_type(type_complex, obj);
 }
 char is_list(object* obj) {
 	return is_type(type_list, obj);
@@ -196,6 +200,14 @@ object* fraction_numerator(object* obj) {
 object* fraction_denominator(object* obj) {
 	check_type(type_fraction, obj);
 	return obj->data.fraction.denominator;
+}
+object* complex_real_part(object* obj) {
+	check_type(type_complex, obj);
+	return obj->data.complex.real_part;
+}
+object* complex_imag_part(object* obj) {
+	check_type(type_complex, obj);
+	return obj->data.complex.imag_part;
 }
 
 object* list_first(object* ls) {

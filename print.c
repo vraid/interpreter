@@ -264,6 +264,28 @@ object* print_fraction(object* args, object* cont) {
 	return perform_call(&num_call);
 }
 
+object print_complex_proc;
+
+object* print_complex(object* args, object* cont) {
+	object* complex;
+	delist_1(args, &complex);
+	
+	printf("(complex ");
+	
+	object end_call;
+	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
+	object end_cont;
+	init_discarding_cont(&end_cont, &end_call);
+	
+	object ls[2];
+	init_list_2(ls, complex_real_part(complex), complex_imag_part(complex));
+	object print_args[1];
+	init_list_1(print_args, ls);
+	object call;
+	init_call(&call, &print_first_sequence_element_proc, print_args, &end_cont);
+	return perform_call(&call);
+}
+
 object* print_newline(object* args, object* cont) {
 	printf("\n");
 	return call_discarding_cont(cont);
@@ -303,6 +325,9 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_fraction:
 			return print_fraction(args, cont);
+			break;
+		case type_complex:
+			return print_complex(args, cont);
 			break;
 		case type_struct_instance:
 			return print_struct(args, cont);
@@ -355,4 +380,6 @@ void init_print_procedures(void) {
 	
 	init_primitive(&print_fraction, &print_fraction_proc);
 	init_primitive(&print_fraction_denominator, &print_fraction_denominator_proc);
+
+	init_primitive(&print_complex, &print_complex_proc);
 }

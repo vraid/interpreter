@@ -12,6 +12,7 @@
 #include "list-util.h"
 #include "integers.h"
 #include "fractions.h"
+#include "complex.h"
 #include "numbers.h"
 #include "sequences.h"
 #include "environments.h"
@@ -77,6 +78,39 @@ object is_true_fraction_proc;
 
 object* function_is_true_fraction(object* args, object* cont) {
 	return is_of_type(type_fraction, args, cont);
+}
+
+object is_complex_proc;
+
+object* function_is_complex(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	return call_cont(cont, boolean(is_exact_complex(a)));
+}
+
+object is_true_complex_proc;
+
+object* function_is_true_complex(object* args, object* cont) {	
+	return is_of_type(type_complex, args, cont);
+}
+
+object is_real_proc;
+
+object* function_is_real(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	return call_cont(cont, boolean(is_exact_real(a)));
+}
+
+object is_imaginary_proc;
+
+object* function_is_imaginary(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	return call_cont(cont, boolean(is_exact_imaginary(a)));
 }
 
 object is_list_proc;
@@ -147,6 +181,87 @@ object* function_cons(object* args, object* cont) {
 	init_list_cell(&list_cell, first, rest);
 	
 	return call_cont(cont, &list_cell);
+}
+
+object real_proc;
+
+object* function_real(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (!is_exact_real(a)) {
+		return throw_error(cont, "real of non-real");
+	}
+	
+	return call_cont(cont, a);
+}
+
+object imaginary_proc;
+
+object* function_imaginary(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (!is_exact_real(a)) {
+		return throw_error(cont, "imaginary of non-real");
+	}
+	
+	object ls[2];
+	init_list_2(ls, integer_zero(), a);
+	object call;
+	init_call(&call, &make_complex_proc, ls, cont);
+	
+	return perform_call(&call);
+}
+
+object complex_proc;
+
+object* function_complex(object* args, object* cont) {
+	object* real;
+	object* imag;
+	delist_2(args, &real, &imag);
+	
+	if (!(is_exact_real(real) && is_exact_real(imag))) {
+		return throw_error(cont, "complex of non-real");
+	}
+	
+	object call;
+	init_call(&call, &make_complex_proc, args, cont);
+	return perform_call(&call);
+}
+
+object complex_real_proc;
+
+object* function_complex_real(object* args, object* cont) {
+	object* num;
+	delist_1(args, &num);
+	
+	if (!is_exact_complex(num)) {
+		return throw_error(cont, "complex-real on non-complex");
+	}
+	if (is_complex(num)) {
+		return call_cont(cont, complex_real_part(num));
+	}
+	else {
+		return call_cont(cont, num);
+	}
+}
+
+object complex_imaginary_proc;
+
+object* function_complex_imaginary(object* args, object* cont) {
+	object* num;
+	delist_1(args, &num);
+	
+	if (!is_exact_complex(num)) {
+		return throw_error(cont, "complex-imaginary on non-complex");
+	}
+	if (is_complex(num)) {
+		return call_cont(cont, complex_imag_part(num));
+	}
+	else {
+		return call_cont(cont, integer_zero());
+	}
 }
 
 object add_proc;
@@ -557,7 +672,11 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("integer?", 1, &function_is_integer, &is_integer_proc);
 	init_and_bind_primitive("fraction?", 1, &function_is_fraction, &is_fraction_proc);
 	init_and_bind_primitive("true-fraction?", 1, &function_is_true_fraction, &is_true_fraction_proc);
-	bind_primitive("number?", 1, &is_fraction_proc);
+	init_and_bind_primitive("complex?", 1, &function_is_complex, &is_complex_proc);
+	init_and_bind_primitive("true-complex?", 1, &function_is_true_complex, &is_true_complex_proc);
+	init_and_bind_primitive("real?", 1, &function_is_real, &is_real_proc);
+	init_and_bind_primitive("imaginary?", 1, &function_is_imaginary, &is_imaginary_proc);
+	bind_primitive("number?", 1, &is_complex_proc);
 	init_and_bind_primitive("list?", 1, &function_is_list, &is_list_proc);
 	init_and_bind_primitive("vector?", 1, &function_is_vector, &is_vector_proc);
 	init_and_bind_primitive("function?", 1, &function_is_function, &is_function_proc);
@@ -568,6 +687,11 @@ void init_standard_functions(void) {
 	bind_primitive("append", 1, &list_append_proc);
 	bind_primitive("first", 1, &first_proc);
 	bind_primitive("rest", 1, &rest_proc);
+	init_and_bind_primitive("real", 1, &function_real, &real_proc);
+	init_and_bind_primitive("imaginary", 1, &function_imaginary, &imaginary_proc);
+	init_and_bind_primitive("complex", 2, &function_complex, &complex_proc);
+	init_and_bind_primitive("complex-real", 1, &function_complex_real, &complex_real_proc);
+	init_and_bind_primitive("complex-imaginary", 1, &function_complex_imaginary, &complex_imaginary_proc);
 	init_and_bind_primitive("+", 2, &function_add, &add_proc);
 	init_and_bind_primitive("negative", 1, &function_negative, &negative_proc);
 	init_and_bind_primitive("-", 2, &function_subtract, &subtract_proc);

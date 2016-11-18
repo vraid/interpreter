@@ -10,6 +10,7 @@ typedef enum {
 	type_fixnum,
 	type_integer,
 	type_fraction,
+	type_complex,
 	type_list,
 	type_stream,
 	type_vector,
@@ -79,6 +80,10 @@ typedef struct object {
 			struct object* numerator;
 			struct object* denominator;
 		} fraction;
+		struct {
+			struct object* real_part;
+			struct object* imag_part;
+		} complex;
 		struct {
 			struct object* first;
 			struct object* rest;
@@ -163,6 +168,7 @@ char is_symbol(object* obj);
 char is_fixnum(object* obj);
 char is_integer(object* obj);
 char is_fraction(object* obj);
+char is_complex(object* obj);
 char is_list(object* obj);
 char is_stream(object* obj);
 char is_sequence(object* obj);
@@ -195,6 +201,8 @@ int integer_sign(object* obj);
 object* integer_digits(object* obj);
 object* fraction_numerator(object* obj);
 object* fraction_denominator(object* obj);
+object* complex_real_part(object* obj);
+object* complex_imag_part(object* obj);
 
 object* list_first(object* ls);
 object* list_rest(object* ls);
