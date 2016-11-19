@@ -35,99 +35,99 @@ object* is_id(object* id, object* args, object* cont) {
 	return call_cont(cont, result);
 }
 
-object is_boolean_proc;
+object std_is_boolean_proc;
 
-object* function_is_boolean(object* args, object* cont) {
+object* std_is_boolean(object* args, object* cont) {
 	return is_of_type(type_boolean, args, cont);
 }
 
-object is_false_proc;
+object std_is_false_proc;
 
-object* function_is_false(object* args, object* cont) {
+object* std_is_false(object* args, object* cont) {
 	return is_id(false(), args, cont);
 }
 
-object is_true_proc;
+object std_is_true_proc;
 
-object* function_is_true(object* args, object* cont) {
+object* std_is_true(object* args, object* cont) {
 	return is_id(true(), args, cont);
 }
 
-object is_symbol_proc;
+object std_is_symbol_proc;
 
-object* function_is_symbol(object* args, object* cont) {
+object* std_is_symbol(object* args, object* cont) {
 	return is_of_type(type_symbol, args, cont);
 }
 
-object is_integer_proc;
+object std_is_integer_proc;
 
-object* function_is_integer(object* args, object* cont) {
+object* std_is_integer(object* args, object* cont) {
 	return is_of_type(type_integer, args, cont);
 }
 
-object is_fraction_proc;
+object std_is_fraction_proc;
 
-object* function_is_fraction(object* args, object* cont) {
+object* std_is_fraction(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
 	return call_cont(cont, boolean(is_exact_real(a)));
 }
 
-object is_true_fraction_proc;
+object std_is_true_fraction_proc;
 
-object* function_is_true_fraction(object* args, object* cont) {
+object* std_is_true_fraction(object* args, object* cont) {
 	return is_of_type(type_fraction, args, cont);
 }
 
-object is_complex_proc;
+object std_is_complex_proc;
 
-object* function_is_complex(object* args, object* cont) {
+object* std_is_complex(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
 	return call_cont(cont, boolean(is_exact_complex(a)));
 }
 
-object is_true_complex_proc;
+object std_is_true_complex_proc;
 
-object* function_is_true_complex(object* args, object* cont) {	
+object* std_is_true_complex(object* args, object* cont) {	
 	return is_of_type(type_complex, args, cont);
 }
 
-object is_real_proc;
+object std_is_real_proc;
 
-object* function_is_real(object* args, object* cont) {
+object* std_is_real(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
 	return call_cont(cont, boolean(is_exact_real(a)));
 }
 
-object is_imaginary_proc;
+object std_is_imaginary_proc;
 
-object* function_is_imaginary(object* args, object* cont) {
+object* std_is_imaginary(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
 	return call_cont(cont, boolean(is_exact_imaginary(a)));
 }
 
-object is_list_proc;
+object std_is_list_proc;
 
-object* function_is_list(object* args, object* cont) {
+object* std_is_list(object* args, object* cont) {
 	return is_of_type(type_list, args, cont);
 }
 
-object is_vector_proc;
+object std_is_vector_proc;
 
-object* function_is_vector(object* args, object* cont) {
+object* std_is_vector(object* args, object* cont) {
 	return is_of_type(type_vector_iterator, args, cont);
 }
 
-object is_function_proc;
+object std_is_function_proc;
 
-object* function_is_function(object* args, object* cont) {
+object* std_is_function(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
 	object* result = boolean(is_type(type_function, obj) || is_type(type_primitive_procedure, obj));
@@ -135,9 +135,9 @@ object* function_is_function(object* args, object* cont) {
 	return call_cont(cont, result);
 }
 
-object is_identical_proc;
+object std_is_identical_proc;
 
-object* function_is_identical(object* args, object* cont) {
+object* std_is_identical(object* args, object* cont) {
 	object* one;
 	object* two;
 	delist_2(args, &one, &two);
@@ -146,18 +146,18 @@ object* function_is_identical(object* args, object* cont) {
 	return call_cont(cont, result);
 }
 
-object not_proc;
+object std_not_proc;
 
-object* function_not(object* args, object* cont) {
+object* std_not(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
 	return call_cont(cont, boolean(a == false()));
 }
 
-object not_identical_proc;
+object std_not_identical_proc;
 
-object* not_identical(object* args, object* cont) {
+object* std_not_identical(object* args, object* cont) {
 	object* one;
 	object* two;
 	delist_2(args, &one, &two);
@@ -166,9 +166,9 @@ object* not_identical(object* args, object* cont) {
 	return call_cont(cont, result);
 }
 
-object cons_proc;
+object std_cons_proc;
 
-object* function_cons(object* args, object* cont) {
+object* std_cons(object* args, object* cont) {
 	object* first;
 	object* rest;
 	delist_2(args, &first, &rest);
@@ -183,9 +183,9 @@ object* function_cons(object* args, object* cont) {
 	return call_cont(cont, &list_cell);
 }
 
-object real_proc;
+object std_real_proc;
 
-object* function_real(object* args, object* cont) {
+object* std_real(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
@@ -196,9 +196,9 @@ object* function_real(object* args, object* cont) {
 	return call_cont(cont, a);
 }
 
-object imaginary_proc;
+object std_imaginary_proc;
 
-object* function_imaginary(object* args, object* cont) {
+object* std_imaginary(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
@@ -214,9 +214,9 @@ object* function_imaginary(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object complex_proc;
+object std_complex_proc;
 
-object* function_complex(object* args, object* cont) {
+object* std_complex(object* args, object* cont) {
 	object* real;
 	object* imag;
 	delist_2(args, &real, &imag);
@@ -230,9 +230,9 @@ object* function_complex(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object complex_real_proc;
+object std_complex_real_proc;
 
-object* function_complex_real(object* args, object* cont) {
+object* std_complex_real(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
@@ -247,9 +247,9 @@ object* function_complex_real(object* args, object* cont) {
 	}
 }
 
-object complex_imaginary_proc;
+object std_complex_imaginary_proc;
 
-object* function_complex_imaginary(object* args, object* cont) {
+object* std_complex_imaginary(object* args, object* cont) {
 	object* num;
 	delist_1(args, &num);
 	
@@ -264,9 +264,9 @@ object* function_complex_imaginary(object* args, object* cont) {
 	}
 }
 
-object add_proc;
+object std_add_proc;
 
-object* function_add(object* args, object* cont) {
+object* std_add(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -280,9 +280,9 @@ object* function_add(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object negative_proc;
+object std_negative_proc;
 
-object* function_negative(object* args, object* cont) {
+object* std_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
@@ -307,9 +307,9 @@ object* function_negative(object* args, object* cont) {
 	}
 }
 
-object subtract_proc;
+object std_subtract_proc;
 
-object* function_subtract(object* args, object* cont) {
+object* std_subtract(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -325,9 +325,9 @@ object* function_subtract(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object subtract_by_proc;
+object std_subtract_by_proc;
 
-object* function_subtract_by(object* args, object* cont) {
+object* std_subtract_by(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -341,9 +341,9 @@ object* function_subtract_by(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object multiply_proc;
+object std_multiply_proc;
 
-object* function_multiply(object* args, object* cont) {
+object* std_multiply(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -357,9 +357,9 @@ object* function_multiply(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object divide_proc;
+object std_divide_proc;
 
-object* function_divide(object* args, object* cont) {
+object* std_divide(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -375,9 +375,9 @@ object* function_divide(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object divide_by_proc;
+object std_divide_by_proc;
 
-object* function_divide_by(object* args, object* cont) {
+object* std_divide_by(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -391,9 +391,9 @@ object* function_divide_by(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object quotient_proc;
+object std_quotient_proc;
 
-object* function_quotient(object* args, object* cont) {
+object* std_quotient(object* args, object* cont) {
 	object* divisor;
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
@@ -411,9 +411,9 @@ object* function_quotient(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object remainder_proc;
+object std_remainder_proc;
 
-object* function_remainder(object* args, object* cont) {
+object* std_remainder(object* args, object* cont) {
 	object* divisor;
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
@@ -431,9 +431,9 @@ object* function_remainder(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object modulo_continued_proc;
+object std_modulo_continued_proc;
 
-object* modulo_continued(object* args, object* cont) {
+object* std_modulo_continued(object* args, object* cont) {
 	object* ls;
 	object* divisor;
 	delist_2(args, &ls, &divisor);
@@ -455,9 +455,9 @@ object* modulo_continued(object* args, object* cont) {
 	}
 }
 
-object modulo_proc;
+object std_modulo_proc;
 
-object* function_modulo(object* args, object* cont) {
+object* std_modulo(object* args, object* cont) {
 	object* divisor;
 	object* dividend;
 	delist_2(args, &divisor, &dividend);
@@ -472,7 +472,7 @@ object* function_modulo(object* args, object* cont) {
 	object next_args[1];
 	init_list_1(next_args, divisor);
 	object next_call;
-	init_call(&next_call, &modulo_continued_proc, next_args, cont);
+	init_call(&next_call, &std_modulo_continued_proc, next_args, cont);
 	object next_cont;
 	init_cont(&next_cont, &next_call);
 	
@@ -482,9 +482,9 @@ object* function_modulo(object* args, object* cont) {
 	return perform_call(&call);
 }
 
-object gcd_proc;
+object std_gcd_proc;
 
-object* function_gcd(object* args, object* cont) {
+object* std_gcd(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -503,7 +503,7 @@ object* compare_numbers(object* nums, object* result, object* cont) {
 	object eq_args[1];
 	init_list_1(eq_args, result);
 	object eq_call;
-	init_call(&eq_call, &is_identical_proc, eq_args, cont);
+	init_call(&eq_call, &std_is_identical_proc, eq_args, cont);
 	object eq_cont;
 	init_cont(&eq_cont, &eq_call);
 	
@@ -513,9 +513,9 @@ object* compare_numbers(object* nums, object* result, object* cont) {
 	return perform_call(&comp_call);
 }
 
-object numeric_equality_proc;
+object std_numeric_equality_proc;
 
-object* function_numeric_equality(object* args, object* cont) {
+object* std_numeric_equality(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -527,9 +527,9 @@ object* function_numeric_equality(object* args, object* cont) {
 	return compare_numbers(args, zero(), cont);
 }
 
-object greater_proc;
+object std_greater_proc;
 
-object* function_greater(object* args, object* cont) {
+object* std_greater(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -541,9 +541,9 @@ object* function_greater(object* args, object* cont) {
 	return compare_numbers(args, one(), cont);
 }
 
-object less_proc;
+object std_less_proc;
 
-object* function_less(object* args, object* cont) {
+object* std_less(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -555,9 +555,9 @@ object* function_less(object* args, object* cont) {
 	return compare_numbers(args, negative_one(), cont);
 }
 
-object greater_or_equal_proc;
+object std_greater_or_equal_proc;
 
-object* function_greater_or_equal(object* args, object* cont) {
+object* std_greater_or_equal(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -567,15 +567,15 @@ object* function_greater_or_equal(object* args, object* cont) {
 	}
 	
 	object not_call;
-	init_call(&not_call, &not_proc, empty_list(), cont);
+	init_call(&not_call, &std_not_proc, empty_list(), cont);
 	object not_cont;
 	init_cont(&not_cont, &not_call);
-	return function_less(args, &not_cont);
+	return std_less(args, &not_cont);
 }
 
-object less_or_equal_proc;
+object std_less_or_equal_proc;
 
-object* function_less_or_equal(object* args, object* cont) {
+object* std_less_or_equal(object* args, object* cont) {
 	object* a;
 	object* b;
 	delist_2(args, &a, &b);
@@ -585,31 +585,31 @@ object* function_less_or_equal(object* args, object* cont) {
 	}
 	
 	object not_call;
-	init_call(&not_call, &not_proc, empty_list(), cont);
+	init_call(&not_call, &std_not_proc, empty_list(), cont);
 	object not_cont;
 	init_cont(&not_cont, &not_call);
-	return function_greater(args, &not_cont);
+	return std_greater(args, &not_cont);
 }
 
-object display_proc;
+object std_display_proc;
 
-object* function_display(object* args, object* cont) {
+object* std_display(object* args, object* cont) {
 	return print_value(args, cont);
 }
 
-object newline_proc;
+object std_newline_proc;
 
-object* function_newline(object* args, object* cont) {
+object* std_newline(object* args, object* cont) {
 	printf("\n");
 	return call_cont(cont, no_object());
 }
 
-object* function_display_newline(object* args, object* cont) {
+object* std_display_newline(object* args, object* cont) {
 	object call;
-	init_call(&call, &newline_proc, empty_list(), cont);
+	init_call(&call, &std_newline_proc, empty_list(), cont);
 	object next_cont;
 	init_cont(&next_cont, &call);
-	return function_display(args, &next_cont);
+	return std_display(args, &next_cont);
 }
 
 char argnames[generic_args_max][2];
@@ -665,50 +665,50 @@ void init_standard_functions(void) {
 	}
 	generic_arg_list[generic_args_max] = &argcells[generic_args_max]-1;
 	
-	init_and_bind_primitive("boolean?", 1, &function_is_boolean, &is_boolean_proc);
-	init_and_bind_primitive("false?", 1, &function_is_false, &is_false_proc);
-	init_and_bind_primitive("true?", 1, &function_is_true, &is_true_proc);
-	init_and_bind_primitive("symbol?", 1, &function_is_symbol, &is_symbol_proc);
-	init_and_bind_primitive("integer?", 1, &function_is_integer, &is_integer_proc);
-	init_and_bind_primitive("fraction?", 1, &function_is_fraction, &is_fraction_proc);
-	init_and_bind_primitive("true-fraction?", 1, &function_is_true_fraction, &is_true_fraction_proc);
-	init_and_bind_primitive("complex?", 1, &function_is_complex, &is_complex_proc);
-	init_and_bind_primitive("true-complex?", 1, &function_is_true_complex, &is_true_complex_proc);
-	init_and_bind_primitive("real?", 1, &function_is_real, &is_real_proc);
-	init_and_bind_primitive("imaginary?", 1, &function_is_imaginary, &is_imaginary_proc);
-	bind_primitive("number?", 1, &is_complex_proc);
-	init_and_bind_primitive("list?", 1, &function_is_list, &is_list_proc);
-	init_and_bind_primitive("vector?", 1, &function_is_vector, &is_vector_proc);
-	init_and_bind_primitive("function?", 1, &function_is_function, &is_function_proc);
-	init_and_bind_primitive("identical?", 2, &function_is_identical, &is_identical_proc);
-	init_and_bind_primitive("not", 1, &function_not, &not_proc);
-	init_primitive(&not_identical, &not_identical_proc);
-	init_and_bind_primitive("link", 2, &function_cons, &cons_proc);
+	init_and_bind_primitive("boolean?", 1, &std_is_boolean, &std_is_boolean_proc);
+	init_and_bind_primitive("false?", 1, &std_is_false, &std_is_false_proc);
+	init_and_bind_primitive("true?", 1, &std_is_true, &std_is_true_proc);
+	init_and_bind_primitive("symbol?", 1, &std_is_symbol, &std_is_symbol_proc);
+	init_and_bind_primitive("integer?", 1, &std_is_integer, &std_is_integer_proc);
+	init_and_bind_primitive("fraction?", 1, &std_is_fraction, &std_is_fraction_proc);
+	init_and_bind_primitive("true-fraction?", 1, &std_is_true_fraction, &std_is_true_fraction_proc);
+	init_and_bind_primitive("complex?", 1, &std_is_complex, &std_is_complex_proc);
+	init_and_bind_primitive("true-complex?", 1, &std_is_true_complex, &std_is_true_complex_proc);
+	init_and_bind_primitive("real?", 1, &std_is_real, &std_is_real_proc);
+	init_and_bind_primitive("imaginary?", 1, &std_is_imaginary, &std_is_imaginary_proc);
+	bind_primitive("number?", 1, &std_is_complex_proc);
+	init_and_bind_primitive("list?", 1, &std_is_list, &std_is_list_proc);
+	init_and_bind_primitive("vector?", 1, &std_is_vector, &std_is_vector_proc);
+	init_and_bind_primitive("function?", 1, &std_is_function, &std_is_function_proc);
+	init_and_bind_primitive("identical?", 2, &std_is_identical, &std_is_identical_proc);
+	init_and_bind_primitive("not", 1, &std_not, &std_not_proc);
+	init_primitive(&std_not_identical, &std_not_identical_proc);
+	init_and_bind_primitive("link", 2, &std_cons, &std_cons_proc);
 	bind_primitive("append", 1, &list_append_proc);
 	bind_primitive("first", 1, &first_proc);
 	bind_primitive("rest", 1, &rest_proc);
-	init_and_bind_primitive("real", 1, &function_real, &real_proc);
-	init_and_bind_primitive("imaginary", 1, &function_imaginary, &imaginary_proc);
-	init_and_bind_primitive("complex", 2, &function_complex, &complex_proc);
-	init_and_bind_primitive("complex-real", 1, &function_complex_real, &complex_real_proc);
-	init_and_bind_primitive("complex-imaginary", 1, &function_complex_imaginary, &complex_imaginary_proc);
-	init_and_bind_primitive("+", 2, &function_add, &add_proc);
-	init_and_bind_primitive("negative", 1, &function_negative, &negative_proc);
-	init_and_bind_primitive("-", 2, &function_subtract, &subtract_proc);
-	init_and_bind_primitive("subtract-by", 2, &function_subtract_by, &subtract_by_proc);
-	init_and_bind_primitive("*", 2, &function_multiply, &multiply_proc);
-	init_and_bind_primitive("/", 2, &function_divide, &divide_proc);
-	init_and_bind_primitive("divide-by", 2, &function_divide_by, &divide_by_proc);
-	init_and_bind_primitive("quotient", 2, &function_quotient, &quotient_proc);
-	init_and_bind_primitive("remainder", 2, &function_remainder, &remainder_proc);
-	init_and_bind_primitive("modulo", 2, &function_modulo, &modulo_proc);
-	init_primitive(&modulo_continued, &modulo_continued_proc);
-	init_and_bind_primitive("gcd", 2, &function_gcd, &gcd_proc);
-	init_and_bind_primitive("=", 2, &function_numeric_equality, &numeric_equality_proc);
-	init_and_bind_primitive(">", 2, &function_greater, &greater_proc);
-	init_and_bind_primitive(">=", 2, &function_greater_or_equal, &greater_or_equal_proc);
-	init_and_bind_primitive("<", 2, &function_less, &less_proc);
-	init_and_bind_primitive("<=", 2, &function_less_or_equal, &less_or_equal_proc);
+	init_and_bind_primitive("real", 1, &std_real, &std_real_proc);
+	init_and_bind_primitive("imaginary", 1, &std_imaginary, &std_imaginary_proc);
+	init_and_bind_primitive("complex", 2, &std_complex, &std_complex_proc);
+	init_and_bind_primitive("complex-real", 1, &std_complex_real, &std_complex_real_proc);
+	init_and_bind_primitive("complex-imaginary", 1, &std_complex_imaginary, &std_complex_imaginary_proc);
+	init_and_bind_primitive("+", 2, &std_add, &std_add_proc);
+	init_and_bind_primitive("negative", 1, &std_negative, &std_negative_proc);
+	init_and_bind_primitive("-", 2, &std_subtract, &std_subtract_proc);
+	init_and_bind_primitive("subtract-by", 2, &std_subtract_by, &std_subtract_by_proc);
+	init_and_bind_primitive("*", 2, &std_multiply, &std_multiply_proc);
+	init_and_bind_primitive("/", 2, &std_divide, &std_divide_proc);
+	init_and_bind_primitive("divide-by", 2, &std_divide_by, &std_divide_by_proc);
+	init_and_bind_primitive("quotient", 2, &std_quotient, &std_quotient_proc);
+	init_and_bind_primitive("remainder", 2, &std_remainder, &std_remainder_proc);
+	init_and_bind_primitive("modulo", 2, &std_modulo, &std_modulo_proc);
+	init_primitive(&std_modulo_continued, &std_modulo_continued_proc);
+	init_and_bind_primitive("gcd", 2, &std_gcd, &std_gcd_proc);
+	init_and_bind_primitive("=", 2, &std_numeric_equality, &std_numeric_equality_proc);
+	init_and_bind_primitive(">", 2, &std_greater, &std_greater_proc);
+	init_and_bind_primitive(">=", 2, &std_greater_or_equal, &std_greater_or_equal_proc);
+	init_and_bind_primitive("<", 2, &std_less, &std_less_proc);
+	init_and_bind_primitive("<=", 2, &std_less_or_equal, &std_less_or_equal_proc);
 	bind_primitive("identity", 1, &identity_proc);
 	add_static_binding(empty_stream(), "empty-stream");
 	bind_primitive("take", 2, &take_proc);
