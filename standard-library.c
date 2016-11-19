@@ -53,6 +53,15 @@ object* std_is_true(object* args, object* cont) {
 	return is_id(true(), args, cont);
 }
 
+object std_is_proc;
+
+object* std_is(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	return call_cont(cont, boolean(a != false()));
+}
+
 object std_is_symbol_proc;
 
 object* std_is_symbol(object* args, object* cont) {
@@ -166,6 +175,18 @@ object* std_not_identical(object* args, object* cont) {
 	return call_cont(cont, result);
 }
 
+object std_is_equivalent_proc;
+
+// the same as identical, for now
+object* std_is_equivalent(object* args, object* cont) {
+	object* one;
+	object* two;
+	delist_2(args, &one, &two);
+	object* result = boolean(one == two);
+	
+	return call_cont(cont, result);
+}
+
 object std_cons_proc;
 
 object* std_cons(object* args, object* cont) {
@@ -174,7 +195,7 @@ object* std_cons(object* args, object* cont) {
 	delist_2(args, &first, &rest);
 	
 	if (!is_list(rest)) {
-		return throw_error(cont, "cons on non-list");
+		return throw_error(cont, "link on non-list");
 	}
 	
 	object list_cell;
@@ -591,6 +612,45 @@ object* std_less_or_equal(object* args, object* cont) {
 	return std_greater(args, &not_cont);
 }
 
+object std_is_zero_proc;
+
+object* std_is_zero(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (!is_number(a)) {
+		return throw_error(cont, "zero? on non-number");
+	}
+	
+	return call_cont(cont, boolean(number_is_zero(a)));
+}
+
+object std_is_positive_proc;
+
+object* std_is_positive(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (!is_exact_real(a)) {
+		return throw_error(cont, "positive? on non-real");
+	}
+	
+	return call_cont(cont, boolean(1 == real_sign(a)));
+}
+
+object std_is_negative_proc;
+
+object* std_is_negative(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (!is_exact_real(a)) {
+		return throw_error(cont, "negative? on non-real");
+	}
+	
+	return call_cont(cont, boolean(-1 == real_sign(a)));
+}
+
 object std_display_proc;
 
 object* std_display(object* args, object* cont) {
@@ -668,6 +728,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("boolean?", 1, &std_is_boolean, &std_is_boolean_proc);
 	init_and_bind_primitive("false?", 1, &std_is_false, &std_is_false_proc);
 	init_and_bind_primitive("true?", 1, &std_is_true, &std_is_true_proc);
+	init_and_bind_primitive("is?", 1, &std_is, &std_is_proc);
 	init_and_bind_primitive("symbol?", 1, &std_is_symbol, &std_is_symbol_proc);
 	init_and_bind_primitive("integer?", 1, &std_is_integer, &std_is_integer_proc);
 	init_and_bind_primitive("fraction?", 1, &std_is_fraction, &std_is_fraction_proc);
@@ -680,13 +741,17 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("list?", 1, &std_is_list, &std_is_list_proc);
 	init_and_bind_primitive("vector?", 1, &std_is_vector, &std_is_vector_proc);
 	init_and_bind_primitive("function?", 1, &std_is_function, &std_is_function_proc);
-	init_and_bind_primitive("identical?", 2, &std_is_identical, &std_is_identical_proc);
+	init_and_bind_primitive("same?", 2, &std_is_identical, &std_is_identical_proc);
+	init_and_bind_primitive("eq?", 2, &std_is_equivalent, &std_is_equivalent_proc);
 	init_and_bind_primitive("not", 1, &std_not, &std_not_proc);
 	init_primitive(&std_not_identical, &std_not_identical_proc);
 	init_and_bind_primitive("link", 2, &std_cons, &std_cons_proc);
 	bind_primitive("append", 1, &list_append_proc);
 	bind_primitive("first", 1, &first_proc);
 	bind_primitive("rest", 1, &rest_proc);
+	init_and_bind_primitive("zero?", 1, &std_is_zero, &std_is_zero_proc);
+	init_and_bind_primitive("positive?", 1, &std_is_positive, &std_is_positive_proc);
+	init_and_bind_primitive("negative?", 1, &std_is_negative, &std_is_negative_proc);
 	init_and_bind_primitive("real", 1, &std_real, &std_real_proc);
 	init_and_bind_primitive("imaginary", 1, &std_imaginary, &std_imaginary_proc);
 	init_and_bind_primitive("complex", 2, &std_complex, &std_complex_proc);

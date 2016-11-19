@@ -8,6 +8,7 @@ object number_multiply_proc;
 object number_divide_proc;
 object number_compare_proc;
 
+char real_sign(object* obj);
 char is_number(object* obj);
 char is_exact_number(object* obj);
 char is_exact_complex(object* obj);
