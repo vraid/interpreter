@@ -37,6 +37,10 @@ void init_positive_integer(object* obj, object* digits) {
 	init_integer(obj, 1, digits);
 }
 
+void init_negated_integer(object* obj, object* num) {
+	init_integer(obj, -1 * integer_sign(num), integer_digits(num));
+}
+
 void init_fraction(object* obj, object* numerator, object* denominator) {
 	init_object(location_stack, type_fraction, obj);
 	obj->data.fraction.numerator = numerator;

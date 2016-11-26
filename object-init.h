@@ -9,6 +9,7 @@ void init_string(object* obj, char* value);
 void init_fixnum(object* obj, long value);
 void init_integer(object* obj, int sign, object* digits);
 void init_positive_integer(object* obj, object* digits);
+void init_negated_integer(object* obj, object* num);
 void init_fraction(object* obj, object* numerator, object* denominator);
 void init_integral_fraction(object* obj, object* numerator);
 void init_complex(object* obj, object* real, object* imag);
