@@ -99,6 +99,11 @@ void traverse_fraction(target_space space, object* obj, object_location location
 	move_if_necessary(space, &obj->data.fraction.denominator, location);
 }
 
+void traverse_complex(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.complex.real_part, location);
+	move_if_necessary(space, &obj->data.complex.imag_part, location);
+}
+
 void traverse_list(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.first, location);
 	move_if_necessary(space, &obj->data.list.rest, location);
@@ -174,6 +179,7 @@ traversal* traversal_function(object* obj) {
 		case type_symbol: return &traverse_symbol;
 		case type_integer: return &traverse_integer;
 		case type_fraction: return &traverse_fraction;
+		case type_complex: return &traverse_complex;
 		case type_list: return &traverse_list;
 		case type_stream: return &traverse_stream;
 		case type_vector: return &traverse_vector;
