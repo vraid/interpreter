@@ -543,6 +543,15 @@ object* integer_subtract(object* args, object* cont) {
 	}
 }
 
+object* integer_negate(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	object num;
+	init_negated_integer(&num, a);
+	return call_cont(cont, &num);
+}
+
 object* integer_multiply_digits(object* args, object* cont) {
 	object* a;
 	object* b;
@@ -1132,6 +1141,8 @@ void init_integer_procedures(void) {
 	init_primitive(&integer_subtract_with_sign, &integer_subtract_with_sign_proc);
 	init_primitive(&integer_subtract_digits, &integer_subtract_digits_proc);
 	init_primitive(&integer_subtract_one, &integer_subtract_one_proc);
+	
+	init_primitive(&integer_negate, &integer_negate_proc);
 
 	init_primitive(&integer_multiply, &integer_multiply_proc);
 	init_primitive(&integer_multiply_digits, &integer_multiply_digits_proc);

@@ -307,25 +307,28 @@ object* std_negative(object* args, object* cont) {
 	object* a;
 	delist_1(args, &a);
 	
-	if (is_integer(a)) {
-		object num;
-		init_integer(&num, - 1 * integer_sign(a), integer_digits(a));
-		return call_cont(cont, &num);
-	}
-	else if (is_fraction(a)) {
-		object* numerator = fraction_numerator(a);
-		
-		object num;
-		init_integer(&num, -1 * integer_sign(numerator), integer_digits(numerator));
-		
-		object fraction;
-		init_fraction(&fraction, &num, fraction_denominator(a));
-		
-		return call_cont(cont, &fraction);
-	}
-	else {
+	if (!is_number(a)) {
 		return throw_error(cont, "negative on non-number");
 	}
+	
+	object call;
+	init_call(&call, &number_negate_proc, args, cont);
+	return perform_call(&call);
+}
+
+object std_conjugate_proc;
+
+object* std_conjugate(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (!is_number(a)) {
+		return throw_error(cont, "conjugate on non-number");
+	}
+	
+	object call;
+	init_call(&call, &number_conjugate_proc, args, cont);
+	return perform_call(&call);
 }
 
 object std_subtract_proc;
@@ -385,7 +388,10 @@ object* std_divide(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (!(is_number(a) && is_number(b))) {
+	if (number_is_zero(b)) {
+		return throw_error(cont, "division by zero");
+	}
+	else if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "/ on non-number");
 	}
 	
@@ -403,6 +409,9 @@ object* std_divide_by(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
+	if (number_is_zero(a)) {
+		return throw_error(cont, "division by zero");
+	}
 	if (!(is_number(a) && is_number(b))) {
 		return throw_error(cont, "divide-by on non-number");
 	}
@@ -759,6 +768,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("complex-imaginary", 1, &std_complex_imaginary, &std_complex_imaginary_proc);
 	init_and_bind_primitive("+", 2, &std_add, &std_add_proc);
 	init_and_bind_primitive("negative", 1, &std_negative, &std_negative_proc);
+	init_and_bind_primitive("conjugate", 1, &std_conjugate, &std_conjugate_proc);
 	init_and_bind_primitive("-", 2, &std_subtract, &std_subtract_proc);
 	init_and_bind_primitive("subtract-by", 2, &std_subtract_by, &std_subtract_by_proc);
 	init_and_bind_primitive("*", 2, &std_multiply, &std_multiply_proc);

@@ -7,6 +7,8 @@ object number_subtract_proc;
 object number_multiply_proc;
 object number_divide_proc;
 object number_compare_proc;
+object number_negate_proc;
+object number_conjugate_proc;
 
 char real_sign(object* obj);
 char is_number(object* obj);

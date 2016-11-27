@@ -20,6 +20,7 @@ object integer_remainder_proc;
 object integer_greatest_common_divisor_proc;
 object integer_to_decimal_proc;
 object integer_to_string_proc;
+object integer_negate_proc;
 
 object* integer_add(object* args, object* cont);
 

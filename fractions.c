@@ -91,12 +91,14 @@ object* fraction_reduce(object* args, object* cont) {
 	return perform_call(&gcd_call);
 }
 
-object fraction_make_and_reduce_proc;
-
 object* fraction_make_and_reduce(object* args, object* cont) {
 	object* numerator;
 	object* denominator;
 	delist_2(args, &numerator, &denominator);
+	
+	if (integer_is_zero(numerator)) {
+		return call_cont(cont, numerator);
+	}
 	
 	int sign = integer_sign(numerator) * integer_sign(denominator);
 	
@@ -172,6 +174,17 @@ object* fraction_subtract(object* args, object* cont) {
 	init_call(&eval_call, &eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(&eval_call);
+}
+
+object* fraction_negate(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	object n;
+	init_negated_integer(&n, fraction_numerator(a));
+	object num;
+	init_fraction(&num, &n, fraction_denominator(a));
+	return call_cont(cont, &num);
 }
 
 object* fraction_multiply(object* args, object* cont) {
@@ -394,6 +407,7 @@ void init_fraction_procedures(void) {
 	
 	init_primitive(&fraction_add, &fraction_add_proc);
 	init_primitive(&fraction_subtract, &fraction_subtract_proc);
+	init_primitive(&fraction_negate, &fraction_negate_proc);
 	init_primitive(&fraction_multiply, &fraction_multiply_proc);
 	init_primitive(&fraction_divide, &fraction_divide_proc);
 	

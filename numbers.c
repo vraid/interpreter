@@ -119,10 +119,33 @@ object* number_add(object* args, object* cont) {
 }
 
 object* number_subtract(object* args, object* cont) {
-	return equalize_up_to_complex(&integer_subtract_proc, &fraction_subtract_proc, &complex_subtract_proc, args, cont);
+	object* subtrahend;
+	object* minuend;
+	delist_2(args, &subtrahend, &minuend);
+	
+	object add_args[1];
+	init_list_1(add_args, minuend);
+	object add_call;
+	init_call(&add_call, &number_add_proc, add_args, cont);
+	object add_cont;
+	init_cont(&add_cont, &add_call);
+	
+	object negate_args[1];
+	init_list_1(negate_args, subtrahend);
+	object negate_call;
+	init_call(&negate_call, &number_negate_proc, negate_args, &add_cont);
+	
+	return perform_call(&negate_call);
 }
 
 object* number_multiply(object* args, object* cont) {
+	object* a;
+	object* b;
+	delist_2(args, &a, &b);
+	
+	if (number_is_zero(a) || number_is_zero(b)) {
+		return call_cont(cont, integer_zero());
+	}
 	return equalize_up_to_complex(&integer_multiply_proc, &fraction_multiply_proc, &complex_multiply_proc, args, cont);
 }
 
@@ -131,20 +154,66 @@ object* number_divide(object* args, object* cont) {
 	object* b;
 	delist_2(args, &a, &b);
 	
-	if (is_integer(a) && is_integer(b)) {
+	if (number_is_zero(b)) {
+		return call_cont(cont, b);
+	}
+	else if (is_integer(a) && is_integer(b)) {
 		object call_args[2];
 		init_list_2(call_args, b, a);
 		object call;
-		init_call(&call, &make_fraction_proc, call_args, cont);
+		init_call(&call, &fraction_make_and_reduce_proc, call_args, cont);
 		return perform_call(&call);
 	}
 	else {
-		return equalize_up_to_fraction(&integer_divide_proc, &fraction_divide_proc, args, cont);
+		return equalize_up_to_complex(&integer_divide_proc, &fraction_divide_proc, &complex_divide_proc, args, cont);
 	}
 }
 
 object* number_compare(object* args, object* cont) {
 	return equalize_up_to_fraction(&integer_compare_proc, &fraction_compare_proc, args, cont);
+}
+
+object* number_negate(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	object* proc;
+	
+	if (is_integer(a)) {
+		proc = &integer_negate_proc;
+	}
+	else if (is_fraction(a)) {
+		proc = &fraction_negate_proc;
+	}
+	else if (is_complex(a)) {
+		proc = &complex_negate_proc;
+	}
+	else {
+		printf("negate on non-number\n");
+		exit(1);
+	}
+	
+	object call;
+	init_call(&call, proc, args, cont);
+	return perform_call(&call);
+}
+
+object* number_conjugate(object* args, object* cont) {
+	object* a;
+	delist_1(args, &a);
+	
+	if (is_integer(a) || is_fraction(a)) {
+		return call_cont(cont, a);
+	}
+	else if (is_complex(a)) {
+		object call;
+		init_call(&call, &complex_conjugate_proc, args, cont);
+		return perform_call(&call);
+	}
+	else {
+		printf("conjugate on non-number\n");
+		exit(1);
+	}
 }
 
 void init_number_procedures(void) {
@@ -153,4 +222,6 @@ void init_number_procedures(void) {
 	init_primitive(&number_multiply, &number_multiply_proc);
 	init_primitive(&number_divide, &number_divide_proc);
 	init_primitive(&number_compare, &number_compare_proc);
+	init_primitive(&number_negate, &number_negate_proc);
+	init_primitive(&number_conjugate, &number_conjugate_proc);
 }
