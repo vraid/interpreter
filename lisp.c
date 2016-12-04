@@ -23,6 +23,7 @@
 #include "memory-handling.h"
 #include "workspace.h"
 #include "base-syntax.h"
+#include "sequence-syntax.h"
 #include "read.h"
 #include "eval.h"
 #include "print.h"
@@ -53,6 +54,7 @@ int main(int argc, char** argv) {
 	init_environment_procedures();
 	init_standard_functions();	
 	init_base_syntax_procedures();
+	init_sequence_syntax_procedures();
 	init_memory_spaces();
 	init_workspace();
 	
