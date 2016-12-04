@@ -20,6 +20,7 @@ object _end_vector_iterator;
 object _empty_string;
 object _empty_environment;
 object _empty_struct_definition;
+object* _define_symbol;
 object* _quote_symbol;
 object _dash_string;
 object _question_mark_string;
@@ -100,6 +101,7 @@ void init_global_variables(void) {
 	_empty_struct_definition.data.struct_definition.fields = empty_list();
 	_empty_struct_definition.data.struct_definition.parent = no_object();
 	
+	_define_symbol = make_static_symbol("define");
 	_quote_symbol = make_static_symbol("quote");
 	
 	init_string(dash_string(), "-");
@@ -211,6 +213,9 @@ object* empty_environment(void) {
 }
 object* empty_struct_definition(void) {
 	return &_empty_struct_definition;
+}
+object* define_symbol(void) {
+	return _define_symbol;
 }
 object* quote_symbol(void) {
 	return _quote_symbol;

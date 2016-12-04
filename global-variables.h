@@ -31,6 +31,7 @@ object* placeholder_value(void);
 object* empty_environment(void);
 object* empty_struct_definition(void);
 
+object* define_symbol(void);
 object* quote_symbol(void);
 
 object* dash_string(void);
