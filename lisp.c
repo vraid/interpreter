@@ -11,6 +11,7 @@
 #include "object-init.h"
 #include "structs.h"
 #include "sequences.h"
+#include "higher-order.h"
 #include "streams.h"
 #include "strings.h"
 #include "integers.h"
@@ -38,6 +39,7 @@ int main(int argc, char** argv) {
 	init_global_variables();
 	init_struct_procedures();
 	init_sequence_procedures();
+	init_higher_order_procedures();
 	init_stream_procedures();
 	init_string_procedures();
 	init_integer_procedures();
