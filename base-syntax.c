@@ -842,7 +842,7 @@ object* struct_func(object* args, object* cont) {
 object syntax_procedure[syntax_count];
 
 void add_syntax(char* name, static_syntax syntax, primitive_proc* proc) {
-	init_syntax(&syntax_procedure[syntax], proc);
+	init_syntax(&syntax_procedure[syntax], proc, syntax);
 	add_static_binding(&syntax_procedure[syntax], name);
 }
 

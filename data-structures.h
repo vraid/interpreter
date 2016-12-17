@@ -48,6 +48,29 @@ typedef enum {
 	cont_catching // catches errors
 } cont_type;
 
+typedef enum {
+	syntax_define,
+	syntax_quote,
+	syntax_delay,
+	syntax_force,
+	syntax_let,
+	syntax_letrec,
+	syntax_rec,
+	syntax_lambda,
+	syntax_curry,
+	syntax_apply,
+	syntax_if,
+	syntax_and,
+	syntax_or,
+	syntax_struct,
+	syntax_list,
+	syntax_stream,
+	syntax_vector,
+	syntax_map,
+	syntax_fold,
+	syntax_filter,
+	syntax_count} static_syntax;
+
 typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
 typedef long long fixnum_type;
@@ -113,6 +136,7 @@ typedef struct object {
 		} struct_instance;
 		struct {
 			primitive_proc* proc;
+			static_syntax id;
 		} syntax;
 		struct {
 			primitive_proc* proc;
@@ -231,6 +255,7 @@ object* function_parameters(object* obj);
 object* function_environment(object* obj);
 object* function_body(object* obj);
 primitive_proc* syntax_proc(object* obj);
+static_syntax syntax_id(object* obj);
 primitive_proc* primitive_procedure_proc(object* obj);
 object* call_function(object* obj);
 object* call_arguments(object* obj);

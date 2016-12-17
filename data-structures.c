@@ -322,6 +322,10 @@ primitive_proc* syntax_proc(object* obj) {
 	check_type(type_syntax, obj);
 	return obj->data.syntax.proc;
 }
+static_syntax syntax_id(object* obj) {
+	check_type(type_syntax, obj);
+	return obj->data.syntax.id;
+}
 primitive_proc* primitive_procedure_proc(object* obj) {
 	check_type(type_primitive_procedure, obj);
 	return obj->data.primitive_procedure.proc;

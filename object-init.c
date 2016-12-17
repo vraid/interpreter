@@ -105,9 +105,10 @@ void init_environment(object* obj, object* bindings) {
 	obj->data.environment.bindings = bindings;
 }
 
-void init_syntax(object* obj, primitive_proc* proc) {
+void init_syntax(object* obj, primitive_proc* proc, static_syntax id) {
 	init_object(location_static, type_syntax, obj);
 	obj->data.syntax.proc = proc;
+	obj->data.syntax.id = id;
 }
 
 void init_function(object* obj, object* environment, object* parameters, object* body) {
