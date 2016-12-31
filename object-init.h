@@ -30,6 +30,7 @@ void init_catching_cont(object* obj, object* call);
 void init_internal_error(object* obj, object* message);
 void init_delay(object* obj, object* value, object* environment);
 
+void init_primitive_procedure(object* obj, primitive_proc* proc);
 void init_primitive(primitive_proc* proc, object* obj);
 
 void init_list_cell(object* obj, object* first, object* rest);

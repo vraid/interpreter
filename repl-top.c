@@ -5,9 +5,11 @@
 #include "read.h"
 #include "eval.h"
 #include "print.h"
+#include "syntax-validate.h"
 #include "delist.h"
 #include "call.h"
 
+object repl_read_or_eval_proc;
 object repl_eval_entry_proc;
 object repl_print_or_read_proc;
 object repl_print_entry_proc;
@@ -42,14 +44,21 @@ object* repl_read_entry(object* args, object* cont) {
 	delist_1(args, &environment);
 	
 	object eval_call;
-	init_call(&eval_call, &repl_eval_entry_proc, args, cont);
+	init_call(&eval_call, &repl_read_or_eval_proc, args, cont);
 	object eval_cont;
-	init_cont(&eval_cont, &eval_call);
+	init_catching_cont(&eval_cont, &eval_call);
+	
+	object validate_args[1];
+	init_list_1(validate_args, empty_environment());
+	object validate_call;
+	init_call(&validate_call, &validate_expression_proc, validate_args, &eval_cont);
+	object validate_cont;
+	init_cont(&validate_cont, &validate_call);
 	
 	object error_args[2];
 	init_list_2(error_args, &read_error_string, environment);
 	object error_call;
-	init_call(&error_call, &repl_error_proc, error_args, &eval_cont);
+	init_call(&error_call, &repl_error_proc, error_args, &validate_cont);
 	object error_cont;
 	init_catching_cont(&error_cont, &error_call);
 	
@@ -63,6 +72,24 @@ object* repl_read_entry(object* args, object* cont) {
 	init_call(&read_call, &read_value_proc, read_args, &error_cont);
 	
 	return perform_call(&read_call);
+}
+
+object* repl_read_or_eval(object* args, object* cont) {
+	object* value;
+	object* environment;
+	delist_2(args, &value, &environment);
+	
+	object call;
+	
+	if (is_internal_error(value)) {
+		printf("syntax error: %s\n", string_value(internal_error_message(value)));
+		init_call(&call, &repl_read_entry_proc, list_rest(args), cont);
+	}
+	else {
+		init_call(&call, &repl_eval_entry_proc, args, cont);
+	}
+	
+	return perform_call(&call);
 }
 
 object* repl_eval_entry(object* args, object* cont) {
@@ -141,6 +168,7 @@ object* repl_print_entry(object* args, object* cont) {
 
 void init_repl_procedures(void) {
 	init_primitive(&repl_read_entry, &repl_read_entry_proc);
+	init_primitive(&repl_read_or_eval, &repl_read_or_eval_proc);
 	init_primitive(&repl_eval_entry, &repl_eval_entry_proc);
 	init_primitive(&repl_print_or_read, &repl_print_or_read_proc);
 	init_primitive(&repl_print_entry, &repl_print_entry_proc);

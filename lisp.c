@@ -25,6 +25,7 @@
 #include "workspace.h"
 #include "base-syntax.h"
 #include "sequence-syntax.h"
+#include "syntax-validate.h"
 #include "read.h"
 #include "eval.h"
 #include "print.h"
@@ -59,6 +60,7 @@ int main(int argc, char** argv) {
 	init_sequence_syntax_procedures();
 	init_memory_spaces();
 	init_workspace();
+	init_validate_procedures();
 	
 	object* environment = static_environment();
 	
