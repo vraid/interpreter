@@ -13,6 +13,7 @@
 #include "environments.h"
 #include "base-syntax.h"
 #include "standard-library.h"
+#include "generic-arguments.h"
 #include "eval.h"
 
 object make_struct_proc;

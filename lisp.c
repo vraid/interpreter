@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "data-structures.h"
 #include "standard-library.h"
+#include "generic-arguments.h"
 #include "symbols.h"
 #include "global-variables.h"
 #include "environments.h"
@@ -55,12 +56,13 @@ int main(int argc, char** argv) {
 	init_eval_procedures();
 	init_repl_procedures();
 	init_environment_procedures();
-	init_standard_functions();	
 	init_base_syntax_procedures();
 	init_sequence_syntax_procedures();
 	init_memory_spaces();
 	init_workspace();
 	init_validate_procedures();
+	init_generic_arguments();
+	init_standard_functions();
 	
 	object* environment = static_environment();
 	
