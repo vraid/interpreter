@@ -15,6 +15,7 @@ void init_generic_arguments(void) {
 	generic_args[0] = make_static_symbol(argnames[0]);
 	init_list_cell(&argcells[0], generic_args[0], empty_list());
 	make_static(&argcells[0]);
+	generic_arg_list[0] = empty_list();
 	for (i = 1; i < generic_args_max; i++) {
 		argnames[i][0] = argnames[i-1][0] + 1;
 		argnames[i][1] = 0;
@@ -23,5 +24,5 @@ void init_generic_arguments(void) {
 		make_static(&argcells[i]);
 		generic_arg_list[i] = &argcells[i-1];
 	}
-	generic_arg_list[generic_args_max] = &argcells[generic_args_max]-1;
+	generic_arg_list[generic_args_max] = &argcells[generic_args_max-1];
 }
