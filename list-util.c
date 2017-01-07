@@ -57,6 +57,9 @@ object* find_duplicate_2(object* a, object* b) {
 }
 
 char is_symbol_list(object* ls) {
+	if (!is_list(ls)) {
+		return 0;
+	}
 	while (!is_empty_list(ls)) {
 		if (!is_symbol(list_first(ls))) {
 			return 0;
