@@ -13,6 +13,7 @@ void init_list_util_procedures(void);
 
 int list_length(object* ls);
 object* list_ref(int n, object* ls);
+char is_symbol_list(object* ls);
 
 object* find_duplicate(object* a);
 object* find_duplicate_2(object* a, object* b);
