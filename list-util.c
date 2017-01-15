@@ -243,7 +243,9 @@ object* unzip_2(object* args, object* cont) {
 	delist_1(args, &list);
 	
 	if (is_empty_list(list)) {
-		return call_cont(cont, empty_list());
+		object res[2];
+		init_list_2(res, empty_list(), empty_list());
+		return call_cont(cont, res);
 	}
 	else {
 		object* first = list_first(list);
