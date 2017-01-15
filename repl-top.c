@@ -48,10 +48,8 @@ object* repl_read_entry(object* args, object* cont) {
 	object eval_cont;
 	init_catching_cont(&eval_cont, &eval_call);
 	
-	object validate_args[1];
-	init_list_1(validate_args, empty_environment());
 	object validate_call;
-	init_call(&validate_call, &validate_expression_proc, validate_args, &eval_cont);
+	init_call(&validate_call, &validate_expression_proc, args, &eval_cont);
 	object validate_cont;
 	init_cont(&validate_cont, &validate_call);
 	
