@@ -9,6 +9,7 @@
 #include "environments.h"
 #include "higher-order.h"
 #include "generic-arguments.h"
+#include "print.h"
 
 object* throw_length_error(object* cont) {
 	return throw_error(cont, "wrong length");
@@ -101,13 +102,13 @@ object* validate_define(object* args, object* cont) {
 	object* env;
 	delist_2(args, &stx, &env);
 	
-	object* rest = list_rest(stx);
-	object* signature = list_first(rest);
+	object* signature;
+	object* value;
+	delist_2(list_rest(stx), &signature, &value);
+	
 	if (invalid_function_signature(signature) != false()) {
 		return throw_error(cont, "invalid definition signature");
 	}
-	rest = list_rest(rest);
-	object* value = list_first(rest);
 	
 	object call_args[2];
 	init_list_2(call_args, value, env);
@@ -121,8 +122,10 @@ object* validate_lambda(object* args, object* cont) {
 	object* env;
 	delist_2(args, &stx, &env);
 	
-	object* rest = list_rest(stx);
-	object* param = list_first(rest);
+	object* param;
+	object* body;
+	delist_2(list_rest(stx), &param, &body);
+	
 	if (!is_symbol_list(param)) {
 		return throw_error(cont, "parameters must be list of symbols");
 	}
@@ -130,8 +133,6 @@ object* validate_lambda(object* args, object* cont) {
 	if (!is_false(dup)) {
 		return throw_error(cont, "duplicate parameter");
 	}
-	rest = list_rest(rest);
-	object* body = list_first(rest);
 	
 	object call_args[2];
 	init_list_2(call_args, body, env);
@@ -176,15 +177,13 @@ object* validate_let(object* args, object* cont) {
 	object* env;
 	delist_2(args, &stx, &env);
 	
-	object* rest = list_rest(stx);
-	object* bindings = list_first(rest);
+	object* bindings;
+	object* body;
+	delist_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
 		return throw_error(cont, "malformed let bindings");
 	}
-	
-	rest = list_rest(rest);
-	object* body = list_first(rest);
 	
 	object next_args[2];
 	init_list_2(next_args, body, env);
@@ -199,6 +198,100 @@ object* validate_let(object* args, object* cont) {
 	init_call(&call, &validate_let_bindings_proc, call_args, &next_cont);
 	
 	return perform_call(&call);
+}
+
+object validate_letrec_two_proc;
+
+object* validate_letrec_two(object* args, object* cont) {
+	object* names_values;
+	object* stx;
+	object* env;
+	delist_3(args, &names_values, &stx, &env);
+	
+	object* names;
+	object* values;
+	delist_2(names_values, &names, &values);
+	
+	object* dup = find_duplicate(names);
+	if (dup != false()) {
+		return throw_error(cont, "duplicate binding in letrec");
+	}
+	
+	object* bindings;
+	object* body;
+	delist_2(list_rest(stx), &bindings, &body);
+	
+	object next_args[2];
+	init_list_2(next_args, body, env);
+	object next_call;
+	init_call(&next_call, &validate_expression_proc, next_args, cont);
+	object next_cont;
+	init_discarding_cont(&next_cont, &next_call);
+	
+	object call_args[3];
+	init_list_3(call_args, stx, bindings, env);
+	object call;
+	init_call(&call, &validate_let_bindings_proc, call_args, &next_cont);
+	
+	return perform_call(&call);
+}
+
+object* validate_letrec(object* args, object* cont) {
+	object* stx;
+	object* env;
+	delist_2(args, &stx, &env);
+	
+	object* bindings;
+	object* body;
+	delist_2(list_rest(stx), &bindings, &body);
+	
+	if (!(is_list(bindings) && list_has_width(2, bindings))) {
+		return throw_error(cont, "malformed letrec bindings");
+	}
+	
+	object next_call;
+	init_call(&next_call, &validate_letrec_two_proc, args, cont);
+	object next_cont;
+	init_cont(&next_cont, &next_call);
+	
+	object unzip_args[1];
+	init_list_1(unzip_args, bindings);
+	object unzip_call;
+	init_call(&unzip_call, &unzip_2_proc, unzip_args, &next_cont);
+	
+	return perform_call(&unzip_call);
+}
+
+object* validate_rec(object* args, object* cont) {
+	object* stx;
+	object* env;
+	delist_2(args, &stx, &env);
+	
+	object* name;
+	object* bindings;
+	object* body;
+	delist_3(list_rest(stx), &name, &bindings, &body);
+	
+	if (!is_symbol(name)) {
+		return throw_error(cont, "rec binding must be symbol");
+	}
+	if (!(is_list(bindings) && list_has_width(2, bindings))) {
+		return throw_error(cont, "malformed rec bindings");
+	}
+	
+	object next_args[2];
+	init_list_2(next_args, body, env);
+	object next_call;
+	init_call(&next_call, &validate_expression_proc, next_args, cont);
+	object next_cont;
+	init_discarding_cont(&next_cont, &next_call);
+	
+	object binding_args[3];
+	init_list_3(binding_args, stx, bindings, env);
+	object binding_call;
+	init_call(&binding_call, &validate_let_bindings_proc, binding_args, &next_cont);
+	
+	return perform_call(&binding_call);
 }
 
 object* validate_struct(object* args, object* cont) {
@@ -328,6 +421,7 @@ object* validate_expression(object* args, object* cont) {
 	
 	object call;
 	init_call(&call, is_list(stx) ? &validate_list_proc : &validate_atom_proc, args, &return_cont);
+	
 	return perform_call(&call);
 }
 
@@ -338,16 +432,16 @@ void init_validate_procedures(void) {
 		init_primitive_procedure(&syntax_validate[i], &standard_validate);
 	}
 	
-	init_primitive_procedure(&syntax_validate[syntax_letrec], &no_validate);
-	init_primitive_procedure(&syntax_validate[syntax_rec], &no_validate);
-	
 	init_primitive_procedure(&syntax_validate[syntax_define], &validate_define);
 	init_primitive_procedure(&syntax_validate[syntax_quote], &no_validate);
 	init_primitive_procedure(&syntax_validate[syntax_lambda], &validate_lambda);
 	init_primitive_procedure(&syntax_validate[syntax_let], &validate_let);
+	init_primitive_procedure(&syntax_validate[syntax_letrec], &validate_letrec);
+	init_primitive_procedure(&syntax_validate[syntax_rec], &validate_rec);
 	init_primitive_procedure(&syntax_validate[syntax_struct], &validate_struct);
 	
 	init_primitive(&validate_let_bindings, &validate_let_bindings_proc);
+	init_primitive(&validate_letrec_two, &validate_letrec_two_proc);
 	init_primitive(&validate_expression, &validate_expression_proc);
 	init_primitive(&return_syntax, &return_syntax_proc);
 	init_primitive(&validate_atom, &validate_atom_proc);
