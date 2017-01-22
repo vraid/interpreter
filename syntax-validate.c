@@ -369,8 +369,8 @@ object* validate_list(object* args, object* cont) {
 			object* a = find_in_environment(env, obj, 1);
 			if (!is_no_binding(a)) {
 				object* val = binding_value(a);
-				if (is_syntax(val)) {
-					static_syntax id = syntax_id(val);	
+				if (is_syntax_procedure(val)) {
+					static_syntax_procedure id = syntax_procedure_id(val);	
 					int n = list_length(stx);
 					if (syntax_length[id] > 0 && syntax_length[id]+1 != n) {
 						return throw_length_error(cont);

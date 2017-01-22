@@ -130,14 +130,14 @@ object* define(object* args, object* cont) {
 	// handles cases like (define ((f a) b) ..)
 	if (is_list(name)) {
 		object desugared[3];
-		init_list_3(desugared, syntax_obj(syntax_lambda), list_rest(name), body);
+		init_list_3(desugared, syntax_procedure_obj(syntax_lambda), list_rest(name), body);
 		object new_syntax[2];
 		init_list_2(new_syntax, list_first(name), desugared);
 		
 		object call_args[2];
 		init_list_2(call_args, new_syntax, environment);
 		object call;
-		init_call(&call, syntax_obj(syntax_define), call_args, cont);
+		init_call(&call, syntax_procedure_obj(syntax_define), call_args, cont);
 		
 		return perform_call(&call);
 	}
@@ -550,7 +550,7 @@ object* curry_one(object* args, object* cont) {
 		object par[1];
 		init_list_1(par, list_first(parameters));
 		object syntax[3];
-		init_list_3(syntax, syntax_obj(syntax_lambda), par, body);
+		init_list_3(syntax, syntax_procedure_obj(syntax_lambda), par, body);
 		
 		object ls[2];
 		init_list_2(ls, list_rest(parameters), syntax);
@@ -639,7 +639,7 @@ object* start_apply(object* args, object* cont) {
 	}
 	
 	object body_ls[3];
-	init_list_3(body_ls, syntax_obj(syntax_lambda), ps, function_body(function));
+	init_list_3(body_ls, syntax_procedure_obj(syntax_lambda), ps, function_body(function));
 	object eval_ls[1];
 	init_list_1(eval_ls, body_ls);
 	object eval_call;
@@ -841,12 +841,12 @@ object* struct_func(object* args, object* cont) {
 
 object syntax_procedure[syntax_count];
 
-void add_syntax(char* name, static_syntax syntax, primitive_proc* proc) {
-	init_syntax(&syntax_procedure[syntax], proc, syntax);
+void add_syntax(char* name, static_syntax_procedure syntax, primitive_proc* proc) {
+	init_syntax_procedure(&syntax_procedure[syntax], proc, syntax);
 	add_static_binding(&syntax_procedure[syntax], name);
 }
 
-object* syntax_obj(static_syntax type) {
+object* syntax_procedure_obj(static_syntax_procedure type) {
 	return &syntax_procedure[type];
 }
 

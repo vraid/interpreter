@@ -52,12 +52,12 @@ object* map_single(object* args, object* cont) {
 }
 
 object* map(object* args, object* cont) {
-	object* syntax;
-	delist_1(args, &syntax);
+	object* syntax_procedure;
+	delist_1(args, &syntax_procedure);
 	
 	object* function;
 	object* sequence;
-	delist_2(syntax, &function, &sequence);
+	delist_2(syntax_procedure, &function, &sequence);
 	
 	if (is_stream(sequence)) {
 		object call;
@@ -132,17 +132,17 @@ object* fold_single(object* args, object* cont) {
 }
 
 object* fold(object* args, object* cont) {
-	object* syntax;
-	delist_1(args, &syntax);
+	object* syntax_procedure;
+	delist_1(args, &syntax_procedure);
 	
 	object* function;
 	object* initial;
 	object* elements;
-	delist_3(syntax, &function, &initial, &elements);
+	delist_3(syntax_procedure, &function, &initial, &elements);
 	
 	if (is_stream(elements)) {
 		object call;
-		init_call(&call, &stream_fold_proc, syntax, cont);
+		init_call(&call, &stream_fold_proc, syntax_procedure, cont);
 		
 		return perform_call(&call);
 	}
@@ -268,16 +268,16 @@ object* filter_first(object* args, object* cont) {
 }
 
 object* filter(object* args, object* cont) {
-	object* syntax;
-	delist_1(args, &syntax);
+	object* syntax_procedure;
+	delist_1(args, &syntax_procedure);
 	
 	object* function;
 	object* elements;
-	delist_2(syntax, &function, &elements);
+	delist_2(syntax_procedure, &function, &elements);
 	
 	if (is_stream(elements)) {
 		object call;
-		init_call(&call, &stream_filter_proc, syntax, cont);
+		init_call(&call, &stream_filter_proc, syntax_procedure, cont);
 		
 		return perform_call(&call);
 	}

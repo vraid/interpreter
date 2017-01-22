@@ -213,7 +213,7 @@ object* eval_list_rest(object* args, object* cont) {
 	object* proc;
 	
 	switch (first->type) {
-		case type_syntax:
+		case type_syntax_procedure:
 			proc = &eval_syntax_proc;
 			break;
 		case type_primitive_procedure:

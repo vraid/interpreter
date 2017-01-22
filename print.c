@@ -350,8 +350,8 @@ object* print_value(object* args, object* cont) {
 		case type_primitive_procedure:
 			printf("function: primitive");
 			break;
-		case type_syntax:
-			printf("syntax");
+		case type_syntax_procedure:
+			printf("syntax_procedure");
 			break;
 		case type_delay:
 			printf("delay");

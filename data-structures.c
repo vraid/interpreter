@@ -34,7 +34,7 @@ void init_type_names(void) {
 	type_names[type_vector] = "vector";
 	type_names[type_vector_iterator] = "vector iterator";
 	type_names[type_primitive_procedure] = "primitive procedure";
-	type_names[type_syntax] = "syntax";
+	type_names[type_syntax_procedure] = "syntax procedure";
 	type_names[type_function] = "function";
 	type_names[type_call] = "call";
 	type_names[type_continuation] = "continuation";
@@ -123,8 +123,8 @@ char is_struct_definition(object* obj) {
 char is_struct_instance(object* obj) {
 	return is_type(type_struct_instance, obj);
 }
-char is_syntax(object* obj) {
-	return is_type(type_syntax, obj);
+char is_syntax_procedure(object* obj) {
+	return is_type(type_syntax_procedure, obj);
 }
 char is_function(object* obj) {
 	return is_type(type_function, obj);
@@ -318,13 +318,13 @@ object* function_body(object* obj) {
 	check_type(type_function, obj);
 	return obj->data.function.body;
 }
-primitive_proc* syntax_proc(object* obj) {
-	check_type(type_syntax, obj);
-	return obj->data.syntax.proc;
+primitive_proc* syntax_procedure_proc(object* obj) {
+	check_type(type_syntax_procedure, obj);
+	return obj->data.syntax_procedure.proc;
 }
-static_syntax syntax_id(object* obj) {
-	check_type(type_syntax, obj);
-	return obj->data.syntax.id;
+static_syntax_procedure syntax_procedure_id(object* obj) {
+	check_type(type_syntax_procedure, obj);
+	return obj->data.syntax_procedure.id;
 }
 primitive_proc* primitive_procedure_proc(object* obj) {
 	check_type(type_primitive_procedure, obj);

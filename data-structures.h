@@ -18,7 +18,7 @@ typedef enum {
 	type_delay,
 	type_struct_definition,
 	type_struct_instance,
-	type_syntax,
+	type_syntax_procedure,
 	type_primitive_procedure,
 	type_function,
 	type_call,
@@ -69,7 +69,7 @@ typedef enum {
 	syntax_map,
 	syntax_fold,
 	syntax_filter,
-	syntax_count} static_syntax;
+	syntax_count} static_syntax_procedure;
 
 typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
@@ -136,8 +136,8 @@ typedef struct object {
 		} struct_instance;
 		struct {
 			primitive_proc* proc;
-			static_syntax id;
-		} syntax;
+			static_syntax_procedure id;
+		} syntax_procedure;
 		struct {
 			primitive_proc* proc;
 		} primitive_procedure;
@@ -200,7 +200,7 @@ char is_vector(object* obj);
 char is_vector_iterator(object* obj);
 char is_struct_definition(object* obj);
 char is_struct_instance(object* obj);
-char is_syntax(object* obj);
+char is_syntax_procedure(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
@@ -254,8 +254,8 @@ object* struct_instance_data(object* obj);
 object* function_parameters(object* obj);
 object* function_environment(object* obj);
 object* function_body(object* obj);
-primitive_proc* syntax_proc(object* obj);
-static_syntax syntax_id(object* obj);
+primitive_proc* syntax_procedure_proc(object* obj);
+static_syntax_procedure syntax_procedure_id(object* obj);
 primitive_proc* primitive_procedure_proc(object* obj);
 object* call_function(object* obj);
 object* call_arguments(object* obj);

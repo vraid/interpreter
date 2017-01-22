@@ -57,7 +57,7 @@ object* vector(object* args, object* cont) {
 	init_cont(&vector_cont, &vector_call);
 	
 	object list_call;
-	init_call(&list_call, syntax_obj(syntax_list), args, &vector_cont);
+	init_call(&list_call, syntax_procedure_obj(syntax_list), args, &vector_cont);
 	
 	return perform_call(&list_call);
 }

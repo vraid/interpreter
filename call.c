@@ -44,8 +44,8 @@ object* perform_call(object* call) {
 	else if (is_primitive_procedure(function)) {
 		return (*(function->data.primitive_procedure.proc))(call_arguments(call), call_continuation(call));
 	}
-	else if (is_syntax(function)) {
-		return (*(function->data.syntax.proc))(call_arguments(call), call_continuation(call));
+	else if (is_syntax_procedure(function)) {
+		return (*(function->data.syntax_procedure.proc))(call_arguments(call), call_continuation(call));
 	}		
 	else {
 		fprintf(stderr, "faulty call\n");

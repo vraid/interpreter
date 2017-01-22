@@ -37,7 +37,7 @@ object* add_struct_constructor_next(object* args, object* cont) {
 	delist_2(args, &fields, &type);
 	
 	object field_list;
-	init_list_cell(&field_list, syntax_obj(syntax_list), fields);
+	init_list_cell(&field_list, syntax_procedure_obj(syntax_list), fields);
 	object vector_list[2];
 	init_list_2(vector_list, &list_to_vector_proc, &field_list);
 	object body[3];
@@ -321,19 +321,19 @@ object* define_struct(object* args, object* cont) {
 	init_cont(&next_cont, &next_call);
 		
 	object append_args[4];
-	init_list_4(append_args, syntax_obj(syntax_list), symbol_name(name), dash_string(), generic_args[0]);
+	init_list_4(append_args, syntax_procedure_obj(syntax_list), symbol_name(name), dash_string(), generic_args[0]);
 	object append_list[2];
 	init_list_2(append_list, &string_append_proc, append_args);
 	object symbol_list[2];
 	init_list_2(symbol_list, &string_to_symbol_proc, append_list);
 	object function[3];
-	init_list_3(function, syntax_obj(syntax_lambda), generic_arg_list[1], symbol_list);
+	init_list_3(function, syntax_procedure_obj(syntax_lambda), generic_arg_list[1], symbol_list);
 	object quote[2];
-	init_list_2(quote, syntax_obj(syntax_quote), fields);
+	init_list_2(quote, syntax_procedure_obj(syntax_quote), fields);
 	object field_names[3];
-	init_list_3(field_names, syntax_obj(syntax_map), symbol_to_string_func, quote);
+	init_list_3(field_names, syntax_procedure_obj(syntax_map), symbol_to_string_func, quote);
 	object map_list[3];
-	init_list_3(map_list, syntax_obj(syntax_map), function, field_names);
+	init_list_3(map_list, syntax_procedure_obj(syntax_map), function, field_names);
 	object eval_args[2];
 	init_list_2(eval_args, map_list, empty_environment());
 	object eval_call;
