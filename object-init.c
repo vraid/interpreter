@@ -143,6 +143,18 @@ void init_catching_cont(object* obj, object* call) {
 	init_cont_base(obj, call, cont_catching);
 }
 
+void init_syntax_object(object* obj, object* syntax, object* origin) {
+	init_object(location_stack, type_syntax_object, obj);
+	obj->data.syntax_object.syntax = syntax;
+	obj->data.syntax_object.origin = origin;
+}
+
+void init_internal_position(object* obj, int x, int y) {
+	init_object(location_stack, type_internal_position, obj);
+	obj->data.internal_position.x = x;
+	obj->data.internal_position.y = y;
+}
+
 void init_internal_error(object* obj, object* message) {
 	init_object(location_stack, type_internal_error, obj);
 	obj->data.internal_error.message = message;

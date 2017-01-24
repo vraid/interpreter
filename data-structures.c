@@ -41,6 +41,8 @@ void init_type_names(void) {
 	type_names[type_binding] = "binding";
 	type_names[type_environment] = "environment";
 	type_names[type_file_port] = "file port";
+	type_names[type_syntax_object] = "syntax object";
+	type_names[type_internal_position] = "internal position";
 	type_names[type_internal_error] = "internal error";
 }
 
@@ -362,6 +364,24 @@ object* binding_value(object* obj) {
 object* environment_bindings(object* obj) {
 	check_type(type_environment, obj);
 	return obj->data.environment.bindings;
+}
+
+object* syntax_object_syntax(object* obj) {
+	check_type(type_syntax_object, obj);
+	return obj->data.syntax_object.syntax;
+}
+object* syntax_object_origin(object* obj) {
+	check_type(type_syntax_object, obj);
+	return obj->data.syntax_object.origin;
+}
+
+int internal_position_x(object* obj) {
+	check_type(type_internal_position, obj);
+	return obj->data.internal_position.x;
+}
+int internal_position_y(object* obj) {
+	check_type(type_internal_position, obj);
+	return obj->data.internal_position.y;
 }
 
 object* internal_error_message(object* obj) {

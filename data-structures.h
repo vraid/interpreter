@@ -26,6 +26,8 @@ typedef enum {
 	type_binding,
 	type_environment,
 	type_file_port,
+	type_syntax_object,
+	type_internal_position,
 	type_internal_error,
 	type_count} object_type;
 
@@ -171,6 +173,14 @@ typedef struct object {
 			FILE* file;
 		} file_port;
 		struct {
+			struct object* syntax;
+			struct object* origin;
+		} syntax_object;
+		struct {
+			int x;
+			int y;
+		} internal_position;
+		struct {
 			struct object* message;
 		} internal_error;
 	} data;
@@ -266,5 +276,11 @@ object* continuation_call(object* obj);
 object* binding_name(object* obj);
 object* binding_value(object* obj);
 object* environment_bindings(object* obj);
+
+object* syntax_object_syntax(object* obj);
+object* syntax_object_origin(object* obj);
+
+int internal_position_x(object* obj);
+int internal_position_y(object* obj);
 
 object* internal_error_message(object* obj);

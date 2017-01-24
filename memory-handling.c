@@ -160,6 +160,11 @@ void traverse_continuation(target_space space, object* obj, object_location loca
 	move_if_necessary(space, &obj->data.continuation.call, location);
 }
 
+void traverse_syntax_object(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.syntax_object.syntax, location);
+	move_if_necessary(space, &obj->data.syntax_object.origin, location);
+}
+
 void traverse_internal_error(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
@@ -191,6 +196,7 @@ traversal* traversal_function(object* obj) {
 		case type_environment: return &traverse_environment;
 		case type_call: return &traverse_call;
 		case type_continuation: return &traverse_continuation;
+		case type_syntax_object: return &traverse_syntax_object;
 		case type_internal_error: return &traverse_internal_error;
 		case type_delay: return &traverse_delay;
 		default: return &traverse_nothing;

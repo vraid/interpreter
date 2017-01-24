@@ -27,6 +27,8 @@ void init_call(object* obj, object* function, object* arguments, object* continu
 void init_cont(object* obj, object* call);
 void init_discarding_cont(object* obj, object* call);
 void init_catching_cont(object* obj, object* call);
+void init_syntax_object(object* obj, object* syntax, object* origin);
+void init_internal_position(object* obj, int x, int y);
 void init_internal_error(object* obj, object* message);
 void init_delay(object* obj, object* value, object* environment);
 
