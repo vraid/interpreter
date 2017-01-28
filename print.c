@@ -296,9 +296,6 @@ object* print_value(object* args, object* cont) {
 	delist_1(args, &obj);
 	
 	switch (obj->type) {
-		case type_none:
-			printf("undefined");
-			break;
 		case type_string:
 			printf("\"%s\"", string_value(obj));
 			break;
@@ -347,17 +344,8 @@ object* print_value(object* args, object* cont) {
 			init_list_1(&ls, function_parameters(obj));
 			return print_sequence(&ls, cont);
 			break;
-		case type_primitive_procedure:
-			printf("function: primitive");
-			break;
-		case type_syntax_procedure:
-			printf("syntax_procedure");
-			break;
-		case type_delay:
-			printf("delay");
-			break;
 		default:
-			fprintf(stderr, "unknown type");
+			fprintf(stderr, "%s", object_type_name(obj));
 	}
 	
 	return call_discarding_cont(cont);
