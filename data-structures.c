@@ -155,6 +155,12 @@ char is_discarding_continuation(object* obj) {
 char is_catching_continuation(object* obj) {
 	return continuation_type(obj) == cont_catching;
 }
+char is_syntax_object(object* obj) {
+	return obj->type == type_syntax_object;
+}
+char is_internal_position(object* obj) {
+	return obj->type == type_internal_position;
+}
 char is_internal_error(object* obj) {
 	return obj->type == type_internal_error;
 }
@@ -373,6 +379,15 @@ object* syntax_object_syntax(object* obj) {
 object* syntax_object_origin(object* obj) {
 	check_type(type_syntax_object, obj);
 	return obj->data.syntax_object.origin;
+}
+
+object* syntax_object_position(object* obj) {
+	while (!is_internal_position(obj)) {
+		check_type(type_syntax_object, obj);
+		obj = syntax_object_origin(obj);
+	}
+	check_type(type_internal_position, obj);
+	return obj;
 }
 
 int internal_position_x(object* obj) {

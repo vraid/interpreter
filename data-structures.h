@@ -222,6 +222,8 @@ char is_nonempty_list(object* obj);
 char is_continuation(object* obj);
 char is_discarding_continuation(object* obj);
 char is_catching_continuation(object* obj);
+char is_syntax_object(object* obj);
+char is_internal_position(object* obj);
 char is_internal_error(object* obj);
 
 char boolean_value(object* obj);
@@ -279,6 +281,7 @@ object* environment_bindings(object* obj);
 
 object* syntax_object_syntax(object* obj);
 object* syntax_object_origin(object* obj);
+object* syntax_object_position(object* obj);
 
 int internal_position_x(object* obj);
 int internal_position_y(object* obj);
