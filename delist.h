@@ -2,8 +2,8 @@
 
 #include "data-structures.h"
 
-void delist_1(object* ls, object** first);
-void delist_2(object* ls, object** first, object** second);
-void delist_3(object* ls, object** first, object** second, object** third);
-void delist_4(object* ls, object** first, object** second, object** third, object** fourth);
-void delist_5(object* ls, object** first, object** second, object** third, object** fourth, object** fifth);
+void delist_1(object* ls, object** a);
+void delist_2(object* ls, object** a, object** b);
+void delist_3(object* ls, object** a, object** b, object** c);
+void delist_4(object* ls, object** a, object** b, object** c, object** d);
+void delist_5(object* ls, object** a, object** b, object** c, object** d, object** e);

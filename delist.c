@@ -8,27 +8,27 @@ void check_rest_empty(object* ls) {
 	}
 }
 
-void delist_1(object* ls, object** first) {
-	*first = list_first(ls);
+void delist_1(object* ls, object** a) {
+	*a = list_first(ls);
 	check_rest_empty(ls);
 }
 
-void delist_2(object* ls, object** first, object** second) {
-	*first = list_first(ls);
-	delist_1(list_rest(ls), second);
+void delist_2(object* ls, object** a, object** b) {
+	*a = list_first(ls);
+	delist_1(list_rest(ls), b);
 }
 
-void delist_3(object* ls, object** first, object** second, object** third) {
-	*first = list_first(ls);
-	delist_2(list_rest(ls), second, third);
+void delist_3(object* ls, object** a, object** b, object** c) {
+	*a = list_first(ls);
+	delist_2(list_rest(ls), b, c);
 }
 
-void delist_4(object* ls, object** first, object** second, object** third, object** fourth) {
-	*first = list_first(ls);
-	delist_3(list_rest(ls), second, third, fourth);
+void delist_4(object* ls, object** a, object** b, object** c, object** d) {
+	*a = list_first(ls);
+	delist_3(list_rest(ls), b, c, d);
 }
 
-void delist_5(object* ls, object** first, object** second, object** third, object** fourth, object** fifth) {
-	*first = list_first(ls);
-	delist_4(list_rest(ls), second, third, fourth, fifth);
+void delist_5(object* ls, object** a, object** b, object** c, object** d, object** e) {
+	*a = list_first(ls);
+	delist_4(list_rest(ls), b, c, d, e);
 }
