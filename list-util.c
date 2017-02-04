@@ -56,19 +56,6 @@ object* find_duplicate_2(object* a, object* b) {
 	return false();
 }
 
-char is_symbol_list(object* ls) {
-	if (!is_list(ls)) {
-		return 0;
-	}
-	while (!is_empty_list(ls)) {
-		if (!is_symbol(list_first(ls))) {
-			return 0;
-		}
-		ls = list_rest(ls);
-	}
-	return 1;
-}
-
 object return_list_proc;
 
 object* return_list(object* args, object* cont) {
@@ -143,7 +130,7 @@ object* unzip_2_step(object* args, object* cont) {
 		return call_discarding_cont(cont);
 	}
 	else {
-		object* first = list_first(list);
+		object* first = desyntax(list_first(list));
 		object* a;
 		object* b;
 		delist_2(first, &a, &b);
@@ -248,7 +235,7 @@ object* unzip_2(object* args, object* cont) {
 		return call_cont(cont, res);
 	}
 	else {
-		object* first = list_first(list);
+		object* first = desyntax(list_first(list));
 		object* a;
 		object* b;
 		delist_2(first, &a, &b);

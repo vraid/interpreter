@@ -2,7 +2,7 @@
 
 #include "data-structures.h"
 
-object print_proc;
+object print_entry_proc;
 object print_newline_proc;
 
 object* print_value(object* args, object* cont);

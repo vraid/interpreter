@@ -299,11 +299,11 @@ object* define_struct(object* args, object* cont) {
 	object* parent;
 	
 	if (length == 2) {
-		delist_2(syntax, &name, &fields);
+		delist_desyntax_2(syntax, &name, &fields);
 		parent = empty_struct_definition();
 	}
 	else if (length == 3) {
-		delist_3(syntax, &name, &parent, &fields);
+		delist_desyntax_3(syntax, &name, &parent, &fields);
 		parent = binding_value(find_in_environment(environment, parent, 0));
 	}
 	else {

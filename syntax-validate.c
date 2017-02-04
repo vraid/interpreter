@@ -15,6 +15,19 @@ object* throw_length_error(object* cont) {
 	return throw_error(cont, "wrong length");
 }
 
+char is_symbol_list(object* ls) {
+	if (!is_list(ls)) {
+		return 0;
+	}
+	while (!is_empty_list(ls)) {
+		if (!is_symbol(desyntax(list_first(ls)))) {
+			return 0;
+		}
+		ls = list_rest(ls);
+	}
+	return 1;
+}
+
 object* invalid_function_signature(object* ls) {
 	if (is_symbol(ls)) {
 		return false();
@@ -35,12 +48,12 @@ object* invalid_function_signature(object* ls) {
 		}
 		ls = a;
 	}
-	return is_symbol(a) ? false() : true();
+	return is_symbol(desyntax(a)) ? false() : true();
 }
 
 char list_has_width(int width, object* ls) {
 	while (!is_empty_list(ls)) {
-		object* a = list_first(ls);
+		object* a = desyntax(list_first(ls));
 		if (!(is_list(a) && list_length(a) == width)) {
 			return 0;
 		}
@@ -104,7 +117,7 @@ object* validate_define(object* args, object* cont) {
 	
 	object* signature;
 	object* value;
-	delist_2(list_rest(stx), &signature, &value);
+	delist_desyntax_2(list_rest(stx), &signature, &value);
 	
 	if (invalid_function_signature(signature) != false()) {
 		return throw_error(cont, "invalid definition signature");
@@ -124,7 +137,7 @@ object* validate_lambda(object* args, object* cont) {
 	
 	object* param;
 	object* body;
-	delist_2(list_rest(stx), &param, &body);
+	delist_desyntax_2(list_rest(stx), &param, &body);
 	
 	if (!is_symbol_list(param)) {
 		return throw_error(cont, "parameters must be list of symbols");
@@ -152,10 +165,10 @@ object* validate_let_bindings(object* args, object* cont) {
 	if (is_empty_list(bindings)) {
 		return call_discarding_cont(cont);
 	}
-	object* first = list_first(bindings);
+	object* first = desyntax(list_first(bindings));
 	object* rest = list_rest(bindings);
 	
-	object* value = list_ref(1, first);
+	object* value = desyntax(list_ref(1, first));
 	
 	object next_args[2];
 	init_list_2(next_args, rest, env);
@@ -179,7 +192,7 @@ object* validate_let(object* args, object* cont) {
 	
 	object* bindings;
 	object* body;
-	delist_2(list_rest(stx), &bindings, &body);
+	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
 		return throw_error(cont, "malformed let bindings");
@@ -219,7 +232,7 @@ object* validate_letrec_two(object* args, object* cont) {
 	
 	object* bindings;
 	object* body;
-	delist_2(list_rest(stx), &bindings, &body);
+	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	object next_args[2];
 	init_list_2(next_args, body, env);
@@ -243,7 +256,7 @@ object* validate_letrec(object* args, object* cont) {
 	
 	object* bindings;
 	object* body;
-	delist_2(list_rest(stx), &bindings, &body);
+	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
 		return throw_error(cont, "malformed letrec bindings");
@@ -270,7 +283,7 @@ object* validate_rec(object* args, object* cont) {
 	object* name;
 	object* bindings;
 	object* body;
-	delist_3(list_rest(stx), &name, &bindings, &body);
+	delist_desyntax_3(list_rest(stx), &name, &bindings, &body);
 	
 	if (!is_symbol(name)) {
 		return throw_error(cont, "rec binding must be symbol");
@@ -304,16 +317,16 @@ object* validate_struct(object* args, object* cont) {
 		return throw_length_error(cont);
 	}
 	
-	object* rest = list_rest(stx);
-	object* name = list_first(rest);
+	object* name;
 	object* parent = no_symbol();
 	object* fields;
+	
 	if (n == 3) {
-		rest = list_rest(rest);
-		parent = list_first(rest);
+		delist_desyntax_3(list_rest(stx), &name, &parent, &fields);
 	}
-	rest = list_rest(rest);
-	fields = list_first(rest);
+	else {
+		delist_desyntax_2(list_rest(stx), &name, &fields);
+	}
 	
 	if (!is_symbol(name)) {
 		return throw_error(cont, "invalid struct name");
@@ -364,7 +377,7 @@ object* validate_list(object* args, object* cont) {
 		return throw_error(cont, "expression cannot be empty list");
 	}
 	else {
-		object* obj = list_first(stx);
+		object* obj = desyntax(list_first(stx));
 		if (is_symbol(obj)) {
 			object* a = find_in_environment(env, obj, 1);
 			if (!is_no_binding(a)) {
@@ -411,6 +424,8 @@ object* validate_expression(object* args, object* cont) {
 	object* stx;
 	object* env;
 	delist_2(args, &stx, &env);
+	
+	stx = desyntax(stx);
 
 	object return_args[1];
 	init_list_1(return_args, stx);	
@@ -419,8 +434,10 @@ object* validate_expression(object* args, object* cont) {
 	object return_cont;
 	init_cont(&return_cont, &return_call);
 	
+	object call_args[2];
+	init_list_2(call_args, stx, env);
 	object call;
-	init_call(&call, is_list(stx) ? &validate_list_proc : &validate_atom_proc, args, &return_cont);
+	init_call(&call, is_list(stx) ? &validate_list_proc : &validate_atom_proc, call_args, &return_cont);
 	
 	return perform_call(&call);
 }

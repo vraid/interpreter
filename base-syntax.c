@@ -110,7 +110,7 @@ object* bind_placeholders(object* args, object* cont) {
 		init_cont(&next_cont, &next_call);
 		
 		object bind_args[3];
-		init_list_3(bind_args, placeholder_value(), list_first(names), environment);
+		init_list_3(bind_args, placeholder_value(), desyntax(list_first(names)), environment);
 		object bind_call;
 		init_call(&bind_call, &extend_environment_proc, bind_args, &next_cont);
 		
@@ -125,7 +125,7 @@ object* define(object* args, object* cont) {
 	
 	object* name;
 	object* body;
-	delist_2(syntax, &name, &body);
+	delist_desyntax_2(syntax, &name, &body);
 	
 	// handles cases like (define ((f a) b) ..)
 	if (is_list(name)) {
@@ -166,7 +166,7 @@ object* quote(object* args, object* cont) {
 	delist_2(args, &syntax, &environment);
 	
 	object* value;
-	delist_1(syntax, &value);
+	delist_desyntax_1(syntax, &value);
 	
 	return call_cont(cont, value);
 }
@@ -177,7 +177,7 @@ object* delay(object* args, object* cont) {
 	delist_2(args, &syntax, &environment);
 	
 	object* value;
-	delist_1(syntax, &value);
+	delist_desyntax_1(syntax, &value);
 	
 	object obj;
 	init_delay(&obj, value, environment);
@@ -234,7 +234,7 @@ object* force(object* args, object* cont) {
 	delist_2(args, &syntax, &environment);
 	
 	object* value;
-	delist_1(syntax, &value);
+	delist_desyntax_1(syntax, &value);
 	
 	object force_call;
 	init_call(&force_call, &eval_force_proc, empty_list(), cont);
@@ -260,10 +260,10 @@ object* let_bind(object* args, object* cont) {
 		return call_cont(cont, environment);
 	}
 	else {
-		object* first = list_first(bindings);
+		object* first = desyntax(list_first(bindings));
 		object* name;
 		object* value;
-		delist_2(first, &name, &value);
+		delist_desyntax_2(first, &name, &value);
 		
 		if (!is_symbol(name)) {
 			return throw_error(cont, "not a valid identifier");
@@ -299,7 +299,7 @@ object* let(object* args, object* cont) {
 	
 	object* bindings;
 	object* body;
-	delist_2(syntax, &bindings, &body);
+	delist_desyntax_2(syntax, &bindings, &body);
 	
 	object eval_args[1];
 	init_list_1(eval_args, body);
@@ -327,10 +327,10 @@ object* letrec_eval_single(object* args, object* cont) {
 		return call_cont(cont, environment);
 	}
 	else {
-		object* first = list_first(bindings);
+		object* first = desyntax(list_first(bindings));
 		object* name;
 		object* value;
-		delist_2(first, &name, &value);
+		delist_desyntax_2(first, &name, &value);
 		
 		object next_args[2];
 		init_list_2(next_args, environment, list_rest(bindings));
@@ -362,7 +362,7 @@ object* letrec_bind(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &names_values, &environment);
 	
-	object* names = list_first(names_values);
+	object* names = desyntax(list_first(names_values));
 	
 	object* dup = find_duplicate(names);
 	if (!is_false(dup)) {
@@ -385,7 +385,7 @@ object* letrec(object* args, object* cont) {
 
 	object* bindings;
 	object* body;
-	delist_2(syntax, &bindings, &body);
+	delist_desyntax_2(syntax, &bindings, &body);
 	
 	object eval_args[1];
 	init_list_1(eval_args, body);
@@ -470,7 +470,7 @@ object* rec_one(object* args, object* cont) {
 	
 	object* parameters;
 	object* arguments;
-	delist_2(pars_args, &parameters, &arguments);
+	delist_desyntax_2(pars_args, &parameters, &arguments);
 	
 	object function;
 	init_function(&function, empty_environment(), parameters, body);
@@ -498,7 +498,7 @@ object* rec(object* args, object* cont) {
 	object* name;
 	object* bindings;
 	object* body;
-	delist_3(syntax, &name, &bindings, &body);
+	delist_desyntax_3(syntax, &name, &bindings, &body);
 	
 	object rec_args[3];
 	init_list_3(rec_args, name, body, environment);
@@ -522,7 +522,7 @@ object* lambda(object* args, object* cont) {
 	
 	object* parameters;
 	object* body;
-	delist_2(syntax, &parameters, &body);
+	delist_desyntax_2(syntax, &parameters, &body);
 	
 	object* dup = find_duplicate(parameters);
 	if (!is_false(dup)) {
@@ -596,7 +596,7 @@ object* curry(object* args, object* cont) {
 	delist_2(args, &syntax, &environment);
 	
 	object* function;
-	delist_1(syntax, &function);
+	delist_desyntax_1(syntax, &function);
 	
 	object eval_ls[1];
 	init_list_1(eval_ls, environment);
@@ -704,7 +704,7 @@ object* if_func(object* args, object* cont) {
 	object* condition;
 	object* then;
 	object* els;
-	delist_3(syntax, &condition, &then, &els);
+	delist_desyntax_3(syntax, &condition, &then, &els);
 	
 	object ls[3];
 	init_list_3(ls, then, els, environment);

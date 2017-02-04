@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "read-state.h"
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -100,14 +101,14 @@ char is_valid_number(object* string) {
 }
 
 int peek(FILE* in) {
-	int c = getc(in);
-	ungetc(c, in);
+	int c = get_input(in);
+	unget_input(in);
 	return c;
 }
 
 void consume_whitespace(FILE* in) {
 	while (is_whitespace(peek(in))) {
-		getc(in);	
+		get_input(in);	
 	}
 }
 
@@ -124,9 +125,9 @@ char keep_reading(char string, int c, int escapes) {
 }
 
 char* get_string(char string, FILE* in) {
-	if (string) getc(in);
+	if (string) get_input(in);
 	int i = 0;
-	int c = getc(in);
+	int c = get_input(in);
 	int escapes = 0;
 	while (keep_reading(string, c, escapes)) {
 		input_buffer[i] = c;
@@ -135,9 +136,9 @@ char* get_string(char string, FILE* in) {
 			fprintf(stderr, "identifier too long, max %i characters\n", input_buffer_size);
 		}
 		escapes = is_escape_char(c) ? escapes + 1 : 0;
-		c = getc(in);
+		c = get_input(in);
 	}
-	if (!string) ungetc(c, in);
+	if (!string) unget_input(in);
 	
 	input_buffer[i] = 0;
 	return input_buffer;
@@ -260,6 +261,21 @@ object* read_hashed(object* args, object* cont) {
 	return throw_error(cont, "invalid value");
 }
 
+object make_syntax_proc;
+
+object* make_syntax(object* args, object* cont) {
+	object* stx;
+	object* pos;
+	delist_2(args, &stx, &pos);
+	
+	object obj;
+	init_syntax_object(&obj, stx, pos);
+	
+	return call_cont(cont, &obj);
+}
+
+object read_value_proc;
+
 object* read_value(object* args, object* cont) {
 	object* input_port;
 	delist_1(args, &input_port);
@@ -269,20 +285,30 @@ object* read_value(object* args, object* cont) {
 	
 	char c = peek(in);
 	
+	object current_pos;
+	init_internal_position(&current_pos, current_read_state().x, current_read_state().y);
+	
+	object syntax_args[1];
+	init_list_1(syntax_args, &current_pos);
+	object syntax_call;
+	init_call(&syntax_call, &make_syntax_proc, syntax_args, cont);
+	object syntax_cont;
+	init_cont(&syntax_cont, &syntax_call);
+	
 	if (is_list_end_delimiter(c)) {
-		getc(in);
+		get_input(in);
 		return throw_error(cont, "unexpected parenthesis");
 	}
 	else if (is_list_start_delimiter(c)) {
-		getc(in);
+		get_input(in);
 		object call;
-		init_call(&call, &read_list_start_proc, args, cont);
+		init_call(&call, &read_list_start_proc, args, &syntax_cont);
 		return perform_call(&call);
 	}
 	else if (is_quote_char(c)) {
-		getc(in);
+		get_input(in);
 		object quote_call;
-		init_call(&quote_call, &quote_object_proc, empty_list(), cont);
+		init_call(&quote_call, &quote_object_proc, empty_list(), &syntax_cont);
 		object quote_cont;
 		init_cont(&quote_cont, &quote_call);
 		object read_call;
@@ -307,7 +333,7 @@ object* read_value(object* args, object* cont) {
 		else {
 			primitive = &read_nonstring_proc;
 		}
-		init_call(&call, primitive, empty_list(), cont);
+		init_call(&call, primitive, empty_list(), &syntax_cont);
 		
 		object next_cont;
 		init_cont(&next_cont, &call);
@@ -363,7 +389,7 @@ object* read_list(object* args, object* cont) {
 	FILE* in = file_port_file(input);
 	consume_whitespace(in);
 	if (is_list_end_delimiter(peek(in))) {
-		getc(in);
+		get_input(in);
 		return call_discarding_cont(cont);
 	}
 	else {
@@ -416,7 +442,7 @@ object* read_list_start(object* args, object* cont) {
 	consume_whitespace(in);
 	
 	if (is_list_end_delimiter(peek(in))) {
-		getc(in);
+		get_input(in);
 		return call_cont(cont, empty_list());
 	}
 	else {
@@ -433,8 +459,20 @@ object* read_list_start(object* args, object* cont) {
 	}
 }
 
+object* read_entry(object* args, object* cont) {
+	object* input_port;
+	delist_1(args, &input_port);
+	
+	consume_whitespace(file_port_file(input_port));
+	reset_read_state();
+	
+	return read_value(args, cont);
+}
+
 void init_read_procedures(void) {
+	init_primitive(&read_entry, &read_entry_proc);
 	init_primitive(&read_value, &read_value_proc);
+	init_primitive(&make_syntax, &make_syntax_proc);
 	init_primitive(&read_add_to_list, &read_add_to_list_proc);
 	init_primitive(&read_list_value, &read_list_value_proc);
 	init_primitive(&read_list, &read_list_proc);

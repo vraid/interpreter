@@ -282,6 +282,7 @@ object* environment_bindings(object* obj);
 object* syntax_object_syntax(object* obj);
 object* syntax_object_origin(object* obj);
 object* syntax_object_position(object* obj);
+object* desyntax(object* obj);
 
 int internal_position_x(object* obj);
 int internal_position_y(object* obj);

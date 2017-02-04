@@ -32,3 +32,29 @@ void delist_5(object* ls, object** a, object** b, object** c, object** d, object
 	*a = list_first(ls);
 	delist_4(list_rest(ls), b, c, d, e);
 }
+
+void delist_desyntax_1(object* ls, object** a) {
+	*a = desyntax(list_first(ls));
+	check_rest_empty(ls);
+}
+
+void delist_desyntax_2(object* ls, object** a, object** b) {
+	*a = desyntax(list_first(ls));
+	delist_desyntax_1(list_rest(ls), b);
+}
+
+void delist_desyntax_3(object* ls, object** a, object** b, object** c) {
+	*a = desyntax(list_first(ls));
+	delist_desyntax_2(list_rest(ls), b, c);
+}
+
+void delist_desyntax_4(object* ls, object** a, object** b, object** c, object** d) {
+	*a = desyntax(list_first(ls));
+	delist_desyntax_3(list_rest(ls), b, c, d);
+}
+
+void delist_desyntax_5(object* ls, object** a, object** b, object** c, object** d, object** e) {
+	*a = desyntax(list_first(ls));
+	delist_desyntax_4(list_rest(ls), b, c, d, e);
+}
+

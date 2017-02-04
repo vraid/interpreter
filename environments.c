@@ -41,7 +41,7 @@ object* extend_environment(object* args, object* cont) {
 	delist_3(args, &value, &name, &env);
 	
 	object binding;
-	init_binding(&binding, name, value);
+	init_binding(&binding, name, desyntax(value));
 	object cell;
 	init_list_cell(&cell, &binding, environment_bindings(env));
 	object new_env;
@@ -73,7 +73,7 @@ object* bind_single_value(object* args, object* cont) {
 		init_cont(&next_cont, &next_call);
 		
 		object bind_ls[3];
-		init_list_3(bind_ls, list_first(values), list_first(names), environment);
+		init_list_3(bind_ls, list_first(values), desyntax(list_first(names)), environment);
 		object bind_call;
 		init_call(&bind_call, &extend_environment_proc, bind_ls, &next_cont);
 		

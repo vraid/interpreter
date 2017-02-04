@@ -9,6 +9,7 @@
 #include "vectors.h"
 #include "integers.h"
 
+object print_proc;
 object print_sequence_element_proc;
 object print_first_sequence_element_proc;
 object print_sequence_proc;
@@ -295,6 +296,10 @@ object* print_value(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
 	
+	object print_args[1];
+	obj = desyntax(obj);
+	init_list_1(print_args, obj);
+	
 	switch (obj->type) {
 		case type_string:
 			printf("\"%s\"", string_value(obj));
@@ -318,25 +323,25 @@ object* print_value(object* args, object* cont) {
 			printf("%lld", fixnum_value(obj));
 			break;
 		case type_integer:
-			return print_integer(args, cont);
+			return print_integer(print_args, cont);
 			break;
 		case type_fraction:
-			return print_fraction(args, cont);
+			return print_fraction(print_args, cont);
 			break;
 		case type_complex:
-			return print_complex(args, cont);
+			return print_complex(print_args, cont);
 			break;
 		case type_struct_instance:
-			return print_struct(args, cont);
+			return print_struct(print_args, cont);
 			break;
 		case type_list:
-			return print_sequence(args, cont);
+			return print_sequence(print_args, cont);
 			break;
 		case type_stream:
-			return print_stream(args, cont);
+			return print_stream(print_args, cont);
 			break;
 		case type_vector_iterator:
-			return print_vector(args, cont);
+			return print_vector(print_args, cont);
 			break;
 		case type_function:
 			printf("function ");
@@ -351,7 +356,30 @@ object* print_value(object* args, object* cont) {
 	return call_discarding_cont(cont);
 }
 
+object* print_entry(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	if (is_syntax_object(obj)) {
+		object* pos = syntax_object_position(obj);
+		printf("(syntax:%i:%i ", internal_position_x(pos), internal_position_y(pos));
+		
+		object end_call;
+		init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
+		object end_cont;
+		init_discarding_cont(&end_cont, &end_call);
+		
+		object print_args[1];
+		init_list_1(print_args, syntax_object_syntax(obj));
+		return print_value(print_args, &end_cont);
+	}
+	else {
+		return print_value(args, cont);
+	}
+}
+
 void init_print_procedures(void) {
+	init_primitive(&print_entry, &print_entry_proc);
 	init_primitive(&print_value, &print_proc);
 	init_primitive(&print_newline, &print_newline_proc);
 	init_primitive(&print_sequence_element, &print_sequence_element_proc);

@@ -91,6 +91,8 @@ object* eval_function_call(object* args, object* cont) {
 	object* function;
 	delist_2(args, &arguments, &function);
 	
+	function = desyntax(function);
+	
 	object eval_args[1];
 	init_list_1(eval_args, function_body(function));
 	object eval_call;
@@ -193,12 +195,16 @@ object* eval_list_elements(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &elements, &environment);
 	
+	elements = desyntax(elements);
+	
 	if (is_empty_list(elements)) {
 		return call_cont(cont, empty_list());
 	}
 	else {
+		object call_args[2];
+		init_list_2(call_args, elements, environment);
 		object call;
-		init_call(&call, &eval_list_elements_first_proc, args, cont);
+		init_call(&call, &eval_list_elements_first_proc, call_args, cont);
 		
 		return perform_call(&call);
 	}
@@ -301,6 +307,8 @@ object* eval(object* args, object* cont) {
 	object* environment;
 	delist_2(args, &obj, &environment);
 	
+	obj = desyntax(obj);
+	
 	object* proc;
 	
 	switch (obj->type) {
@@ -314,8 +322,10 @@ object* eval(object* args, object* cont) {
 			proc = &eval_identity_proc;
 			break;
 	}
+	object call_args[2];
+	init_list_2(call_args, obj, environment);
 	object call;
-	init_call(&call, proc, args, cont);
+	init_call(&call, proc, call_args, cont);
 	
 	return perform_call(&call);
 }

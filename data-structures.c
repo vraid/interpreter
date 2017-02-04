@@ -390,6 +390,14 @@ object* syntax_object_position(object* obj) {
 	return obj;
 }
 
+object* desyntax(object* obj) {
+	obj = is_syntax_object(obj) ? syntax_object_syntax(obj) : obj;
+	if (is_syntax_object(obj)) {
+		fprintf(stderr, "syntax containing syntax\n");
+	}
+	return obj;
+}
+
 int internal_position_x(object* obj) {
 	check_type(type_internal_position, obj);
 	return obj->data.internal_position.x;
