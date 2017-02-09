@@ -17,7 +17,7 @@ object* first(object* args, object* cont) {
 	delist_1(args, &seq);
 	
 	if (!is_sequence(seq)) {
-		return throw_error(cont, "first on non-sequence");
+		return throw_error_string(cont, "first on non-sequence");
 	}
 	else {
 		return call_cont(cont, sequence_first(seq));
@@ -29,10 +29,10 @@ object* rest(object* args, object* cont) {
 	delist_1(args, &seq);
 	
 	if (!is_sequence(seq)) {
-		return throw_error(cont, "rest on non-sequence");
+		return throw_error_string(cont, "rest on non-sequence");
 	}
 	else if (is_empty_sequence(seq)) {
-		return throw_error(cont, "rest on empty sequence");
+		return throw_error_string(cont, "rest on empty sequence");
 	}
 	else if (is_stream(seq)) {
 		object eval_args[1];

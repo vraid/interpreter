@@ -196,7 +196,7 @@ object* std_cons(object* args, object* cont) {
 	delist_2(args, &first, &rest);
 	
 	if (!is_list(rest)) {
-		return throw_error(cont, "link on non-list");
+		return throw_error_string(cont, "link on non-list");
 	}
 	
 	object list_cell;
@@ -212,7 +212,7 @@ object* std_real(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_exact_real(a)) {
-		return throw_error(cont, "real of non-real");
+		return throw_error_string(cont, "real of non-real");
 	}
 	
 	return call_cont(cont, a);
@@ -225,7 +225,7 @@ object* std_imaginary(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_exact_real(a)) {
-		return throw_error(cont, "imaginary of non-real");
+		return throw_error_string(cont, "imaginary of non-real");
 	}
 	
 	object ls[2];
@@ -244,7 +244,7 @@ object* std_complex(object* args, object* cont) {
 	delist_2(args, &real, &imag);
 	
 	if (!(is_exact_real(real) && is_exact_real(imag))) {
-		return throw_error(cont, "complex of non-real");
+		return throw_error_string(cont, "complex of non-real");
 	}
 	
 	object call;
@@ -259,7 +259,7 @@ object* std_complex_real(object* args, object* cont) {
 	delist_1(args, &num);
 	
 	if (!is_exact_complex(num)) {
-		return throw_error(cont, "complex-real on non-complex");
+		return throw_error_string(cont, "complex-real on non-complex");
 	}
 	if (is_complex(num)) {
 		return call_cont(cont, complex_real_part(num));
@@ -276,7 +276,7 @@ object* std_complex_imaginary(object* args, object* cont) {
 	delist_1(args, &num);
 	
 	if (!is_exact_complex(num)) {
-		return throw_error(cont, "complex-imaginary on non-complex");
+		return throw_error_string(cont, "complex-imaginary on non-complex");
 	}
 	if (is_complex(num)) {
 		return call_cont(cont, complex_imag_part(num));
@@ -294,7 +294,7 @@ object* std_add(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "+ on non-number");
+		return throw_error_string(cont, "+ on non-number");
 	}
 	
 	object call;
@@ -309,7 +309,7 @@ object* std_negative(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_number(a)) {
-		return throw_error(cont, "negative on non-number");
+		return throw_error_string(cont, "negative on non-number");
 	}
 	
 	object call;
@@ -324,7 +324,7 @@ object* std_conjugate(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_number(a)) {
-		return throw_error(cont, "conjugate on non-number");
+		return throw_error_string(cont, "conjugate on non-number");
 	}
 	
 	object call;
@@ -340,7 +340,7 @@ object* std_subtract(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "- on non-number");
+		return throw_error_string(cont, "- on non-number");
 	}
 	
 	object call_args[2];
@@ -358,7 +358,7 @@ object* std_subtract_by(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "subtract-by on non-number");
+		return throw_error_string(cont, "subtract-by on non-number");
 	}
 	
 	object call;
@@ -374,7 +374,7 @@ object* std_multiply(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "* on non-number");
+		return throw_error_string(cont, "* on non-number");
 	}
 	
 	object call;
@@ -390,10 +390,10 @@ object* std_divide(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (number_is_zero(b)) {
-		return throw_error(cont, "division by zero");
+		return throw_error_string(cont, "division by zero");
 	}
 	else if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "/ on non-number");
+		return throw_error_string(cont, "/ on non-number");
 	}
 	
 	object call_args[2];
@@ -411,10 +411,10 @@ object* std_divide_by(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (number_is_zero(a)) {
-		return throw_error(cont, "division by zero");
+		return throw_error_string(cont, "division by zero");
 	}
 	if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "divide-by on non-number");
+		return throw_error_string(cont, "divide-by on non-number");
 	}
 	
 	object call;
@@ -430,10 +430,10 @@ object* std_quotient(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	if (!(is_integer(divisor) && is_integer(dividend))) {
-		return throw_error(cont, "quotient on non-number");
+		return throw_error_string(cont, "quotient on non-number");
 	}
 	if (integer_is_zero(divisor)) {
-		return throw_error(cont, "division by zero (quotient)");
+		return throw_error_string(cont, "division by zero (quotient)");
 	}
 	
 	object call;
@@ -450,10 +450,10 @@ object* std_remainder(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	if (!(is_integer(divisor) && is_integer(dividend))) {
-		return throw_error(cont, "remainder on non-number");
+		return throw_error_string(cont, "remainder on non-number");
 	}
 	if (integer_is_zero(divisor)) {
-		return throw_error(cont, "division by zero (remainder)");
+		return throw_error_string(cont, "division by zero (remainder)");
 	}
 	
 	object call;
@@ -494,10 +494,10 @@ object* std_modulo(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	if (!(is_integer(divisor) && is_integer(dividend))) {
-		return throw_error(cont, "modulo on non-integer");
+		return throw_error_string(cont, "modulo on non-integer");
 	}
 	else if (!is_positive(divisor)) {
-		return throw_error(cont, "modulo with nonpositive base");
+		return throw_error_string(cont, "modulo with nonpositive base");
 	}
 	
 	object next_args[1];
@@ -521,7 +521,7 @@ object* std_gcd(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_integer(a) && is_integer(b))) {
-		return throw_error(cont, "gcd on non-integer");
+		return throw_error_string(cont, "gcd on non-integer");
 	}
 	
 	object gcd_call;
@@ -552,7 +552,7 @@ object* std_numeric_equality(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_number(a) && is_number(b))) {
-		return throw_error(cont, "= on non-number");
+		return throw_error_string(cont, "= on non-number");
 	}
 	
 	return compare_numbers(args, zero(), cont);
@@ -566,7 +566,7 @@ object* std_greater(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_exact_real(a) && is_exact_real(b))) {
-		return throw_error(cont, "> on non-real");
+		return throw_error_string(cont, "> on non-real");
 	}
 	
 	return compare_numbers(args, one(), cont);
@@ -580,7 +580,7 @@ object* std_less(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_exact_real(a) && is_exact_real(b))) {
-		return throw_error(cont, "< on non-number");
+		return throw_error_string(cont, "< on non-number");
 	}
 	
 	return compare_numbers(args, negative_one(), cont);
@@ -594,7 +594,7 @@ object* std_greater_or_equal(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_exact_real(a) && is_exact_real(b))) {
-		return throw_error(cont, ">= on non-number");
+		return throw_error_string(cont, ">= on non-number");
 	}
 	
 	object not_call;
@@ -612,7 +612,7 @@ object* std_less_or_equal(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	if (!(is_exact_real(a) && is_exact_real(b))) {
-		return throw_error(cont, "<= on non-number");
+		return throw_error_string(cont, "<= on non-number");
 	}
 	
 	object not_call;
@@ -629,7 +629,7 @@ object* std_is_zero(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_number(a)) {
-		return throw_error(cont, "zero? on non-number");
+		return throw_error_string(cont, "zero? on non-number");
 	}
 	
 	return call_cont(cont, boolean(number_is_zero(a)));
@@ -642,7 +642,7 @@ object* std_is_positive(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_exact_real(a)) {
-		return throw_error(cont, "positive? on non-real");
+		return throw_error_string(cont, "positive? on non-real");
 	}
 	
 	return call_cont(cont, boolean(1 == real_sign(a)));
@@ -655,7 +655,7 @@ object* std_is_negative(object* args, object* cont) {
 	delist_1(args, &a);
 	
 	if (!is_exact_real(a)) {
-		return throw_error(cont, "negative? on non-real");
+		return throw_error_string(cont, "negative? on non-real");
 	}
 	
 	return call_cont(cont, boolean(-1 == real_sign(a)));

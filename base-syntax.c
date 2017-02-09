@@ -37,7 +37,11 @@ object* update_binding(object* args, object* cont) {
 	object* binding = find_in_environment(environment, name, 1);
 	
 	if (is_no_binding(binding) || !is_placeholder_value(binding_value(binding))) {
-		return throw_error(cont, "updating non-placeholder binding");
+		object str;
+		init_string(&str, "updating non-placeholder binding");
+		object ls[3];
+		init_list_3(ls, &str, name, value);
+		return throw_error(cont, ls);
 	}
 	binding->data.binding.value = value;
 	add_mutation(binding, value);
@@ -266,7 +270,11 @@ object* let_bind(object* args, object* cont) {
 		delist_desyntax_2(first, &name, &value);
 		
 		if (!is_symbol(name)) {
-			return throw_error(cont, "not a valid identifier");
+			object str;
+			init_string(&str, "not a valid identifier");
+			object ls[2];
+			init_list_2(ls, &str, name);
+			return throw_error(cont, ls);
 		}
 		
 		object let_args[1];
@@ -366,7 +374,7 @@ object* letrec_bind(object* args, object* cont) {
 	
 	object* dup = find_duplicate(names);
 	if (!is_false(dup)) {
-		return throw_error(cont, "duplicate binding");
+		return throw_error_string(cont, "duplicate binding");
 	}
 	else {
 		object bind_args[2];
@@ -526,7 +534,11 @@ object* lambda(object* args, object* cont) {
 	
 	object* dup = find_duplicate(parameters);
 	if (!is_false(dup)) {
-		return throw_error(cont, "duplicate parameter");
+		object str;
+		init_string(&str, "duplicate parameter");
+		object ls[2];
+		init_list_2(ls, &str, syntax);
+		return throw_error(cont, ls);
 	}
 	else {
 		object function;

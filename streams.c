@@ -229,7 +229,7 @@ object* stream_filter(object* args, object* cont) {
 
 object* throw_stream_rest_error(object* cont, object* rest) {
 	fprintf(stderr, "invalid stream rest type: %s\n", object_type_name(rest));
-	return throw_error(cont, "invalid stream rest type");
+	return throw_error_string(cont, "invalid stream rest type");
 }
 
 object* eval_stream_rest(object* args, object* cont) {
@@ -237,7 +237,7 @@ object* eval_stream_rest(object* args, object* cont) {
 	delist_1(args, &stream);
 	
 	if (is_empty_stream(stream)) {
-		return throw_error(cont, "rest on empty stream");
+		return throw_error_string(cont, "rest on empty stream");
 	}
 	
 	object* rest = stream_rest(stream);

@@ -15,15 +15,6 @@ object eval_symbol_proc;
 object eval_list_proc;
 object eval_list_rest_proc;
 
-char invalid_value_string[] = "invalid value: ";
-
-object* eval_invalid_value(object* string, object* cont) {
-	char* str = alloca(sizeof(char) * (1 + strlen(invalid_value_string) + string_length(string)));
-	strcpy(str, invalid_value_string);
-	strcpy(str + strlen(invalid_value_string), string_value(string));
-	return throw_error(cont, str);
-}
-
 object* eval_identity(object* args, object* cont) {
 	object* obj;
 	object* environment;
@@ -228,9 +219,13 @@ object* eval_list_rest(object* args, object* cont) {
 		case type_function:
 			proc = &eval_function_proc;
 			break;
-		default:
-			fprintf(stderr, "application of %s\n", object_type_name(first));
-			return throw_error(cont, "application of non-function");
+		default: {
+			object str;
+			init_string(&str, "application of non-function");
+			object ls[3];
+			init_list_3(ls, &str, first, rest);
+			return throw_error(cont, ls);
+		}
 	}
 	
 	object call;
@@ -245,7 +240,7 @@ object* eval_list(object* args, object* cont) {
 	delist_2(args, &list, &environment);
 	
 	if (is_empty_list(list)) {
-		return throw_error(cont, "eval of empty list");
+		return throw_error_string(cont, "eval of empty list");
 	}
 	else {
 		object next_ls[2];
@@ -264,8 +259,6 @@ object* eval_list(object* args, object* cont) {
 	}
 }
 
-char unbound_variable_string[] = "unbound variable: ";
-
 object* eval_symbol(object* args, object* cont) {
 	object* obj;
 	object* environment;
@@ -274,11 +267,11 @@ object* eval_symbol(object* args, object* cont) {
 	object* binding = find_in_environment(environment, obj, 0);
 	
 	if (is_no_binding(binding)) {
-		object* string = symbol_name(obj);
-		char* str = alloca(sizeof(char) * (1 + strlen(unbound_variable_string) + string_length(string)));
-		strcpy(str, unbound_variable_string);
-		strcpy(str + strlen(unbound_variable_string), string_value(string));
-		return throw_error(cont, str);
+		object str;
+		init_string(&str, "unbound variable");
+		object ls[2];
+		init_list_2(ls, &str, obj);
+		return throw_error(cont, ls);
 	}
 	else {
 		object* value = binding_value(binding);

@@ -12,7 +12,7 @@
 #include "print.h"
 
 object* throw_length_error(object* cont) {
-	return throw_error(cont, "wrong length");
+	return throw_error_string(cont, "wrong length");
 }
 
 char is_symbol_list(object* ls) {
@@ -120,7 +120,11 @@ object* validate_define(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &signature, &value);
 	
 	if (invalid_function_signature(signature) != false()) {
-		return throw_error(cont, "invalid definition signature");
+		object str;
+		init_string(&str, "invalid definition signature");
+		object ls[2];
+		init_list_2(ls, &str, stx);
+		return throw_error(cont, ls);
 	}
 	
 	object call_args[2];
@@ -140,11 +144,19 @@ object* validate_lambda(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &param, &body);
 	
 	if (!is_symbol_list(param)) {
-		return throw_error(cont, "parameters must be list of symbols");
+		object str;
+		init_string(&str, "parameters must be list of symbols");
+		object ls[2];
+		init_list_2(ls, &str, param);
+		return throw_error(cont, ls);
 	}
 	object* dup = find_duplicate(param);
 	if (!is_false(dup)) {
-		return throw_error(cont, "duplicate parameter");
+		object str;
+		init_string(&str, "duplicate parameter");
+		object ls[2];
+		init_list_2(ls, &str, param);
+		return throw_error(cont, ls);
 	}
 	
 	object call_args[2];
@@ -195,7 +207,11 @@ object* validate_let(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
-		return throw_error(cont, "malformed let bindings");
+		object str;
+		init_string(&str, "malformed let bindings");
+		object ls[2];
+		init_list_2(ls, &str, bindings);
+		return throw_error(cont, ls);
 	}
 	
 	object next_args[2];
@@ -227,7 +243,11 @@ object* validate_letrec_two(object* args, object* cont) {
 	
 	object* dup = find_duplicate(names);
 	if (dup != false()) {
-		return throw_error(cont, "duplicate binding in letrec");
+		object str;
+		init_string(&str, "duplicate binding in letrec");
+		object ls[2];
+		init_list_2(ls, &str, stx);
+		return throw_error(cont, ls);
 	}
 	
 	object* bindings;
@@ -259,7 +279,11 @@ object* validate_letrec(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
-		return throw_error(cont, "malformed letrec bindings");
+		object str;
+		init_string(&str, "malformed letrec bindings");
+		object ls[2];
+		init_list_2(ls, &str, stx);
+		return throw_error(cont, ls);
 	}
 	
 	object next_call;
@@ -286,10 +310,18 @@ object* validate_rec(object* args, object* cont) {
 	delist_desyntax_3(list_rest(stx), &name, &bindings, &body);
 	
 	if (!is_symbol(name)) {
-		return throw_error(cont, "rec binding must be symbol");
+		object str;
+		init_string(&str, "rec binding must be symbol");
+		object ls[2];
+		init_list_2(ls, &str, stx);
+		return throw_error(cont, ls);
 	}
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
-		return throw_error(cont, "malformed rec bindings");
+		object str;
+		init_string(&str, "malformed rec bindings");
+		object ls[2];
+		init_list_2(ls, &str, bindings);
+		return throw_error(cont, ls);
 	}
 	
 	object next_args[2];
@@ -329,17 +361,33 @@ object* validate_struct(object* args, object* cont) {
 	}
 	
 	if (!is_symbol(name)) {
-		return throw_error(cont, "invalid struct name");
+		object str;
+		init_string(&str, "invalid struct name");
+		object ls[3];
+		init_list_3(ls, &str, name, stx);
+		return throw_error(cont, ls);
 	}
 	if (!is_symbol(parent)) {
-		return throw_error(cont, "invalid struct parent");
+		object str;
+		init_string(&str, "invalid struct parent");
+		object ls[3];
+		init_list_3(ls, &str, parent, stx);
+		return throw_error(cont, ls);
 	}
 	if (!is_symbol_list(fields)) {
-		return throw_error(cont, "invalid struct fields");
+		object str;
+		init_string(&str, "invalid struct fields");
+		object ls[2];
+		init_list_2(ls, &str, stx);
+		return throw_error(cont, ls);
 	}
 	object* dup = find_duplicate(fields);
 	if (dup != false()) {
-		return throw_error(cont, "duplicate struct field");
+		object str;
+		init_string(&str, "duplicate struct field");
+		object ls[3];
+		init_list_3(ls, &str, dup, stx);
+		return throw_error(cont, ls);
 	}
 	return call_cont(cont, stx);
 }
@@ -374,7 +422,7 @@ object* validate_list(object* args, object* cont) {
 	delist_2(args, &stx, &env);
 	
 	if (is_empty_list(stx)) {
-		return throw_error(cont, "expression cannot be empty list");
+		return throw_error_string(cont, "expression cannot be empty list");
 	}
 	else {
 		object* obj = desyntax(list_first(stx));

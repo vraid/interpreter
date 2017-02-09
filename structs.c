@@ -159,7 +159,7 @@ object* struct_access(object* args, object* cont) {
 	delist_3(args, &type, &num, &st);
 	
 	if (!struct_is_type(type, st)) {
-		return throw_error(cont, "incorrect struct type");
+		return throw_error_string(cont, "incorrect struct type");
 	}
 	else {
 		object* data = struct_instance_data(st);
@@ -307,7 +307,11 @@ object* define_struct(object* args, object* cont) {
 		parent = binding_value(find_in_environment(environment, parent, 0));
 	}
 	else {
-		return throw_error(cont, "invalid struct definition");
+		object str;
+		init_string(&str, "invalid struct definition");
+		object ls[2];
+		init_list_2(ls, &str, syntax);
+		return throw_error(cont, ls);
 	}
 	
 	object struct_type;

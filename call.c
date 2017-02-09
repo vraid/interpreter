@@ -53,13 +53,18 @@ object* perform_call(object* call) {
 	}
 }
 
-object* throw_error(object* cont, char* message) {
-	object string;
-	init_string(&string, message);
+object* throw_error(object* cont, object* message) {
 	object e;
-	init_internal_error(&e, &string);
+	init_internal_error(&e, message);
 	
 	return call_cont(cont, &e);
+}
+
+object* throw_error_string(object* cont, char* str) {
+	object obj;
+	init_string(&obj, str);
+	
+	return throw_error(cont, &obj);
 }
 
 object* call_cont(object* cont, object* arg) {

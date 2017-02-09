@@ -243,7 +243,11 @@ object* read_number(object* args, object* cont) {
 		return perform_call(&read_call);
 	}
 	else {
-		return throw_error(cont, "invalid number");
+		object str;
+		init_string(&str, "invalid number");
+		object ls[2];
+		init_list_2(ls, &str, string);
+		return throw_error(cont, ls);
 	}
 }
 
@@ -258,7 +262,11 @@ object* read_hashed(object* args, object* cont) {
 			case 'f' : return call_cont(cont, false());
 		}
 	}
-	return throw_error(cont, "invalid value");
+	object str;
+	init_string(&str, "invalid value");
+	object ls[2];
+	init_list_2(ls, &str, string);
+	return throw_error(cont, ls);
 }
 
 object make_syntax_proc;
@@ -297,7 +305,7 @@ object* read_value(object* args, object* cont) {
 	
 	if (is_list_end_delimiter(c)) {
 		get_input(in);
-		return throw_error(cont, "unexpected parenthesis");
+		return throw_error_string(cont, "unexpected parenthesis");
 	}
 	else if (is_list_start_delimiter(c)) {
 		get_input(in);

@@ -62,7 +62,7 @@ object* bind_single_value(object* args, object* cont) {
 		return call_cont(cont, environment);
 	}
 	else if (is_empty_list(names)) {
-		return throw_error(cont, "arity mismatch, too many arguments");
+		return throw_error_string(cont, "arity mismatch, too many arguments");
 	}
 	else {
 		object next_ls[2];
