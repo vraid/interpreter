@@ -73,10 +73,15 @@ object* print_sequence(object* args, object* cont) {
 }
 
 object* print_vector(object* args, object* cont) {	
-	printf("#");
+	printf("(vector");
+
+	object end_call;
+	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
+	object end_cont;
+	init_discarding_cont(&end_cont, &end_call);
 
 	object print_call;
-	init_call(&print_call, &print_sequence_proc, args, cont);
+	init_call(&print_call, &print_sequence_element_proc, args, &end_cont);
 	
 	return perform_call(&print_call);
 }
