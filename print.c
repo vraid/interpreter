@@ -82,8 +82,9 @@ object* print_vector(object* args, object* cont) {
 }
 
 object print_stream_element_proc;
+object print_stream_rest_proc;
 
-object* print_stream_element_base(char is_first, object* args, object* cont) {
+object* print_stream_element(object* args, object* cont) {
 	object* stream;
 	delist_1(args, &stream);
 	
@@ -91,12 +92,12 @@ object* print_stream_element_base(char is_first, object* args, object* cont) {
 		return call_discarding_cont(cont);
 	}
 	else
-		if (!is_first) printf(" ");
+		printf(" ");
 		
 		object next_args[1];
 		init_list_1(next_args, stream);
 		object next_call;
-		init_call(&next_call, &print_stream_element_proc, next_args, cont);
+		init_call(&next_call, &print_stream_rest_proc, next_args, cont);
 		object next_cont;
 		init_discarding_cont(&next_cont, &next_call);
 		
@@ -107,7 +108,7 @@ object* print_stream_element_base(char is_first, object* args, object* cont) {
 		return perform_call(&call);
 }
 
-object* print_stream_element(object* args, object* cont) {
+object* print_stream_rest(object* args, object* cont) {
 	object* stream;
 	delist_1(args, &stream);
 	
@@ -125,21 +126,18 @@ object* print_stream_element(object* args, object* cont) {
 		else {
 			object print_args[1];
 			init_list_1(print_args, rest);
-			return print_stream_element_base(0, print_args, cont);
+			object call;
+			init_call(&call, &print_stream_element_proc, print_args, cont);
+			
+			return perform_call(&call);
 		}
 	}
-}
-
-object print_first_stream_element_proc;
-
-object* print_first_stream_element(object* args, object* cont) {
-	return print_stream_element_base(1, args, cont);
 }
 
 object* print_stream(object* args, object* cont) {
 	object* stream;
 	delist_1(args, &stream);
-	printf("#stream(");
+	printf("(stream");
 	
 	if (is_empty_stream(stream)) {
 		printf(")");
@@ -154,7 +152,7 @@ object* print_stream(object* args, object* cont) {
 		object first_args[1];
 		init_list_1(first_args, stream);
 		object first_call;
-		init_call(&first_call, &print_first_stream_element_proc, first_args, &end_cont);
+		init_call(&first_call, &print_stream_element_proc, first_args, &end_cont);
 		
 		return perform_call(&first_call);
 	}
@@ -388,7 +386,7 @@ void init_print_procedures(void) {
 	init_primitive(&print_sequence_end, &print_sequence_end_proc);
 	
 	init_primitive(&print_stream_element, &print_stream_element_proc);
-	init_primitive(&print_first_stream_element, &print_first_stream_element_proc);
+	init_primitive(&print_stream_rest, &print_stream_rest_proc);
 	
 	init_primitive(&print_struct, &print_struct_proc);
 	init_primitive(&print_integer, &print_integer_proc);
