@@ -144,23 +144,17 @@ object* print_stream(object* args, object* cont) {
 	delist_1(args, &stream);
 	printf("(stream");
 	
-	if (is_empty_stream(stream)) {
-		printf(")");
-		return call_discarding_cont(cont);
-	}
-	else {
-		object end_call;
-		init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-		object end_cont;
-		init_discarding_cont(&end_cont, &end_call);
-		
-		object first_args[1];
-		init_list_1(first_args, stream);
-		object first_call;
-		init_call(&first_call, &print_stream_element_proc, first_args, &end_cont);
-		
-		return perform_call(&first_call);
-	}
+	object end_call;
+	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
+	object end_cont;
+	init_discarding_cont(&end_cont, &end_call);
+	
+	object first_args[1];
+	init_list_1(first_args, stream);
+	object first_call;
+	init_call(&first_call, &print_stream_element_proc, first_args, &end_cont);
+	
+	return perform_call(&first_call);
 }
 
 object print_struct_proc;
@@ -171,22 +165,16 @@ object* print_struct(object* args, object* cont) {
 	object* type = struct_instance_type(st);
 	printf("(struct:%s", string_value(symbol_name(struct_definition_name(type))));
 	
-	if (is_empty_list(struct_definition_fields(type))) {
-		printf(")");
-		return call_discarding_cont(cont);
-	}
-	else {
-		object end_call;
-		init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-		object end_cont;
-		init_discarding_cont(&end_cont, &end_call);
-		
-		object print_args[1];
-		init_list_1(print_args, struct_instance_data(st));
-		object call;
-		init_call(&call, &print_sequence_element_proc, print_args, &end_cont);
-		return perform_call(&call);
-	}
+	object end_call;
+	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
+	object end_cont;
+	init_discarding_cont(&end_cont, &end_call);
+	
+	object print_args[1];
+	init_list_1(print_args, struct_instance_data(st));
+	object call;
+	init_call(&call, &print_sequence_element_proc, print_args, &end_cont);
+	return perform_call(&call);
 }
 
 object print_integer_digits_proc;
