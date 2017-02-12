@@ -164,7 +164,7 @@ object* print_struct(object* args, object* cont) {
 	object* st;
 	delist_1(args, &st);
 	object* type = struct_instance_type(st);
-	printf("#struct(%s ", string_value(symbol_name(struct_definition_name(type))));
+	printf("(struct:%s", string_value(symbol_name(struct_definition_name(type))));
 	
 	if (is_empty_list(struct_definition_fields(type))) {
 		printf(")");
@@ -179,7 +179,7 @@ object* print_struct(object* args, object* cont) {
 		object print_args[1];
 		init_list_1(print_args, struct_instance_data(st));
 		object call;
-		init_call(&call, &print_first_sequence_element_proc, print_args, &end_cont);
+		init_call(&call, &print_sequence_element_proc, print_args, &end_cont);
 		return perform_call(&call);
 	}
 }
