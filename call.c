@@ -54,17 +54,27 @@ object* perform_call(object* call) {
 }
 
 object* throw_error(object* cont, object* message) {
+	return throw_origin_error(cont, empty_list(), message);
+}
+
+object* throw_error_string(object* cont, char* str) {
+	return throw_origin_error_string(cont, empty_list(), str);
+}
+
+object* throw_origin_error(object* cont, object* origin, object* message) {
+	object ls[2];
+	init_list_2(ls, message, origin);
 	object e;
-	init_internal_error(&e, message);
+	init_internal_error(&e, ls);
 	
 	return call_cont(cont, &e);
 }
 
-object* throw_error_string(object* cont, char* str) {
+object* throw_origin_error_string(object* cont, object* origin, char* str) {
 	object obj;
 	init_string(&obj, str);
 	
-	return throw_error(cont, &obj);
+	return throw_origin_error(cont, origin, &obj);
 }
 
 object* call_cont(object* cont, object* arg) {
