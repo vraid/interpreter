@@ -1,5 +1,7 @@
-#include <stdio.h>
 #include "print.h"
+
+#include <stdlib.h>
+#include <stdio.h>
 #include "data-structures.h"
 #include "sequences.h"
 #include "global-variables.h"
@@ -24,19 +26,13 @@ object* print_sequence_element_base(char is_first, object* args, object* cont) {
 	}
 	else
 		if (!is_first) printf(" ");
-		object iterator;
-		object* next_iter = next_iterator(&iterator, seq);
-		object next_args[1];
-		init_list_1(next_args, next_iter);
-		object next_call;
-		init_call(&next_call, &print_sequence_element_proc, next_args, cont);
-		object next_cont;
-		init_discarding_cont(&next_cont, &next_call);
-		object print_args[1];
-		init_list_1(print_args, sequence_first(seq));
-		object call;
-		init_call(&call, &print_proc, print_args, &next_cont);
-		return perform_call(&call);
+		object* next_iter = alloc_next_iterator(seq);
+		object* next_args = alloc_list_1(next_iter);
+		object* next_call = alloc_call(&print_sequence_element_proc, next_args, cont);
+		object* next_cont = alloc_discarding_cont(next_call);
+		object* print_args = alloc_list_1(sequence_first(seq));
+		object* call = alloc_call(&print_proc, print_args, next_cont);
+		return perform_call(call);
 }
 
 object* print_sequence_element(object* args, object* cont) {
@@ -62,28 +58,22 @@ object* print_sequence(object* args, object* cont) {
 	}
 	else {
 		printf("(");
-		object end_call;
-		init_call(&end_call, &print_sequence_end_proc, args, cont);
-		object end_cont;
-		init_discarding_cont(&end_cont, &end_call);
-		object call;
-		init_call(&call, &print_first_sequence_element_proc, args, &end_cont);
-		return perform_call(&call);
+		object* end_call = alloc_call(&print_sequence_end_proc, args, cont);
+		object* end_cont = alloc_discarding_cont(end_call);
+		object* call = alloc_call(&print_first_sequence_element_proc, args, end_cont);
+		return perform_call(call);
 	}	
 }
 
 object* print_vector(object* args, object* cont) {	
 	printf("(vector");
 
-	object end_call;
-	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-	object end_cont;
-	init_discarding_cont(&end_cont, &end_call);
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
 
-	object print_call;
-	init_call(&print_call, &print_sequence_element_proc, args, &end_cont);
+	object* print_call = alloc_call(&print_sequence_element_proc, args, end_cont);
 	
-	return perform_call(&print_call);
+	return perform_call(print_call);
 }
 
 object print_stream_element_proc;
@@ -99,18 +89,13 @@ object* print_stream_element(object* args, object* cont) {
 	else
 		printf(" ");
 		
-		object next_args[1];
-		init_list_1(next_args, stream);
-		object next_call;
-		init_call(&next_call, &print_stream_rest_proc, next_args, cont);
-		object next_cont;
-		init_discarding_cont(&next_cont, &next_call);
+		object* next_args = alloc_list_1(stream);
+		object* next_call = alloc_call(&print_stream_rest_proc, next_args, cont);
+		object* next_cont = alloc_discarding_cont(next_call);
 		
-		object print_args[1];
-		init_list_1(print_args, stream_first(stream));
-		object call;
-		init_call(&call, &print_proc, print_args, &next_cont);
-		return perform_call(&call);
+		object* print_args = alloc_list_1(stream_first(stream));
+		object* call = alloc_call(&print_proc, print_args, next_cont);
+		return perform_call(call);
 }
 
 object* print_stream_rest(object* args, object* cont) {
@@ -129,12 +114,10 @@ object* print_stream_rest(object* args, object* cont) {
 			return call_discarding_cont(cont);
 		}
 		else {
-			object print_args[1];
-			init_list_1(print_args, rest);
-			object call;
-			init_call(&call, &print_stream_element_proc, print_args, cont);
+			object* print_args = alloc_list_1(rest);
+			object* call = alloc_call(&print_stream_element_proc, print_args, cont);
 			
-			return perform_call(&call);
+			return perform_call(call);
 		}
 	}
 }
@@ -144,17 +127,13 @@ object* print_stream(object* args, object* cont) {
 	delist_1(args, &stream);
 	printf("(stream");
 	
-	object end_call;
-	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-	object end_cont;
-	init_discarding_cont(&end_cont, &end_call);
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
 	
-	object first_args[1];
-	init_list_1(first_args, stream);
-	object first_call;
-	init_call(&first_call, &print_stream_element_proc, first_args, &end_cont);
+	object* first_args = alloc_list_1(stream);
+	object* first_call = alloc_call(&print_stream_element_proc, first_args, end_cont);
 	
-	return perform_call(&first_call);
+	return perform_call(first_call);
 }
 
 object print_struct_proc;
@@ -165,16 +144,12 @@ object* print_struct(object* args, object* cont) {
 	object* type = struct_instance_type(st);
 	printf("(struct:%s", string_value(symbol_name(struct_definition_name(type))));
 	
-	object end_call;
-	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-	object end_cont;
-	init_discarding_cont(&end_cont, &end_call);
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
 	
-	object print_args[1];
-	init_list_1(print_args, struct_instance_data(st));
-	object call;
-	init_call(&call, &print_sequence_element_proc, print_args, &end_cont);
-	return perform_call(&call);
+	object* print_args = alloc_list_1(struct_instance_data(st));
+	object* call = alloc_call(&print_sequence_element_proc, print_args, end_cont);
+	return perform_call(call);
 }
 
 object print_integer_digits_proc;
@@ -203,15 +178,12 @@ object* print_integer(object* args, object* cont) {
 		printf("-");
 	}
 	
-	object print_call;
-	init_call(&print_call, &print_integer_digits_proc, empty_list(), cont);
-	object print_cont;
-	init_cont(&print_cont, &print_call);
+	object* print_call = alloc_call(&print_integer_digits_proc, empty_list(), cont);
+	object* print_cont = alloc_cont(print_call);
 	
-	object call;
-	init_call(&call, &integer_to_decimal_proc, args, &print_cont);
+	object* call = alloc_call(&integer_to_decimal_proc, args, print_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object print_fraction_denominator_proc;
@@ -225,10 +197,9 @@ object* print_fraction_denominator(object* args, object* cont) {
 	}
 	else {
 		printf("/");
-		object print_call;
-		init_call(&print_call, &print_integer_proc, args, cont);
+		object* print_call = alloc_call(&print_integer_proc, args, cont);
 		
-		return perform_call(&print_call);
+		return perform_call(print_call);
 	}
 }
 
@@ -241,19 +212,14 @@ object* print_fraction(object* args, object* cont) {
 	object* num = fraction_numerator(fraction);
 	object* denom = fraction_denominator(fraction);
 	
-	object denom_args[1];
-	init_list_1(denom_args, denom);
-	object denom_call;
-	init_call(&denom_call, &print_fraction_denominator_proc, denom_args, cont);
-	object denom_cont;
-	init_discarding_cont(&denom_cont, &denom_call);
+	object* denom_args = alloc_list_1(denom);
+	object* denom_call = alloc_call(&print_fraction_denominator_proc, denom_args, cont);
+	object* denom_cont = alloc_discarding_cont(denom_call);
 	
-	object num_args[1];
-	init_list_1(num_args, num);
-	object num_call;
-	init_call(&num_call, &print_integer_proc, num_args, &denom_cont);
+	object* num_args = alloc_list_1(num);
+	object* num_call = alloc_call(&print_integer_proc, num_args, denom_cont);
 	
-	return perform_call(&num_call);
+	return perform_call(num_call);
 }
 
 object print_complex_proc;
@@ -264,18 +230,13 @@ object* print_complex(object* args, object* cont) {
 	
 	printf("(complex ");
 	
-	object end_call;
-	init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-	object end_cont;
-	init_discarding_cont(&end_cont, &end_call);
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
 	
-	object ls[2];
-	init_list_2(ls, complex_real_part(complex), complex_imag_part(complex));
-	object print_args[1];
-	init_list_1(print_args, ls);
-	object call;
-	init_call(&call, &print_first_sequence_element_proc, print_args, &end_cont);
-	return perform_call(&call);
+	object* ls = alloc_list_2(complex_real_part(complex), complex_imag_part(complex));
+	object* print_args = alloc_list_1(ls);
+	object* call = alloc_call(&print_first_sequence_element_proc, print_args, end_cont);
+	return perform_call(call);
 }
 
 object* print_newline(object* args, object* cont) {
@@ -287,9 +248,8 @@ object* print_value(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
 	
-	object print_args[1];
 	obj = desyntax(obj);
-	init_list_1(print_args, obj);
+	object* print_args = alloc_list_1(obj);
 	
 	switch (obj->type) {
 		case type_string:
@@ -336,9 +296,8 @@ object* print_value(object* args, object* cont) {
 			break;
 		case type_function:
 			printf("function ");
-			object ls;
-			init_list_1(&ls, function_parameters(obj));
-			return print_sequence(&ls, cont);
+			object* ls = alloc_list_1(function_parameters(obj));
+			return print_sequence(ls, cont);
 			break;
 		default:
 			fprintf(stderr, "%s", object_type_name(obj));
@@ -355,14 +314,11 @@ object* print_entry(object* args, object* cont) {
 		object* pos = syntax_object_position(obj);
 		printf("(syntax:%i:%i ", internal_position_x(pos), internal_position_y(pos));
 		
-		object end_call;
-		init_call(&end_call, &print_sequence_end_proc, empty_list(), cont);
-		object end_cont;
-		init_discarding_cont(&end_cont, &end_call);
+		object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+		object* end_cont = alloc_discarding_cont(end_call);
 		
-		object print_args[1];
-		init_list_1(print_args, syntax_object_syntax(obj));
-		return print_value(print_args, &end_cont);
+		object* print_args = alloc_list_1(syntax_object_syntax(obj));
+		return print_value(print_args, end_cont);
 	}
 	else {
 		return print_value(args, cont);

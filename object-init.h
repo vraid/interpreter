@@ -2,42 +2,108 @@
 
 #include "data-structures.h"
 
+#define alloc_bytes(n) alloca(n)
+#define alloc_objects(n) alloc_bytes(n*sizeof(object))
+#define alloc_obj() alloc_objects(1)
+
 void make_static(object* obj);
 void make_semistatic(object* obj);
-void init_object(object_location loc, object_type t, object* obj);
-void init_string(object* obj, char* value);
-void init_fixnum(object* obj, long value);
-void init_integer(object* obj, int sign, object* digits);
-void init_positive_integer(object* obj, object* digits);
-void init_negated_integer(object* obj, object* num);
-void init_fraction(object* obj, object* numerator, object* denominator);
-void init_integral_fraction(object* obj, object* numerator);
-void init_complex(object* obj, object* real, object* imag);
-void init_symbol(object* obj, object* name);
-void init_binding(object* obj, object* name, object* value);
-void init_stream(object* obj, object* first, object* rest);
-void init_vector(object* obj, int length, object** data);
-void init_vector_iterator(object* obj, int n, object* vector);
-void init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent);
-void init_struct_instance(object* obj, object* type, object* data);
-void init_environment(object* obj, object* bindings);
-void init_syntax_procedure(object* obj, primitive_proc* proc, static_syntax_procedure id);
-void init_function(object* obj, object* environment, object* parameters, object* body);
-void init_call(object* obj, object* function, object* arguments, object* continuation);
-void init_cont(object* obj, object* call);
-void init_discarding_cont(object* obj, object* call);
-void init_catching_cont(object* obj, object* call);
-void init_syntax_object(object* obj, object* syntax, object* origin);
-void init_internal_position(object* obj, int x, int y);
-void init_internal_error(object* obj, object* message);
-void init_delay(object* obj, object* value, object* environment);
+object* init_object(object_location loc, object_type t, object* obj);
 
-void init_primitive_procedure(object* obj, primitive_proc* proc);
-void init_primitive(primitive_proc* proc, object* obj);
+object* init_string(object* obj, char* value);
+#define alloc_string(a) init_string(alloc_obj(), a)
 
-void init_list_cell(object* obj, object* first, object* rest);
-void init_list_1(object* ls, object* first);
-void init_list_2(object* ls, object* first, object* second);
-void init_list_3(object* ls, object* first, object* second, object* third);
-void init_list_4(object* ls, object* first, object* second, object* third, object* fourth);
-void init_list_5(object* ls, object* first, object* second, object* third, object* fourth, object* fifth);
+object* init_fixnum(object* obj, long value);
+#define alloc_fixnum(a) init_fixnum(alloc_obj(), a)
+
+object* init_integer(object* obj, int sign, object* digits);
+#define alloc_integer(a, b) init_integer(alloc_obj(), a, b)
+
+object* init_positive_integer(object* obj, object* digits);
+#define alloc_positive_integer(a) init_positive_integer(alloc_obj(), a)
+
+object* init_negated_integer(object* obj, object* num);
+#define alloc_negated_integer(a) init_negated_integer(alloc_obj(), a)
+
+object* init_fraction(object* obj, object* numerator, object* denominator);
+#define alloc_fraction(a, b) init_fraction(alloc_obj(), a, b)
+
+object* init_integral_fraction(object* obj, object* numerator);
+#define alloc_integral_fraction(a) init_integral_fraction(alloc_obj(), a)
+
+object* init_complex(object* obj, object* real, object* imag);
+#define alloc_complex(a, b) init_complex(alloc_obj(), a, b)
+
+object* init_symbol(object* obj, object* name);
+#define alloc_symbol(a) init_symbol(alloc_obj(), a)
+
+object* init_binding(object* obj, object* name, object* value);
+#define alloc_binding(a, b) init_binding(alloc_obj(), a, b)
+
+object* init_stream(object* obj, object* first, object* rest);
+#define alloc_stream(a, b) init_stream(alloc_obj(), a, b)
+
+object* init_vector(object* obj, int length, object** data);
+#define alloc_vector(a, b) init_vector(alloc_obj(), a, b)
+
+object* init_vector_iterator(object* obj, int n, object* vector);
+#define alloc_vector_iterator(a, b) init_vector_iterator(alloc_obj(), a, b)
+
+object* init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent);
+#define alloc_struct_definition(a, b, c, d) init_struct_definition(alloc_obj(), a, b, c, d)
+
+object* init_struct_instance(object* obj, object* type, object* data);
+#define alloc_struct_instance(a, b) init_struct_instance(alloc_obj(), a, b)
+
+object* init_environment(object* obj, object* bindings);
+#define alloc_environment(a) init_environment(alloc_obj(), a)
+
+object* init_syntax_procedure(object* obj, primitive_proc* proc, static_syntax_procedure id);
+
+object* init_function(object* obj, object* environment, object* parameters, object* body);
+#define alloc_function(a, b, c) init_function(alloc_obj(), a, b, c)
+
+object* init_call(object* obj, object* function, object* arguments, object* continuation);
+#define alloc_call(a, b, c) init_call(alloc_obj(), a, b, c)
+
+object* init_cont(object* obj, object* call);
+#define alloc_cont(a) init_cont(alloc_obj(), a)
+
+object* init_discarding_cont(object* obj, object* call);
+#define alloc_discarding_cont(a) init_discarding_cont(alloc_obj(), a)
+
+object* init_catching_cont(object* obj, object* call);
+#define alloc_catching_cont(a) init_catching_cont(alloc_obj(), a)
+
+object* init_syntax_object(object* obj, object* syntax, object* origin);
+#define alloc_syntax_object(a, b) init_syntax_object(alloc_obj(), a, b)
+
+object* init_internal_position(object* obj, int x, int y);
+#define alloc_internal_position(a, b) init_internal_position(alloc_obj(), a, b)
+
+object* init_internal_error(object* obj, object* message);
+#define alloc_internal_error(a) init_internal_error(alloc_obj(), a)
+
+object* init_delay(object* obj, object* value, object* environment);
+#define alloc_delay(a, b) init_delay(alloc_obj(), a, b)
+
+object* init_primitive_procedure(object* obj, primitive_proc* proc);
+object* init_primitive(primitive_proc* proc, object* obj);
+
+object* init_list_cell(object* obj, object* first, object* rest);
+#define alloc_list_cell(a, b) init_list_cell(alloc_obj(), a, b)
+
+object* init_list_1(object* ls, object* first);
+#define alloc_list_1(a) init_list_1(alloc_objects(1), a)
+
+object* init_list_2(object* ls, object* first, object* second);
+#define alloc_list_2(a, b) init_list_2(alloc_objects(2), a, b)
+
+object* init_list_3(object* ls, object* first, object* second, object* third);
+#define alloc_list_3(a, b, c) init_list_3(alloc_objects(3), a, b, c)
+
+object* init_list_4(object* ls, object* first, object* second, object* third, object* fourth);
+#define alloc_list_4(a, b, c, d) init_list_4(alloc_objects(4), a, b, c, d)
+
+object* init_list_5(object* ls, object* first, object* second, object* third, object* fourth, object* fifth);
+#define alloc_list_5(a, b, c, d, e) init_list_5(alloc_objects(5), a, b, c, d, e)

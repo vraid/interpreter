@@ -71,22 +71,16 @@ object* make_list(object* args, object* cont) {
 	object* proc_args;
 	delist_3(args, &value, &proc, &proc_args);
 	
-	object first;
-	init_list_1(&first, value);
+	object* first = alloc_list_1(value);
 	
-	object return_args[1];
-	init_list_1(return_args, &first);
-	object return_call;
-	init_call(&return_call, &return_list_proc, return_args, cont);
-	object return_cont;
-	init_discarding_cont(&return_cont, &return_call);
+	object* return_args = alloc_list_1(first);
+	object* return_call = alloc_call(&return_list_proc, return_args, cont);
+	object* return_cont = alloc_discarding_cont(return_call);
 	
-	object call_args;
-	init_list_cell(&call_args, &first, proc_args);
-	object call;
-	init_call(&call, proc, &call_args, &return_cont);
+	object* call_args = alloc_list_cell(first, proc_args);
+	object* call = alloc_call(proc, call_args, return_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object* add_to_list(object* args, object* cont) {
@@ -94,12 +88,11 @@ object* add_to_list(object* args, object* cont) {
 	object* last;
 	delist_2(args, &value, &last);
 	
-	object cell;
-	init_list_1(&cell, value);
-	last->data.list.rest = &cell;
-	add_mutation(last, &cell);
+	object* cell = alloc_list_1(value);
+	last->data.list.rest = cell;
+	add_mutation(last, cell);
 	
-	return call_cont(cont, &cell);
+	return call_cont(cont, cell);
 }
 
 object* reverse_list(object* args, object* cont) {
@@ -109,8 +102,7 @@ object* reverse_list(object* args, object* cont) {
 	object* next = empty_list();
 	
 	while (!is_empty_list(list)) {
-		object* cell = alloca(sizeof(object));
-		init_list_cell(cell, list_first(list), next);
+		object* cell = alloc_list_cell(list_first(list), next);
 		list = list_rest(list);
 		next = cell;
 	}
@@ -134,21 +126,17 @@ object* unzip_2_step(object* args, object* cont) {
 		object* a;
 		object* b;
 		delist_2(first, &a, &b);
-		object one_next[1];
-		init_list_1(one_next, a);
-		object two_next[1];
-		init_list_1(two_next, b);
+		object* one_next = alloc_list_1(a);
+		object* two_next = alloc_list_1(b);
 		one->data.list.rest = one_next;
 		add_mutation(one, one_next);
 		two->data.list.rest = two_next;
 		add_mutation(two, two_next);
 		
-		object call_args[3];
-		init_list_3(call_args, one_next, two_next, list_rest(list));
-		object call;
-		init_call(&call, &unzip_2_step_proc, call_args, cont);
+		object* call_args = alloc_list_3(one_next, two_next, list_rest(list));
+		object* call = alloc_call(&unzip_2_step_proc, call_args, cont);
 		
-		return perform_call(&call);
+		return perform_call(call);
 	}
 }
 
@@ -163,8 +151,7 @@ object* list_append_multiple(object* lists, object* cont) {
 	while (!is_empty_list(lists)) {
 		object* ls = list_first(lists);
 		while (!is_empty_list(ls)) {
-			object* cell = alloca(sizeof(object));
-			init_list_cell(cell, list_first(ls), empty_list());
+			object* cell = alloc_list_cell(list_first(ls), empty_list());
 			if (is_first) {
 				first = cell;
 				is_first = 0;
@@ -215,8 +202,7 @@ object* list_append_first_reversed(object* args, object* cont) {
 		object* next = second;
 		
 		while (!is_empty_list(first)) {
-			object* cell = alloca(sizeof(object));
-			init_list_cell(cell, list_first(first), next);
+			object* cell = alloc_list_cell(list_first(first), next);
 			next = cell;
 			first = list_rest(first);
 		}
@@ -230,8 +216,7 @@ object* unzip_2(object* args, object* cont) {
 	delist_1(args, &list);
 	
 	if (is_empty_list(list)) {
-		object res[2];
-		init_list_2(res, empty_list(), empty_list());
+		object* res = alloc_list_2(empty_list(), empty_list());
 		return call_cont(cont, res);
 	}
 	else {
@@ -239,27 +224,18 @@ object* unzip_2(object* args, object* cont) {
 		object* a;
 		object* b;
 		delist_2(first, &a, &b);
-		object one[1];
-		init_list_1(one, a);
-		object two[1];
-		init_list_1(two, b);
+		object* one = alloc_list_1(a);
+		object* two = alloc_list_1(b);
 		
-		object result[2];
-		init_list_2(result, one, two);
+		object* result = alloc_list_2(one, two);
+		object* result_args = alloc_list_1(result);
+		object* result_call = alloc_call(&identity_proc, result_args, cont);
+		object* result_cont = alloc_discarding_cont(result_call);
 		
-		object result_args[1];
-		init_list_1(result_args, result);
-		object result_call;
-		init_call(&result_call, &identity_proc, result_args, cont);
-		object result_cont;
-		init_discarding_cont(&result_cont, &result_call);
+		object* unzip_args = alloc_list_3(one, two, list_rest(list));
+		object* unzip_call = alloc_call(&unzip_2_step_proc, unzip_args, result_cont);
 		
-		object unzip_args[3];
-		init_list_3(unzip_args, one, two, list_rest(list));
-		object unzip_call;
-		init_call(&unzip_call, &unzip_2_step_proc, unzip_args, &result_cont);
-		
-		return perform_call(&unzip_call);
+		return perform_call(unzip_call);
 	}
 }
 

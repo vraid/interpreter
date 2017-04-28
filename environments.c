@@ -40,14 +40,11 @@ object* extend_environment(object* args, object* cont) {
 	object* env;
 	delist_3(args, &value, &name, &env);
 	
-	object binding;
-	init_binding(&binding, name, desyntax(value));
-	object cell;
-	init_list_cell(&cell, &binding, environment_bindings(env));
-	object new_env;
-	init_environment(&new_env, &cell);
+	object* binding = alloc_binding(name, desyntax(value));
+	object* cell = alloc_list_cell(binding, environment_bindings(env));
+	object* new_env = alloc_environment(cell);
 	
-	return call_cont(cont, &new_env);
+	return call_cont(cont, new_env);
 }
 
 object bind_single_value_proc;
@@ -65,19 +62,14 @@ object* bind_single_value(object* args, object* cont) {
 		return throw_error_string(cont, "arity mismatch, too many arguments");
 	}
 	else {
-		object next_ls[2];
-		init_list_2(next_ls, list_rest(values), list_rest(names));
-		object next_call;
-		init_call(&next_call, &bind_single_value_proc, next_ls, cont);
-		object next_cont;
-		init_cont(&next_cont, &next_call);
+		object* next_ls = alloc_list_2(list_rest(values), list_rest(names));
+		object* next_call = alloc_call(&bind_single_value_proc, next_ls, cont);
+		object* next_cont = alloc_cont(next_call);
 		
-		object bind_ls[3];
-		init_list_3(bind_ls, list_first(values), desyntax(list_first(names)), environment);
-		object bind_call;
-		init_call(&bind_call, &extend_environment_proc, bind_ls, &next_cont);
+		object* bind_ls = alloc_list_3(list_first(values), desyntax(list_first(names)), environment);
+		object* bind_call = alloc_call(&extend_environment_proc, bind_ls, next_cont);
 		
-		return perform_call(&bind_call);
+		return perform_call(bind_call);
 	}
 }
 
@@ -87,13 +79,10 @@ object* bind_values(object* args, object* cont) {
 	object* environment;
 	delist_3(args, &values, &names, &environment);
 	
-	object ls[3];
-	init_list_3(ls, environment, values, names);
+	object* ls = alloc_list_3(environment, values, names);
+	object* call = alloc_call(&bind_single_value_proc, ls, cont);
 	
-	object call;
-	init_call(&call, &bind_single_value_proc, ls, cont);
-	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object* find_in_environment(object* env, object* symbol, char return_placeholders) {

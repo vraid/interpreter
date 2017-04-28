@@ -1,4 +1,6 @@
 #include "base-util.h"
+
+#include <stdlib.h>
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -9,8 +11,7 @@ object* quote_object(object* args, object* cont) {
 	object* value;
 	delist_1(args, &value);
 	
-	object ls[2];
-	init_list_2(ls, quote_symbol(), value);
+	object* ls = alloc_list_2(quote_symbol(), value);
 	
 	return call_cont(cont, ls);
 }

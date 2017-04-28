@@ -63,25 +63,20 @@ object* equalize_up_to_fraction(object* integer_proc, object* fraction_proc, obj
 	
 	if (a_fraction || b_fraction) {
 		if (a_fraction && b_fraction) {
-			object call;
-			init_call(&call, fraction_proc, args, cont);
-			return perform_call(&call);
+			object* call = alloc_call(fraction_proc, args, cont);
+			return perform_call(call);
 		}
 		else {
-			object num;
-			init_integral_fraction(&num, a_fraction ? b : a);
-			object call_args[2];
-			init_list_2(call_args, a_fraction ? a : &num, a_fraction ? &num : b);
-			object call;
-			init_call(&call, fraction_proc, call_args, cont);
+			object* num = alloc_integral_fraction(a_fraction ? b : a);
+			object* call_args = alloc_list_2(a_fraction ? a : num, a_fraction ? num : b);
+			object* call = alloc_call(fraction_proc, call_args, cont);
 			
-			return perform_call(&call);
+			return perform_call(call);
 		}
 	}
 	else {
-		object call;
-		init_call(&call, integer_proc, args, cont);
-		return perform_call(&call);
+		object* call = alloc_call(integer_proc, args, cont);
+		return perform_call(call);
 	}
 }
 
@@ -94,19 +89,15 @@ object* equalize_up_to_complex(object* integer_proc, object* fraction_proc, obje
 	char b_complex = is_complex(b);
 	if (a_complex || b_complex) {
 		if (a_complex && b_complex) {
-			object call;
-			init_call(&call, complex_proc, args, cont);
-			return perform_call(&call);
+			object* call = alloc_call(complex_proc, args, cont);
+			return perform_call(call);
 		}
 		else {
-			object num;
-			init_complex(&num, a_complex ? b : a, integer_zero());
-			object call_args[2];
-			init_list_2(call_args, a_complex ? a : &num, a_complex ? &num : b);
-			object call;
-			init_call(&call, complex_proc, call_args, cont);
+			object* num = alloc_complex(a_complex ? b : a, integer_zero());
+			object* call_args = alloc_list_2(a_complex ? a : num, a_complex ? num : b);
+			object* call = alloc_call(complex_proc, call_args, cont);
 			
-			return perform_call(&call);
+			return perform_call(call);
 		}
 	}
 	else {
@@ -123,19 +114,14 @@ object* number_subtract(object* args, object* cont) {
 	object* minuend;
 	delist_2(args, &subtrahend, &minuend);
 	
-	object add_args[1];
-	init_list_1(add_args, minuend);
-	object add_call;
-	init_call(&add_call, &number_add_proc, add_args, cont);
-	object add_cont;
-	init_cont(&add_cont, &add_call);
+	object* add_args = alloc_list_1(minuend);
+	object* add_call = alloc_call(&number_add_proc, add_args, cont);
+	object* add_cont = alloc_cont(add_call);
 	
-	object negate_args[1];
-	init_list_1(negate_args, subtrahend);
-	object negate_call;
-	init_call(&negate_call, &number_negate_proc, negate_args, &add_cont);
+	object* negate_args = alloc_list_1(subtrahend);
+	object* negate_call = alloc_call(&number_negate_proc, negate_args, add_cont);
 	
-	return perform_call(&negate_call);
+	return perform_call(negate_call);
 }
 
 object* number_multiply(object* args, object* cont) {
@@ -158,11 +144,9 @@ object* number_divide(object* args, object* cont) {
 		return call_cont(cont, b);
 	}
 	else if (is_integer(a) && is_integer(b)) {
-		object call_args[2];
-		init_list_2(call_args, b, a);
-		object call;
-		init_call(&call, &fraction_make_and_reduce_proc, call_args, cont);
-		return perform_call(&call);
+		object* call_args = alloc_list_2(b, a);
+		object* call = alloc_call(&fraction_make_and_reduce_proc, call_args, cont);
+		return perform_call(call);
 	}
 	else {
 		return equalize_up_to_complex(&integer_divide_proc, &fraction_divide_proc, &complex_divide_proc, args, cont);
@@ -193,9 +177,8 @@ object* number_negate(object* args, object* cont) {
 		exit(1);
 	}
 	
-	object call;
-	init_call(&call, proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(proc, args, cont);
+	return perform_call(call);
 }
 
 object* number_conjugate(object* args, object* cont) {
@@ -206,9 +189,8 @@ object* number_conjugate(object* args, object* cont) {
 		return call_cont(cont, a);
 	}
 	else if (is_complex(a)) {
-		object call;
-		init_call(&call, &complex_conjugate_proc, args, cont);
-		return perform_call(&call);
+		object* call = alloc_call(&complex_conjugate_proc, args, cont);
+		return perform_call(call);
 	}
 	else {
 		printf("conjugate on non-number\n");

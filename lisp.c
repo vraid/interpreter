@@ -74,12 +74,9 @@ int main(int argc, char** argv) {
 		environment = static_environment();
 	}
 	
-	object read_args[1];
-	init_list_1(read_args, environment);
-	
-	object read_call;
-	init_call(&read_call, &repl_read_entry_proc, read_args, end_cont());
-	top_call(&read_call);
+	object* read_args = alloc_list_1(environment);
+	object* read_call = alloc_call(&repl_read_entry_proc, read_args, end_cont());
+	top_call(read_call);
 	
 	return 0;
 }

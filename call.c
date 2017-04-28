@@ -1,4 +1,6 @@
 #include "call.h"
+
+#include <stdlib.h>
 #include <setjmp.h>
 #include "data-structures.h"
 #include "object-init.h"
@@ -62,19 +64,16 @@ object* throw_error_string(object* cont, char* str) {
 }
 
 object* throw_origin_error(object* cont, object* origin, object* message) {
-	object ls[2];
-	init_list_2(ls, message, origin);
-	object e;
-	init_internal_error(&e, ls);
+	object* ls = alloc_list_2(message, origin);
+	object* e = alloc_internal_error(ls);
 	
-	return call_cont(cont, &e);
+	return call_cont(cont, e);
 }
 
 object* throw_origin_error_string(object* cont, object* origin, char* str) {
-	object obj;
-	init_string(&obj, str);
+	object* obj = alloc_string(str);
 	
-	return throw_origin_error(cont, origin, &obj);
+	return throw_origin_error(cont, origin, obj);
 }
 
 object* call_cont(object* cont, object* arg) {
@@ -88,12 +87,10 @@ object* call_cont(object* cont, object* arg) {
 		return no_object();
 	}
 	else {
-		object ls;
-		init_list_cell(&ls, arg, call_arguments(call));
-		object new_call;
+		object* ls = alloc_list_cell(arg, call_arguments(call));
 		// copying the modified call to the stack simplifies the gc
-		init_call(&new_call, call_function(call), &ls, call_continuation(call));
-		return perform_call(&new_call);
+		object* new_call = alloc_call(call_function(call), ls, call_continuation(call));
+		return perform_call(new_call);
 	}
 }
 

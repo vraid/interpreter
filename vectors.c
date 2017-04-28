@@ -32,7 +32,7 @@ object* vector_to_list(object* args, object* cont) {
 	delist_1(args, &vec);
 	
 	int length = vector_length(vec);
-	object* list = alloca(sizeof(object) * length);
+	object* list = alloc_objects(length);
 	
 	object* first = empty_list();
 	
@@ -50,7 +50,7 @@ object* list_to_vector(object* args, object* cont) {
 	
 	int length = list_length(list);
 	
-	object** data = alloca(sizeof(object*) * length);
+	object** data = alloc_bytes(sizeof(object*) * length);
 	
 	int count = 0;
 	object* ls = list;
@@ -61,11 +61,8 @@ object* list_to_vector(object* args, object* cont) {
 		count++;
 	}
 	
-	object vector;
-	init_vector(&vector, length, data);
-	
-	object iterator;
-	object* iter = first_iterator(&iterator, &vector);
+	object* vector = alloc_vector(length, data);
+	object* iter = alloc_first_iterator(vector);
 	
 	return call_cont(cont, iter);
 }

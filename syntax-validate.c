@@ -1,5 +1,6 @@
 #include "syntax-validate.h"
 
+#include <stdlib.h>
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -103,11 +104,9 @@ object* standard_validate(object* args, object* cont) {
 	delist_2(args, &stx, &env);
 	
 	object* rest = list_rest(stx);
-	object call_args[2];
-	init_list_2(call_args, rest, env);
-	object call;
-	init_call(&call, &validate_list_elements_proc, call_args, cont);
-	return perform_call(&call);
+	object* call_args = alloc_list_2(rest, env);
+	object* call = alloc_call(&validate_list_elements_proc, call_args, cont);
+	return perform_call(call);
 }
 
 object* validate_define(object* args, object* cont) {
@@ -120,18 +119,14 @@ object* validate_define(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &signature, &value);
 	
 	if (invalid_function_signature(signature) != false()) {
-		object str;
-		init_string(&str, "invalid definition signature");
-		object ls[2];
-		init_list_2(ls, &str, stx);
+		object* str = alloc_string("invalid definition signature");
+		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
 	
-	object call_args[2];
-	init_list_2(call_args, value, env);
-	object call;
-	init_call(&call, &validate_expression_proc, call_args, cont);
-	return perform_call(&call);
+	object* call_args = alloc_list_2(value, env);
+	object* call = alloc_call(&validate_expression_proc, call_args, cont);
+	return perform_call(call);
 }
 
 object* validate_lambda(object* args, object* cont) {
@@ -144,26 +139,20 @@ object* validate_lambda(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &param, &body);
 	
 	if (!is_symbol_list(param)) {
-		object str;
-		init_string(&str, "parameters must be list of symbols");
-		object ls[2];
-		init_list_2(ls, &str, param);
+		object* str = alloc_string("parameters must be list of symbols");
+		object* ls = alloc_list_2(str, param);
 		return throw_error(cont, ls);
 	}
 	object* dup = find_duplicate(param);
 	if (!is_false(dup)) {
-		object str;
-		init_string(&str, "duplicate parameter");
-		object ls[2];
-		init_list_2(ls, &str, param);
+		object* str = alloc_string("duplicate parameter");
+		object* ls = alloc_list_2(str, param);
 		return throw_error(cont, ls);
 	}
 	
-	object call_args[2];
-	init_list_2(call_args, body, env);
-	object call;
-	init_call(&call, &validate_expression_proc, call_args, cont);
-	return perform_call(&call);
+	object* call_args = alloc_list_2(body, env);
+	object* call = alloc_call(&validate_expression_proc, call_args, cont);
+	return perform_call(call);
 }
 
 object validate_let_bindings_proc;
@@ -182,19 +171,14 @@ object* validate_let_bindings(object* args, object* cont) {
 	
 	object* value = desyntax(list_ref(1, first));
 	
-	object next_args[2];
-	init_list_2(next_args, rest, env);
-	object next_call;
-	init_call(&next_call, &validate_let_bindings_proc, next_args, cont);
-	object next_cont;
-	init_cont(&next_cont, &next_call);
+	object* next_args = alloc_list_2(rest, env);
+	object* next_call = alloc_call(&validate_let_bindings_proc, next_args, cont);
+	object* next_cont = alloc_cont(next_call);
 	
-	object call_args[2];
-	init_list_2(call_args, value, env);
-	object call;
-	init_call(&call, &validate_expression_proc, call_args, &next_cont);
+	object* call_args = alloc_list_2(value, env);
+	object* call = alloc_call(&validate_expression_proc, call_args, next_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object* validate_let(object* args, object* cont) {
@@ -207,26 +191,19 @@ object* validate_let(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
-		object str;
-		init_string(&str, "malformed let bindings");
-		object ls[2];
-		init_list_2(ls, &str, bindings);
+		object* str = alloc_string("malformed let bindings");
+		object* ls = alloc_list_2(str, bindings);
 		return throw_error(cont, ls);
 	}
 	
-	object next_args[2];
-	init_list_2(next_args, body, env);
-	object next_call;
-	init_call(&next_call, &validate_expression_proc, next_args, cont);
-	object next_cont;
-	init_discarding_cont(&next_cont, &next_call);
+	object* next_args = alloc_list_2(body, env);
+	object* next_call = alloc_call(&validate_expression_proc, next_args, cont);
+	object* next_cont = alloc_discarding_cont(next_call);
 	
-	object call_args[3];
-	init_list_3(call_args, stx, bindings, env);
-	object call;
-	init_call(&call, &validate_let_bindings_proc, call_args, &next_cont);
+	object* call_args = alloc_list_3(stx, bindings, env);
+	object* call = alloc_call(&validate_let_bindings_proc, call_args, next_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object validate_letrec_two_proc;
@@ -243,10 +220,8 @@ object* validate_letrec_two(object* args, object* cont) {
 	
 	object* dup = find_duplicate(names);
 	if (dup != false()) {
-		object str;
-		init_string(&str, "duplicate binding in letrec");
-		object ls[2];
-		init_list_2(ls, &str, stx);
+		object* str = alloc_string("duplicate binding in letrec");
+		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
 	
@@ -254,19 +229,14 @@ object* validate_letrec_two(object* args, object* cont) {
 	object* body;
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
-	object next_args[2];
-	init_list_2(next_args, body, env);
-	object next_call;
-	init_call(&next_call, &validate_expression_proc, next_args, cont);
-	object next_cont;
-	init_discarding_cont(&next_cont, &next_call);
+	object* next_args = alloc_list_2(body, env);
+	object* next_call = alloc_call(&validate_expression_proc, next_args, cont);
+	object* next_cont = alloc_discarding_cont(next_call);
 	
-	object call_args[3];
-	init_list_3(call_args, stx, bindings, env);
-	object call;
-	init_call(&call, &validate_let_bindings_proc, call_args, &next_cont);
+	object* call_args = alloc_list_3(stx, bindings, env);
+	object* call = alloc_call(&validate_let_bindings_proc, call_args, next_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object* validate_letrec(object* args, object* cont) {
@@ -279,24 +249,18 @@ object* validate_letrec(object* args, object* cont) {
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
-		object str;
-		init_string(&str, "malformed letrec bindings");
-		object ls[2];
-		init_list_2(ls, &str, stx);
+		object* str = alloc_string("malformed letrec bindings");
+		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
 	
-	object next_call;
-	init_call(&next_call, &validate_letrec_two_proc, args, cont);
-	object next_cont;
-	init_cont(&next_cont, &next_call);
+	object* next_call = alloc_call(&validate_letrec_two_proc, args, cont);
+	object* next_cont = alloc_cont(next_call);
 	
-	object unzip_args[1];
-	init_list_1(unzip_args, bindings);
-	object unzip_call;
-	init_call(&unzip_call, &unzip_2_proc, unzip_args, &next_cont);
+	object* unzip_args = alloc_list_1(bindings);
+	object* unzip_call = alloc_call(&unzip_2_proc, unzip_args, next_cont);
 	
-	return perform_call(&unzip_call);
+	return perform_call(unzip_call);
 }
 
 object* validate_rec(object* args, object* cont) {
@@ -310,33 +274,24 @@ object* validate_rec(object* args, object* cont) {
 	delist_desyntax_3(list_rest(stx), &name, &bindings, &body);
 	
 	if (!is_symbol(name)) {
-		object str;
-		init_string(&str, "rec binding must be symbol");
-		object ls[2];
-		init_list_2(ls, &str, stx);
+		object* str = alloc_string("rec binding must be symbol");
+		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
 	if (!(is_list(bindings) && list_has_width(2, bindings))) {
-		object str;
-		init_string(&str, "malformed rec bindings");
-		object ls[2];
-		init_list_2(ls, &str, bindings);
+		object* str = alloc_string("malformed rec bindings");
+		object* ls = alloc_list_2(str, bindings);
 		return throw_error(cont, ls);
 	}
 	
-	object next_args[2];
-	init_list_2(next_args, body, env);
-	object next_call;
-	init_call(&next_call, &validate_expression_proc, next_args, cont);
-	object next_cont;
-	init_discarding_cont(&next_cont, &next_call);
+	object* next_args = alloc_list_2(body, env);
+	object* next_call = alloc_call(&validate_expression_proc, next_args, cont);
+	object* next_cont = alloc_discarding_cont(next_call);
 	
-	object binding_args[3];
-	init_list_3(binding_args, stx, bindings, env);
-	object binding_call;
-	init_call(&binding_call, &validate_let_bindings_proc, binding_args, &next_cont);
+	object* binding_args = alloc_list_3(stx, bindings, env);
+	object* binding_call = alloc_call(&validate_let_bindings_proc, binding_args, next_cont);
 	
-	return perform_call(&binding_call);
+	return perform_call(binding_call);
 }
 
 object* validate_struct(object* args, object* cont) {
@@ -361,32 +316,24 @@ object* validate_struct(object* args, object* cont) {
 	}
 	
 	if (!is_symbol(name)) {
-		object str;
-		init_string(&str, "invalid struct name");
-		object ls[3];
-		init_list_3(ls, &str, name, stx);
+		object* str = alloc_string("invalid struct name");
+		object* ls = alloc_list_3(str, name, stx);
 		return throw_error(cont, ls);
 	}
 	if (!is_symbol(parent)) {
-		object str;
-		init_string(&str, "invalid struct parent");
-		object ls[3];
-		init_list_3(ls, &str, parent, stx);
+		object* str = alloc_string("invalid struct parent");
+		object* ls = alloc_list_3(str, parent, stx);
 		return throw_error(cont, ls);
 	}
 	if (!is_symbol_list(fields)) {
-		object str;
-		init_string(&str, "invalid struct fields");
-		object ls[2];
-		init_list_2(ls, &str, stx);
+		object* str = alloc_string("invalid struct fields");
+		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
 	object* dup = find_duplicate(fields);
 	if (dup != false()) {
-		object str;
-		init_string(&str, "duplicate struct field");
-		object ls[3];
-		init_list_3(ls, &str, dup, stx);
+		object* str = alloc_string("duplicate struct field");
+		object* ls = alloc_list_3(str, dup, stx);
 		return throw_error(cont, ls);
 	}
 	return call_cont(cont, stx);
@@ -399,19 +346,14 @@ object* validate_list_elements(object* args, object* cont) {
 	object* env;
 	delist_2(args, &stx, &env);
 	
-	object body[3];
-	init_list_3(body, &validate_expression_proc, generic_args[0], env);
-	object func;
-	init_function(&func, empty_environment(), generic_arg_list[1], body);
+	object* body = alloc_list_3(&validate_expression_proc, generic_args[0], env);
+	object* func = alloc_function(empty_environment(), generic_arg_list[1], body);
 	
-	object map_list[2];
-	init_list_2(map_list, &func, stx);
-	object map_args[1];
-	init_list_1(map_args, map_list);
-	object map_call;
-	init_call(&map_call, &map_proc, map_args, cont);
+	object* map_list = alloc_list_2(func, stx);
+	object* map_args = alloc_list_1(map_list);
+	object* map_call = alloc_call(&map_proc, map_args, cont);
 	
-	return perform_call(&map_call);
+	return perform_call(map_call);
 }
 
 object validate_list_proc;
@@ -436,15 +378,13 @@ object* validate_list(object* args, object* cont) {
 					if (syntax_length[id] > 0 && syntax_length[id]+1 != n) {
 						return throw_length_error(cont);
 					}
-					object call;
-					init_call(&call, &syntax_validate[id], args, cont);
-					return perform_call(&call);
+					object* call = alloc_call(&syntax_validate[id], args, cont);
+					return perform_call(call);
 				}
 			}
 		}
-		object list_call;
-		init_call(&list_call, &validate_list_elements_proc, args, cont);
-		return perform_call(&list_call);
+		object* list_call = alloc_call(&validate_list_elements_proc, args, cont);
+		return perform_call(list_call);
 	}
 }
 
@@ -475,19 +415,14 @@ object* validate_expression(object* args, object* cont) {
 	
 	stx = desyntax(stx);
 
-	object return_args[1];
-	init_list_1(return_args, stx);	
-	object return_call;
-	init_call(&return_call, &return_syntax_proc, return_args, cont);
-	object return_cont;
-	init_cont(&return_cont, &return_call);
+	object* return_args = alloc_list_1(stx);	
+	object* return_call = alloc_call(&return_syntax_proc, return_args, cont);
+	object* return_cont = alloc_cont(return_call);
 	
-	object call_args[2];
-	init_list_2(call_args, stx, env);
-	object call;
-	init_call(&call, is_list(stx) ? &validate_list_proc : &validate_atom_proc, call_args, &return_cont);
+	object* call_args = alloc_list_2(stx, env);
+	object* call = alloc_call(is_list(stx) ? &validate_list_proc : &validate_atom_proc, call_args, return_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 void init_validate_procedures(void) {

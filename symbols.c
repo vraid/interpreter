@@ -51,14 +51,11 @@ object* symbol(char* name, object* cont) {
 	
 	if (is_no_object(obj)) {
 		// symbol not found, adding it
-		object* string = alloca(sizeof(object));
 		char* str = alloca(sizeof(char) * (1 + strlen(name)));
 		strcpy(str, name);
-		init_string(string, str);
-		object* symbol = alloca(sizeof(object));
-		init_symbol(symbol, string);
-		object* cell = alloca(sizeof(object));
-		init_list_cell(cell, symbol, symbol_list);
+		object* string = alloc_string(str);
+		object* symbol = alloc_symbol(string);
+		object* cell = alloc_list_cell(symbol, symbol_list);
 		symbol_list = cell;
 		obj = symbol;
 	}

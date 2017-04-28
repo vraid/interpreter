@@ -199,10 +199,9 @@ object* std_cons(object* args, object* cont) {
 		return throw_error_string(cont, "link on non-list");
 	}
 	
-	object list_cell;
-	init_list_cell(&list_cell, first, rest);
+	object* list_cell = alloc_list_cell(first, rest);
 	
-	return call_cont(cont, &list_cell);
+	return call_cont(cont, list_cell);
 }
 
 object std_real_proc;
@@ -228,12 +227,10 @@ object* std_imaginary(object* args, object* cont) {
 		return throw_error_string(cont, "imaginary of non-real");
 	}
 	
-	object ls[2];
-	init_list_2(ls, integer_zero(), a);
-	object call;
-	init_call(&call, &make_complex_proc, ls, cont);
+	object* ls = alloc_list_2(integer_zero(), a);
+	object* call = alloc_call(&make_complex_proc, ls, cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object std_complex_proc;
@@ -247,9 +244,8 @@ object* std_complex(object* args, object* cont) {
 		return throw_error_string(cont, "complex of non-real");
 	}
 	
-	object call;
-	init_call(&call, &make_complex_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&make_complex_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_complex_real_proc;
@@ -297,9 +293,8 @@ object* std_add(object* args, object* cont) {
 		return throw_error_string(cont, "+ on non-number");
 	}
 	
-	object call;
-	init_call(&call, &number_add_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&number_add_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_negative_proc;
@@ -312,9 +307,8 @@ object* std_negative(object* args, object* cont) {
 		return throw_error_string(cont, "negative on non-number");
 	}
 	
-	object call;
-	init_call(&call, &number_negate_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&number_negate_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_conjugate_proc;
@@ -327,9 +321,8 @@ object* std_conjugate(object* args, object* cont) {
 		return throw_error_string(cont, "conjugate on non-number");
 	}
 	
-	object call;
-	init_call(&call, &number_conjugate_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&number_conjugate_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_subtract_proc;
@@ -343,11 +336,9 @@ object* std_subtract(object* args, object* cont) {
 		return throw_error_string(cont, "- on non-number");
 	}
 	
-	object call_args[2];
-	init_list_2(call_args, b, a);
-	object call;
-	init_call(&call, &number_subtract_proc, call_args, cont);
-	return perform_call(&call);
+	object* call_args = alloc_list_2(b, a);
+	object* call = alloc_call(&number_subtract_proc, call_args, cont);
+	return perform_call(call);
 }
 
 object std_subtract_by_proc;
@@ -361,9 +352,8 @@ object* std_subtract_by(object* args, object* cont) {
 		return throw_error_string(cont, "subtract-by on non-number");
 	}
 	
-	object call;
-	init_call(&call, &number_subtract_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&number_subtract_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_multiply_proc;
@@ -377,9 +367,8 @@ object* std_multiply(object* args, object* cont) {
 		return throw_error_string(cont, "* on non-number");
 	}
 	
-	object call;
-	init_call(&call, &number_multiply_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&number_multiply_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_divide_proc;
@@ -396,11 +385,9 @@ object* std_divide(object* args, object* cont) {
 		return throw_error_string(cont, "/ on non-number");
 	}
 	
-	object call_args[2];
-	init_list_2(call_args, b, a);
-	object call;
-	init_call(&call, &number_divide_proc, call_args, cont);
-	return perform_call(&call);
+	object* call_args = alloc_list_2(b, a);
+	object* call = alloc_call(&number_divide_proc, call_args, cont);
+	return perform_call(call);
 }
 
 object std_divide_by_proc;
@@ -417,9 +404,8 @@ object* std_divide_by(object* args, object* cont) {
 		return throw_error_string(cont, "divide-by on non-number");
 	}
 	
-	object call;
-	init_call(&call, &number_divide_proc, args, cont);
-	return perform_call(&call);
+	object* call = alloc_call(&number_divide_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_quotient_proc;
@@ -436,10 +422,9 @@ object* std_quotient(object* args, object* cont) {
 		return throw_error_string(cont, "division by zero (quotient)");
 	}
 	
-	object call;
-	init_call(&call, &integer_quotient_proc, args, cont);
+	object* call = alloc_call(&integer_quotient_proc, args, cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object std_remainder_proc;
@@ -456,10 +441,8 @@ object* std_remainder(object* args, object* cont) {
 		return throw_error_string(cont, "division by zero (remainder)");
 	}
 	
-	object call;
-	init_call(&call, &integer_remainder_proc, args, cont);
-	
-	return perform_call(&call);
+	object* call = alloc_call(&integer_remainder_proc, args, cont);
+	return perform_call(call);
 }
 
 object std_modulo_continued_proc;
@@ -474,12 +457,10 @@ object* std_modulo_continued(object* args, object* cont) {
 	delist_2(ls, &quotient, &remainder);
 	
 	if (is_negative(remainder)) {
-		object add_args[2];
-		init_list_2(add_args, remainder, divisor);
-		object add_call;
-		init_call(&add_call, &integer_add_proc, add_args, cont);
+		object* add_args = alloc_list_2(remainder, divisor);
+		object* add_call = alloc_call(&integer_add_proc, add_args, cont);
 		
-		return perform_call(&add_call);
+		return perform_call(add_call);
 	}
 	else {
 		return call_cont(cont, remainder);
@@ -500,17 +481,13 @@ object* std_modulo(object* args, object* cont) {
 		return throw_error_string(cont, "modulo with nonpositive base");
 	}
 	
-	object next_args[1];
-	init_list_1(next_args, divisor);
-	object next_call;
-	init_call(&next_call, &std_modulo_continued_proc, next_args, cont);
-	object next_cont;
-	init_cont(&next_cont, &next_call);
+	object* next_args = alloc_list_1(divisor);
+	object* next_call = alloc_call(&std_modulo_continued_proc, next_args, cont);
+	object* next_cont = alloc_cont(next_call);
 	
-	object call;
-	init_call(&call, &integer_divide_proc, args, &next_cont);
+	object* call = alloc_call(&integer_divide_proc, args, next_cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 object std_gcd_proc;
@@ -524,24 +501,19 @@ object* std_gcd(object* args, object* cont) {
 		return throw_error_string(cont, "gcd on non-integer");
 	}
 	
-	object gcd_call;
-	init_call(&gcd_call, &integer_greatest_common_divisor_proc, args, cont);
+	object* gcd_call = alloc_call(&integer_greatest_common_divisor_proc, args, cont);
 	
-	return perform_call(&gcd_call);
+	return perform_call(gcd_call);
 }
 
 object* compare_numbers(object* nums, object* result, object* cont) {
-	object eq_args[1];
-	init_list_1(eq_args, result);
-	object eq_call;
-	init_call(&eq_call, &std_is_identical_proc, eq_args, cont);
-	object eq_cont;
-	init_cont(&eq_cont, &eq_call);
+	object* eq_args = alloc_list_1(result);
+	object* eq_call = alloc_call(&std_is_identical_proc, eq_args, cont);
+	object* eq_cont = alloc_cont(eq_call);
 	
-	object comp_call;
-	init_call(&comp_call, &number_compare_proc, nums, &eq_cont);
+	object* comp_call = alloc_call(&number_compare_proc, nums, eq_cont);
 	
-	return perform_call(&comp_call);
+	return perform_call(comp_call);
 }
 
 object std_numeric_equality_proc;
@@ -597,11 +569,9 @@ object* std_greater_or_equal(object* args, object* cont) {
 		return throw_error_string(cont, ">= on non-number");
 	}
 	
-	object not_call;
-	init_call(&not_call, &std_not_proc, empty_list(), cont);
-	object not_cont;
-	init_cont(&not_cont, &not_call);
-	return std_less(args, &not_cont);
+	object* not_call = alloc_call(&std_not_proc, empty_list(), cont);
+	object* not_cont = alloc_cont(not_call);
+	return std_less(args, not_cont);
 }
 
 object std_less_or_equal_proc;
@@ -615,11 +585,9 @@ object* std_less_or_equal(object* args, object* cont) {
 		return throw_error_string(cont, "<= on non-number");
 	}
 	
-	object not_call;
-	init_call(&not_call, &std_not_proc, empty_list(), cont);
-	object not_cont;
-	init_cont(&not_cont, &not_call);
-	return std_greater(args, &not_cont);
+	object* not_call = alloc_call(&std_not_proc, empty_list(), cont);
+	object* not_cont = alloc_cont(not_call);
+	return std_greater(args, not_cont);
 }
 
 object std_is_zero_proc;
@@ -675,11 +643,9 @@ object* std_newline(object* args, object* cont) {
 }
 
 object* std_display_newline(object* args, object* cont) {
-	object call;
-	init_call(&call, &std_newline_proc, empty_list(), cont);
-	object next_cont;
-	init_cont(&next_cont, &call);
-	return std_display(args, &next_cont);
+	object* call = alloc_call(&std_newline_proc, empty_list(), cont);
+	object* next_cont = alloc_cont(call);
+	return std_display(args, next_cont);
 }
 
 #define primitive_max 1024

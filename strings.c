@@ -30,10 +30,9 @@ object* string_append(object* args, object* cont) {
 	}
 	str[i] = 0;
 	
-	object new_string;
-	init_string(&new_string, str);
+	object* new_string = alloc_string(str);
 	
-	return call_cont(cont, &new_string);
+	return call_cont(cont, new_string);
 }
 
 void init_string_procedures(void) {

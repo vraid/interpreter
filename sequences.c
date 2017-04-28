@@ -35,12 +35,10 @@ object* rest(object* args, object* cont) {
 		return throw_error_string(cont, "rest on empty sequence");
 	}
 	else if (is_stream(seq)) {
-		object eval_args[1];
-		init_list_1(eval_args, seq);
-		object eval_call;
-		init_call(&eval_call, &eval_stream_rest_proc, eval_args, cont);
+		object* eval_args = alloc_list_1(seq);
+		object* eval_call = alloc_call(&eval_stream_rest_proc, eval_args, cont);
 		
-		return perform_call(&eval_call);
+		return perform_call(eval_call);
 	}
 	else {
 		object next_iter;
@@ -59,19 +57,14 @@ object* take_single(object* args, object* cont) {
 	object* count;
 	delist_3(args, &sequence, &last, &count);
 	
-	object rest_args[2];
-	init_list_2(rest_args, count, sequence);
-	object rest_call;
-	init_call(&rest_call, &take_rest_proc, rest_args, cont);
-	object rest_cont;
-	init_cont(&rest_cont, &rest_call);
+	object* rest_args = alloc_list_2(count, sequence);
+	object* rest_call = alloc_call(&take_rest_proc, rest_args, cont);
+	object* rest_cont = alloc_cont(rest_call);
 	
-	object add_args[2];
-	init_list_2(add_args, sequence_first(sequence), last);
-	object add_call;
-	init_call(&add_call, &add_to_list_proc, add_args, &rest_cont);
+	object* add_args = alloc_list_2(sequence_first(sequence), last);
+	object* add_call = alloc_call(&add_to_list_proc, add_args, rest_cont);
 	
-	return perform_call(&add_call);
+	return perform_call(add_call);
 }
 
 object take_rest_second_proc;
@@ -86,19 +79,14 @@ object* take_rest_second(object* args, object* cont) {
 		return call_discarding_cont(cont);
 	}
 	else {
-		object take_args[2];
-		init_list_2(take_args, last, count);
-		object take_call;
-		init_call(&take_call, &take_single_proc, take_args, cont);
-		object take_cont;
-		init_cont(&take_cont, &take_call);
+		object* take_args = alloc_list_2(last, count);
+		object* take_call = alloc_call(&take_single_proc, take_args, cont);
+		object* take_cont = alloc_cont(take_call);
 		
-		object eval_args[1];
-		init_list_1(eval_args, sequence);
-		object eval_call;
-		init_call(&eval_call, &rest_proc, eval_args, &take_cont);
+		object* eval_args = alloc_list_1(sequence);
+		object* eval_call = alloc_call(&rest_proc, eval_args, take_cont);
 		
-		return perform_call(&eval_call);
+		return perform_call(eval_call);
 	}
 }
 
@@ -108,19 +96,14 @@ object* take_rest(object* args, object* cont) {
 	object* sequence;
 	delist_3(args, &last, &count, &sequence);
 	
-	object rest_args[2];
-	init_list_2(rest_args, last, sequence);
-	object rest_call;
-	init_call(&rest_call, &take_rest_second_proc, rest_args, cont);
-	object rest_cont;
-	init_cont(&rest_cont, &rest_call);
+	object* rest_args = alloc_list_2(last, sequence);
+	object* rest_call = alloc_call(&take_rest_second_proc, rest_args, cont);
+	object* rest_cont = alloc_cont(rest_call);
 	
-	object dec_args[1];
-	init_list_1(dec_args, count);
-	object dec_call;
-	init_call(&dec_call, &integer_subtract_one_proc, dec_args, &rest_cont);
+	object* dec_args = alloc_list_1(count);
+	object* dec_call = alloc_call(&integer_subtract_one_proc, dec_args, rest_cont);
 	
-	return perform_call(&dec_call);
+	return perform_call(dec_call);
 }
 
 object take_first_proc;
@@ -130,14 +113,11 @@ object* take_first(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	object take_args[2];
-	init_list_2(take_args, count, sequence);
-	object list_args[3];
-	init_list_3(list_args, sequence_first(sequence), &take_rest_proc, take_args);
-	object list_call;
-	init_call(&list_call, &make_list_proc, list_args, cont);
+	object* take_args = alloc_list_2(count, sequence);
+	object* list_args = alloc_list_3(sequence_first(sequence), &take_rest_proc, take_args);
+	object* list_call = alloc_call(&make_list_proc, list_args, cont);
 	
-	return perform_call(&list_call);
+	return perform_call(list_call);
 }
 
 object* take(object* args, object* cont) {
@@ -149,10 +129,9 @@ object* take(object* args, object* cont) {
 		return call_cont(cont, empty_list());
 	}
 	else {
-		object call;
-		init_call(&call, &take_first_proc, args, cont);
+		object* call = alloc_call(&take_first_proc, args, cont);
 		
-		return perform_call(&call);
+		return perform_call(call);
 	}
 }
 
@@ -168,19 +147,14 @@ object* drop_single_second(object* args, object* cont) {
 		return call_cont(cont, sequence);
 	}
 	else {
-		object drop_args[1];
-		init_list_1(drop_args, count);
-		object drop_call;
-		init_call(&drop_call, &drop_single_proc, drop_args, cont);
-		object drop_cont;
-		init_cont(&drop_cont, &drop_call);
+		object* drop_args = alloc_list_1(count);
+		object* drop_call = alloc_call(&drop_single_proc, drop_args, cont);
+		object* drop_cont = alloc_cont(drop_call);
 		
-		object eval_args[1];
-		init_list_1(eval_args, sequence);
-		object eval_call;
-		init_call(&eval_call, &rest_proc, eval_args, &drop_cont);
+		object* eval_args = alloc_list_1(sequence);
+		object* eval_call = alloc_call(&rest_proc, eval_args, drop_cont);
 		
-		return perform_call(&eval_call);
+		return perform_call(eval_call);
 	}
 }
 
@@ -189,19 +163,14 @@ object* drop_single(object* args, object* cont) {
 	object* count;
 	delist_2(args, &sequence, &count);
 	
-	object drop_args[1];
-	init_list_1(drop_args, sequence);
-	object drop_call;
-	init_call(&drop_call, &drop_single_second_proc, drop_args, cont);
-	object drop_cont;
-	init_cont(&drop_cont, &drop_call);
+	object* drop_args = alloc_list_1(sequence);
+	object* drop_call = alloc_call(&drop_single_second_proc, drop_args, cont);
+	object* drop_cont = alloc_cont(drop_call);
 	
-	object dec_args[1];
-	init_list_1(dec_args, count);
-	object dec_call;
-	init_call(&dec_call, &integer_subtract_one_proc, dec_args, &drop_cont);
+	object* dec_args = alloc_list_1(count);
+	object* dec_call = alloc_call(&integer_subtract_one_proc, dec_args, drop_cont);
 	
-	return perform_call(&dec_call);
+	return perform_call(dec_call);
 }
 
 object* drop(object* args, object* cont) {
@@ -209,12 +178,10 @@ object* drop(object* args, object* cont) {
 	object* sequence;
 	delist_2(args, &count, &sequence);
 	
-	object call_args[2];
-	init_list_2(call_args, sequence, count);
-	object call;
-	init_call(&call, &drop_single_proc, call_args, cont);
+	object* call_args = alloc_list_2(sequence, count);
+	object* call = alloc_call(&drop_single_proc, call_args, cont);
 	
-	return perform_call(&call);
+	return perform_call(call);
 }
 
 int sequence_length(object* obj) {
