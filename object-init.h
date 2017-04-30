@@ -107,3 +107,7 @@ object* init_list_4(object* ls, object* first, object* second, object* third, ob
 
 object* init_list_5(object* ls, object* first, object* second, object* third, object* fourth, object* fifth);
 #define alloc_list_5(a, b, c, d, e) init_list_5(alloc_objects(5), a, b, c, d, e)
+
+object* init_trace_list(object* cell, object* a, object* trace);
+#define alloc_trace_list(a, b) init_trace_list(alloc_obj(), a, b)
+

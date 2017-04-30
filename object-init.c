@@ -241,3 +241,21 @@ object* init_list_5(object* ls, object* first, object* second, object* third, ob
 	init_list_4(ls+1, second, third, fourth, fifth);
 	return ls;
 }
+
+object* init_trace_list(object* cell, object* a, object* trace) {
+	if (is_false(trace) || !is_syntax_object(a)) {
+		return trace;
+	}
+	else {
+		object* last = trace;
+		
+		while (!is_empty_list(trace)) {
+			if (list_first(trace) == a) {
+				return trace;
+			}
+			trace = list_rest(trace);
+		}
+		
+		return init_list_cell(cell, a, last);
+	}
+}
