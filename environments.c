@@ -40,7 +40,7 @@ object* extend_environment(object* args, object* cont) {
 	object* env;
 	delist_3(args, &value, &name, &env);
 	
-	object* binding = alloc_binding(name, desyntax(value));
+	object* binding = alloc_binding(desyntax(name), desyntax(value));
 	object* cell = alloc_list_cell(binding, environment_bindings(env));
 	object* new_env = alloc_environment(cell);
 	
@@ -66,7 +66,7 @@ object* bind_single_value(object* args, object* cont) {
 		object* next_call = alloc_call(&bind_single_value_proc, next_ls, cont);
 		object* next_cont = alloc_cont(next_call);
 		
-		object* bind_ls = alloc_list_3(list_first(values), desyntax(list_first(names)), environment);
+		object* bind_ls = alloc_list_3(list_first(values), list_first(names), environment);
 		object* bind_call = alloc_call(&extend_environment_proc, bind_ls, next_cont);
 		
 		return perform_call(bind_call);
