@@ -4,7 +4,7 @@
 
 #define alloc_bytes(n) alloca(n)
 #define alloc_chars(n) alloc_bytes(sizeof(char) * (n))
-#define alloc_objects(n) alloc_bytes(n*sizeof(object))
+#define alloc_objects(n) alloc_bytes(sizeof(object) * (n))
 #define alloc_obj() alloc_objects(1)
 
 void make_static(object* obj);
