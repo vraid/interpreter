@@ -18,7 +18,7 @@ object* string_append(object* args, object* cont) {
 		length += string_length(list_first(ls));
 		ls = list_rest(ls);
 	}
-	char* str = alloca(sizeof(char) * (length + 1));
+	char* str = alloc_chars(1 + length);
 	int i = 0;
 	ls = strings;
 	while (!is_empty_list(ls)) {

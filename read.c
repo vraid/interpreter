@@ -145,7 +145,7 @@ char* get_string(char string, FILE* in) {
 }
 
 object* string(char* cs, object* cont) {
-	char* str = alloca(sizeof(char) * (1 + strlen(cs)));
+	char* str = alloc_chars(1 + strlen(cs));
 	strcpy(str, cs);
 	object* s = alloc_string(str);
 	return call_cont(cont, s);
