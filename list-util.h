@@ -3,6 +3,7 @@
 #include "data-structures.h"
 
 object make_list_proc;
+object link_list_proc;
 object add_to_list_proc;
 object reverse_list_proc;
 object list_append_proc;

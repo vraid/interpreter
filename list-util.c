@@ -83,6 +83,16 @@ object* make_list(object* args, object* cont) {
 	return perform_call(call);
 }
 
+object* link_list(object* args, object* cont) {
+	object* value;
+	object* list;
+	delist_2(args, &value, &list);
+	
+	object* cell = alloc_list_cell(value, list);
+	
+	return call_cont(cont, cell);
+}
+
 object* add_to_list(object* args, object* cont) {
 	object* value;
 	object* last;
@@ -241,6 +251,7 @@ object* unzip_2(object* args, object* cont) {
 
 void init_list_util_procedures(void) {
 	init_primitive(&make_list, &make_list_proc);
+	init_primitive(&link_list, &link_list_proc);
 	init_primitive(&add_to_list, &add_to_list_proc);
 	init_primitive(&return_list, &return_list_proc);
 	init_primitive(&reverse_list, &reverse_list_proc);
