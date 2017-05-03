@@ -6,6 +6,7 @@
 #include "object-init.h"
 #include "call.h"
 #include "delist.h"
+#include "string-util.h"
 
 #define static_symbol_max 1024
 
@@ -51,8 +52,7 @@ object* symbol(char* name, object* cont) {
 	
 	if (is_no_object(obj)) {
 		// symbol not found, adding it
-		char* str = alloc_chars(1 + strlen(name));
-		strcpy(str, name);
+		char* str = alloc_copy_str(name);
 		object* string = alloc_string(str);
 		object* symbol = alloc_symbol(string);
 		object* cell = alloc_list_cell(symbol, symbol_list);

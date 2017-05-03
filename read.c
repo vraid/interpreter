@@ -7,6 +7,7 @@
 #include "global-variables.h"
 #include "object-init.h"
 #include "base-util.h"
+#include "string-util.h"
 #include "util.h"
 #include "memory-handling.h"
 #include "delist.h"
@@ -145,8 +146,7 @@ char* get_string(char string, FILE* in) {
 }
 
 object* string(char* cs, object* cont) {
-	char* str = alloc_chars(1 + strlen(cs));
-	strcpy(str, cs);
+	char* str = alloc_copy_str(cs);
 	object* s = alloc_string(str);
 	return call_cont(cont, s);
 }
