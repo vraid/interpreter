@@ -11,15 +11,16 @@
 #include "strings.h"
 #include "symbols.h"
 #include "list-util.h"
+#include "string-util.h"
 #include "environments.h"
 #include "base-syntax.h"
 #include "standard-library.h"
 #include "generic-arguments.h"
 #include "eval.h"
 
-object make_struct_proc;
+object make_struct_instance_proc;
 
-object* make_struct(object* args, object* cont) {
+object* make_struct_instance(object* args, object* cont) {
 	object* type;
 	object* data;
 	delist_2(args, &type, &data);
@@ -36,9 +37,8 @@ object* add_struct_constructor_next(object* args, object* cont) {
 	object* type;
 	delist_2(args, &fields, &type);
 	
-	object* field_list = alloc_list_cell(syntax_procedure_obj(syntax_list), fields);
-	object* vector_list = alloc_list_2(&list_to_vector_proc, field_list);
-	object* body = alloc_list_3(&make_struct_proc, type, vector_list);
+	object* vector_list = alloc_list_cell(syntax_procedure_obj(syntax_vector), fields);
+	object* body = alloc_list_3(&make_struct_instance_proc, type, vector_list);
 	object* function = alloc_function(empty_environment(), fields, body);
 	
 	type->data.struct_definition.fields = fields;
@@ -118,14 +118,11 @@ object* define_struct_is_type(object* args, object* cont) {
 	object* bind_call = alloc_call(&bind_struct_is_type_proc, bind_args, cont);
 	object* bind_cont = alloc_cont(bind_call);
 	
-	object* symbol_call = alloc_call(&string_to_symbol_proc, empty_list(), bind_cont);
-	object* symbol_cont = alloc_cont(symbol_call);
+	object* is_name = alloc_append_string_2(symbol_name(name), question_mark_string());
+	object* symbol_args = alloc_list_1(is_name);
+	object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, bind_cont);
 	
-	object* name_list = alloc_list_2(symbol_name(name), question_mark_string());
-	object* name_args = alloc_list_1(name_list);
-	object* name_call = alloc_call(&string_append_proc, name_args, symbol_cont);
-	
-	return perform_call(name_call);
+	return perform_call(symbol_call);
 }
 
 object struct_access_proc;
@@ -239,6 +236,37 @@ object* define_struct_next(object* args, object* cont) {
 	return perform_call(constructor_call);
 }
 
+object struct_field_names_proc;
+
+object* struct_field_names(object* args, object* cont) {
+	object* result;
+	object* fields;
+	object* name;
+	delist_3(args, &result, &fields, &name);
+	
+	if (is_empty_list(fields)) {
+		object* call_args = alloc_list_1(result);
+		object* call = alloc_call(&reverse_list_proc, call_args, cont);
+		
+		return perform_call(call);
+	}
+	else {
+		object* next_args = alloc_list_2(list_rest(fields), name);
+		object* next_call = alloc_call(&struct_field_names_proc, next_args, cont);
+		object* next_cont = alloc_cont(next_call);
+		
+		object* link_args = alloc_list_1(result);
+		object* link_call = alloc_call(&link_list_proc, link_args, next_cont);
+		object* link_cont = alloc_cont(link_call);
+		
+		object* fieldname = alloc_append_string_3(name, dash_string(), symbol_name(desyntax(list_first(fields))));
+		object* symbol_args = alloc_list_1(fieldname);
+		object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, link_cont);
+		
+		return perform_call(symbol_call);
+	}
+}
+
 object* define_struct(object* args, object* cont) {
 	object* syntax;
 	object* environment;
@@ -269,22 +297,15 @@ object* define_struct(object* args, object* cont) {
 	object* next_args = alloc_list_2(struct_type, environment);
 	object* next_call = alloc_call(&define_struct_next_proc, next_args, cont);
 	object* next_cont = alloc_cont(next_call);
-		
-	object* append_args = alloc_list_4(syntax_procedure_obj(syntax_list), symbol_name(name), dash_string(), generic_args[0]);
-	object* append_list = alloc_list_2(&string_append_proc, append_args);
-	object* symbol_list = alloc_list_2(&string_to_symbol_proc, append_list);
-	object* function = alloc_list_3(syntax_procedure_obj(syntax_lambda), generic_arg_list[1], symbol_list);
-	object* quote = alloc_list_2(syntax_procedure_obj(syntax_quote), fields);
-	object* field_names = alloc_list_3(syntax_procedure_obj(syntax_map), symbol_to_string_func, quote);
-	object* map_list = alloc_list_3(syntax_procedure_obj(syntax_map), function, field_names);
-	object* eval_args = alloc_list_2(map_list, empty_environment());
-	object* eval_call = alloc_call(&eval_proc, eval_args, next_cont);
 	
-	return perform_call(eval_call);
+	object* name_args = alloc_list_3(empty_list(), fields, symbol_name(name));
+	object* name_call = alloc_call(&struct_field_names_proc, name_args, next_cont);
+	
+	return perform_call(name_call);
 }
 
 void init_struct_procedures(void) {
-	init_primitive(&make_struct, &make_struct_proc);
+	init_primitive(&make_struct_instance, &make_struct_instance_proc);
 	init_primitive(&add_struct_constructor, &add_struct_constructor_proc);
 	init_primitive(&add_struct_constructor_next, &add_struct_constructor_next_proc);
 	init_primitive(&struct_access, &struct_access_proc);
@@ -294,6 +315,7 @@ void init_struct_procedures(void) {
 	init_primitive(&struct_is_type_func, &struct_is_type_proc);
 	init_primitive(&bind_struct_is_type, &bind_struct_is_type_proc);
 	init_primitive(&define_struct_is_type, &define_struct_is_type_proc);
+	init_primitive(&struct_field_names, &struct_field_names_proc);
 	init_primitive(&define_struct, &define_struct_proc);
 	init_primitive(&define_struct_next, &define_struct_next_proc);
 }
