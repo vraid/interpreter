@@ -166,7 +166,6 @@ typedef struct object {
 		} environment;
 		struct {
 			struct object* value;
-			struct object* environment;
 			char evaluated;
 		} delay;
 		struct {
@@ -253,7 +252,6 @@ object* vector_iterator_vector(object* obj);
 int vector_iterator_length(object* obj);
 
 object* delay_value(object* obj);
-object* delay_environment(object* obj);
 char delay_evaluated(object* obj);
 
 object* struct_definition_name(object* obj);

@@ -85,8 +85,8 @@ object* init_internal_position(object* obj, int x, int y);
 object* init_internal_error(object* obj, object* message);
 #define alloc_internal_error(a) init_internal_error(alloc_obj(), a)
 
-object* init_delay(object* obj, object* value, object* environment);
-#define alloc_delay(a, b) init_delay(alloc_obj(), a, b)
+object* init_delay(object* obj, object* value);
+#define alloc_delay(a) init_delay(alloc_obj(), a)
 
 object* init_primitive_procedure(object* obj, primitive_proc* proc);
 object* init_primitive(primitive_proc* proc, object* obj);

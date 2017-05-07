@@ -187,10 +187,9 @@ object* init_internal_error(object* obj, object* message) {
 	return obj;
 }
 
-object* init_delay(object* obj, object* value, object* environment) {
+object* init_delay(object* obj, object* value) {
 	init_object(location_stack, type_delay, obj);
 	obj->data.delay.value = value;
-	obj->data.delay.environment = environment;
 	obj->data.delay.evaluated = 0;
 	return obj;
 }

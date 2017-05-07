@@ -294,6 +294,9 @@ object* print_value(object* args, object* cont) {
 		case type_vector_iterator:
 			return print_vector(print_args, cont);
 			break;
+		case type_delay:
+			printf("(delay:)");
+			break;
 		case type_function:
 			printf("function ");
 			object* ls = alloc_list_1(function_parameters(obj));

@@ -280,10 +280,6 @@ object* delay_value(object* obj) {
 	check_type(type_delay, obj);
 	return obj->data.delay.value;
 }
-object* delay_environment(object* obj) {
-	check_type(type_delay, obj);
-	return obj->data.delay.environment;
-}
 char delay_evaluated(object* obj) {
 	check_type(type_delay, obj);
 	return obj->data.delay.evaluated;

@@ -34,7 +34,8 @@ object* stream_map(object* args, object* cont) {
 	else {
 		object* rest_list = alloc_list_2(&eval_stream_rest_proc, stream);
 		object* map_list = alloc_list_3(syntax_procedure_obj(syntax_map), function, rest_list);
-		object* delay = alloc_delay(map_list, empty_environment());
+		object* delay_args = alloc_list_2(map_list, empty_environment());
+		object* delay = alloc_delay(delay_args);
 		
 		object* make_args = alloc_list_1(delay);
 		object* make_call = alloc_call(&make_stream_proc, make_args, cont);
@@ -121,7 +122,8 @@ object* stream_filter_build(object* args, object* cont) {
 	else {
 		object* rest_list = alloc_list_2(&eval_stream_rest_proc, stream);
 		object* filter_list = alloc_list_3(syntax_procedure_obj(syntax_filter), function, rest_list);
-		object* delay = alloc_delay(filter_list, empty_environment());
+		object* delay_args = alloc_list_2(filter_list, empty_environment());
+		object* delay = alloc_delay(delay_args);
 
 		object* stream = alloc_stream(value, delay);
 		

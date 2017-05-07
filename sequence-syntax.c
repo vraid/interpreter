@@ -31,7 +31,8 @@ object* stream(object* args, object* cont) {
 	object* rest;
 	delist_2(syntax, &first, &rest);
 	
-	object* delay = alloc_delay(rest, environment);
+	object* delay_args = alloc_list_2(rest, environment);
+	object* delay = alloc_delay(delay_args);
 	
 	object* stream_args = alloc_list_1(delay);
 	object* stream_call = alloc_call(&make_stream_proc, stream_args, cont);
@@ -42,7 +43,6 @@ object* stream(object* args, object* cont) {
 	
 	return perform_call(eval_call);
 }
-	
 
 object* vector(object* args, object* cont) {
 	object* vector_call = alloc_call(&list_to_vector_proc, empty_list(), cont);

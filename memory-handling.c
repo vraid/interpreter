@@ -171,7 +171,6 @@ void traverse_internal_error(target_space space, object* obj, object_location lo
 
 void traverse_delay(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.delay.value, location);
-	move_if_necessary(space, &obj->data.delay.environment, location);
 }
 
 void traverse_nothing(target_space space, object* obj, object_location location) {

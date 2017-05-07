@@ -153,9 +153,10 @@ object* delay(object* args, object* cont) {
 	delist_2(args, &syntax, &environment);
 	
 	object* value;
-	delist_desyntax_1(syntax, &value);
+	delist_1(syntax, &value);
 	
-	object* obj = alloc_delay(value, environment);
+	object* delay_args = alloc_list_2(value, environment);	
+	object* obj = alloc_delay(delay_args);
 	
 	return call_cont(cont, obj);
 }
@@ -168,7 +169,6 @@ object* update_delay(object* args, object* cont) {
 	delist_2(args, &value, &delay);
 	
 	delay->data.delay.value = value;
-	delay->data.delay.environment = false();
 	delay->data.delay.evaluated = 1;
 	
 	add_mutation(delay, value);
@@ -191,8 +191,7 @@ object* eval_force(object* args, object* cont) {
 		object* update_call = alloc_call(&update_delay_proc, update_args, cont);
 		object* update_cont = alloc_cont(update_call);
 		
-		object* eval_args = alloc_list_2(delay_value(obj), delay_environment(obj));
-		object* eval_call = alloc_call(&eval_proc, eval_args, update_cont);
+		object* eval_call = alloc_call(&eval_proc, delay_value(obj), update_cont);
 		
 		return perform_call(eval_call);
 	}
