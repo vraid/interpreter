@@ -12,12 +12,17 @@ object _static_environment;
 object static_bindings[static_binding_max];
 object static_binding_cell[static_binding_max];
 int static_binding_count = 0;
+char environment_init = 0;
 
 object* static_environment(void) {
 	return &_static_environment;
 }
 
 object* add_static_binding(object* value, char* name) {
+	if (!environment_init) {
+		fprintf(stderr, "environment not initialized\n");
+		exit(0);
+	}	
 	if (static_binding_count == static_binding_max) {
 		fprintf(stderr, "too many static bindings\n");
 		exit(0);
@@ -99,6 +104,7 @@ object* find_in_environment(object* env, object* symbol, char return_placeholder
 
 void init_environment_procedures(void) {
 	init_environment(&_static_environment, empty_list());
+	environment_init = 1;
 	make_static(&_static_environment);
 	
 	init_primitive(&extend_environment, &extend_environment_proc);
