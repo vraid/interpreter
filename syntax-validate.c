@@ -413,14 +413,14 @@ object* validate_expression(object* args, object* cont) {
 	object* env;
 	delist_2(args, &stx, &env);
 	
-	stx = desyntax(stx);
+	object* obj = desyntax(stx);
 
 	object* return_args = alloc_list_1(stx);	
 	object* return_call = alloc_call(&return_syntax_proc, return_args, cont);
 	object* return_cont = alloc_cont(return_call);
 	
-	object* call_args = alloc_list_2(stx, env);
-	object* call = alloc_call(is_list(stx) ? &validate_list_proc : &validate_atom_proc, call_args, return_cont);
+	object* call_args = alloc_list_2(obj, env);
+	object* call = alloc_call(is_list(obj) ? &validate_list_proc : &validate_atom_proc, call_args, return_cont);
 	
 	return perform_call(call);
 }
