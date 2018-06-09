@@ -14,7 +14,7 @@ char* workspace(void) {
 void resize_workspace(int size) {
 	free(_workspace);
 	_workspace = malloc(size);
-	printf("workspace at %p\n", _workspace);
+	printf("workspace at %p\n", (void*)(_workspace));
 	workspace_size = size;
 }
 
