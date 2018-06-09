@@ -42,9 +42,9 @@ object* add_struct_constructor_next(object* args, object* cont) {
 	object* function = alloc_function(empty_environment(), fields, body);
 	
 	type->data.struct_definition.fields = fields;
-	add_mutation(type, fields);
+	add_stack_reference(type, fields);
 	type->data.struct_definition.constructor = function;
-	add_mutation(type, function);
+	add_stack_reference(type, function);
 	
 	return call_cont(cont, type);
 }

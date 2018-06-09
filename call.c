@@ -32,7 +32,7 @@ char stack_full(void) {
 }
 
 object* perform_call(object* call) {
-	if ((call_count >= max_call_count) || stack_full() || max_mutations_reached()) {
+	if ((call_count >= max_call_count) || stack_full() || max_stack_references_reached()) {
 		call_count = 0;
 		save_call(call);
 		perform_gc(&saved_call);

@@ -6,26 +6,26 @@
 #include "global-variables.h"
 #include "symbols.h"
 
-#define max_mutations 1024
-object* mutations[max_mutations];
-int mutation_count = 0;
+#define max_stack_references 1024
+object* stack_references[max_stack_references];
+int stack_reference_count = 0;
 
-char max_mutations_reached(void) {
-	return mutation_count == max_mutations;
+char max_stack_references_reached(void) {
+	return stack_reference_count == max_stack_references;
 }
 
-void add_mutation(object* obj, object* reference) {
-	if (max_mutations_reached()) {
-		fprintf(stderr, "too many mutations\n");
+void add_stack_reference(object* obj, object* reference) {
+	if (max_stack_references_reached()) {
+		fprintf(stderr, "too many stack references\n");
 		exit(0);
 	}
 	if (obj->location > location_heap) {
-		fprintf(stderr, "mutation at %s\n", location_name[obj->location]);
+		fprintf(stderr, "stack reference at %s\n", location_name[obj->location]);
 		exit(0);
 	}
 	else if ((obj->location == location_heap) && (reference->location == location_stack)) {
-		mutations[mutation_count] = obj;
-		mutation_count++;
+		stack_references[stack_reference_count] = obj;
+		stack_reference_count++;
 	}
 }
 
@@ -299,9 +299,9 @@ void perform_gc(object** root) {
 	else {
 		location = location_stack;
 		int i;
-		for (i = 0; i < mutation_count; i++) {
-			clear_garbage(&main_memory_space, mutations+i, location, 0);
-			mutations[i] = no_object();
+		for (i = 0; i < stack_reference_count; i++) {
+			clear_garbage(&main_memory_space, stack_references+i, location, 0);
+			stack_references[i] = no_object();
 		}
 	}
 	clear_garbage(&main_memory_space, &symbol_list, location, 1);
@@ -313,7 +313,7 @@ void perform_gc(object** root) {
 		main_memory_space.fill_and_resize =  resize_at_next_major_gc(&main_memory_space);
 		if (print_gc) printf("used heap data post-gc: %i\n", used_heap_data(&main_memory_space));
 	}
-	mutation_count = 0;
+	stack_reference_count = 0;
 }
 
 void init_memory_spaces() {
