@@ -3,29 +3,19 @@
 
 #include "memory-handling.h"
 #include "data-structures.h"
+#include "object-init.h"
 #include "global-variables.h"
 #include "symbols.h"
 
-#define max_stack_references 1024
-object* stack_references[max_stack_references];
-int stack_reference_count = 0;
+object* stack_references;
 
-char max_stack_references_reached(void) {
-	return stack_reference_count == max_stack_references;
-}
-
-void add_stack_reference(object* obj, object* reference) {
-	if (max_stack_references_reached()) {
-		fprintf(stderr, "too many stack references\n");
-		exit(0);
-	}
+void add_stack_reference(object* ls, object* obj, object* reference) {
 	if (obj->location > location_heap) {
 		fprintf(stderr, "stack reference at %s\n", location_name[obj->location]);
 		exit(0);
 	}
 	else if ((obj->location == location_heap) && (reference->location == location_stack)) {
-		stack_references[stack_reference_count] = obj;
-		stack_reference_count++;
+		stack_references = init_list_cell(ls, obj, stack_references);
 	}
 }
 
@@ -298,22 +288,26 @@ void perform_gc(object** root) {
 	}
 	else {
 		location = location_stack;
-		int i;
-		for (i = 0; i < stack_reference_count; i++) {
-			clear_garbage(&main_memory_space, stack_references+i, location, 0);
-			stack_references[i] = no_object();
+		while (!is_empty_list(stack_references)) {
+			// move all stack objects referenced by the heap
+			clear_garbage(&main_memory_space, &(stack_references->data.list.first), location, 0);
+			stack_references = list_rest(stack_references);
 		}
 	}
 	clear_garbage(&main_memory_space, &symbol_list, location, 1);
 	clear_garbage(&main_memory_space, root, location, 1);
+	stack_references = empty_list();
 	if (resize) {
 		free(old_memory);
 	}
 	if (is_major) {
-		main_memory_space.fill_and_resize =  resize_at_next_major_gc(&main_memory_space);
+		main_memory_space.fill_and_resize = resize_at_next_major_gc(&main_memory_space);
 		if (print_gc) printf("used heap data post-gc: %i\n", used_heap_data(&main_memory_space));
 	}
-	stack_reference_count = 0;
+}
+
+void init_memory_handling() {
+	stack_references = empty_list();
 }
 
 void init_memory_spaces() {

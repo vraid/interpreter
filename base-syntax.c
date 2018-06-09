@@ -42,7 +42,7 @@ object* update_binding(object* args, object* cont) {
 		return throw_error(cont, ls);
 	}
 	binding->data.binding.value = value;
-	add_stack_reference(binding, value);
+	alloc_stack_reference(binding, value);
 	
 	// the environment is not the latest one, so it is discarded
 	return call_discarding_cont(cont);
@@ -177,7 +177,7 @@ object* update_delay(object* args, object* cont) {
 	delay->data.delay.value = value;
 	delay->data.delay.evaluated = 1;
 	
-	add_stack_reference(delay, value);
+	alloc_stack_reference(delay, value);
 	
 	return call_cont(cont, value);
 }
@@ -372,7 +372,7 @@ object* rec_three(object* args, object* cont) {
 	delist_4(args, &environment, &function, &arguments, &trace);
 	
 	function->data.function.environment = environment;
-	add_stack_reference(function, environment);
+	alloc_stack_reference(function, environment);
 	
 	object* eval_args = alloc_list_3(arguments, function, trace);
 	object* eval_call = alloc_call(&eval_function_call_proc, eval_args, cont);

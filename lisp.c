@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
 	init_environment_procedures();
 	init_base_syntax_procedures();
 	init_sequence_syntax_procedures();
+	init_memory_handling();
 	init_memory_spaces();
 	init_workspace();
 	init_validate_procedures();

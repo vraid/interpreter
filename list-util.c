@@ -100,7 +100,7 @@ object* add_to_list(object* args, object* cont) {
 	
 	object* cell = alloc_list_1(value);
 	last->data.list.rest = cell;
-	add_stack_reference(last, cell);
+	alloc_stack_reference(last, cell);
 	
 	return call_cont(cont, cell);
 }
@@ -139,9 +139,9 @@ object* unzip_2_step(object* args, object* cont) {
 		object* one_next = alloc_list_1(a);
 		object* two_next = alloc_list_1(b);
 		one->data.list.rest = one_next;
-		add_stack_reference(one, one_next);
+		alloc_stack_reference(one, one_next);
 		two->data.list.rest = two_next;
-		add_stack_reference(two, two_next);
+		alloc_stack_reference(two, two_next);
 		
 		object* call_args = alloc_list_3(one_next, two_next, list_rest(list));
 		object* call = alloc_call(&unzip_2_step_proc, call_args, cont);
