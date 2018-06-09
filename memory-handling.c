@@ -167,34 +167,12 @@ void traverse_delay(target_space space, object* obj, object_location location) {
 void traverse_nothing(target_space space, object* obj, object_location location) {
 }
 
-typedef void (traversal)(target_space space, object* obj, object_location location);
+typedef void (traversal_function)(target_space space, object* obj, object_location location);
 
-traversal* traversal_function(object* obj) {
-	switch (obj->type) {
-		case type_symbol: return &traverse_symbol;
-		case type_integer: return &traverse_integer;
-		case type_fraction: return &traverse_fraction;
-		case type_complex: return &traverse_complex;
-		case type_list: return &traverse_list;
-		case type_stream: return &traverse_stream;
-		case type_vector: return &traverse_vector;
-		case type_vector_iterator: return &traverse_vector_iterator;
-		case type_struct_definition: return &traverse_struct_definition;
-		case type_struct_instance: return &traverse_struct_instance;
-		case type_function: return &traverse_function;
-		case type_binding: return &traverse_binding;
-		case type_environment: return &traverse_environment;
-		case type_call: return &traverse_call;
-		case type_continuation: return &traverse_continuation;
-		case type_syntax_object: return &traverse_syntax_object;
-		case type_internal_error: return &traverse_internal_error;
-		case type_delay: return &traverse_delay;
-		default: return &traverse_nothing;
-	}
-}
+traversal_function* traversal[type_count];
 
 void traverse_object(target_space space, object* obj, object_location location) {
-	(*traversal_function(obj))(space, obj, location);
+	(*traversal[obj->type])(space, obj, location);
 }
 
 void clear_garbage(memory_space* memory, object** root, object_location location, char move_root) {
@@ -308,6 +286,29 @@ void perform_gc(object** root) {
 
 void init_memory_handling() {
 	stack_references = empty_list();
+	
+	object_type t;
+	for (t = type_none; t < type_count; t++) {
+		traversal[t] = &traverse_nothing;
+	}
+	traversal[type_symbol] = &traverse_symbol;
+	traversal[type_integer] = &traverse_integer;
+	traversal[type_fraction] = &traverse_fraction;
+	traversal[type_complex] = &traverse_complex;
+	traversal[type_list] = &traverse_list;
+	traversal[type_stream] = &traverse_stream;
+	traversal[type_vector] = &traverse_vector;
+	traversal[type_vector_iterator] = &traverse_vector_iterator;
+	traversal[type_struct_definition] = &traverse_struct_definition;
+	traversal[type_struct_instance] = &traverse_struct_instance;
+	traversal[type_function] = &traverse_function;
+	traversal[type_binding] = &traverse_binding;
+	traversal[type_environment] = &traverse_environment;
+	traversal[type_call] = &traverse_call;
+	traversal[type_continuation] = &traverse_continuation;
+	traversal[type_syntax_object] = &traverse_syntax_object;
+	traversal[type_internal_error] = &traverse_internal_error;
+	traversal[type_delay] = &traverse_delay;
 }
 
 void init_memory_spaces() {
