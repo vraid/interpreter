@@ -311,6 +311,6 @@ void init_memory_handling() {
 	traversal[type_delay] = &traverse_delay;
 }
 
-void init_memory_spaces() {
-	init_memory_space(&main_memory_space, 1024 * 1024 * 4);
+void init_memory_spaces(int size) {
+	init_memory_space(&main_memory_space, size);
 }

@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 	init_base_syntax_procedures();
 	init_sequence_syntax_procedures();
 	init_memory_handling();
-	init_memory_spaces();
+	init_memory_spaces(1024 * 1024 * 4);
 	init_workspace();
 	init_validate_procedures();
 	init_generic_arguments();
