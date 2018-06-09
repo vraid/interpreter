@@ -180,6 +180,7 @@ typedef struct object {
 			int y;
 		} internal_position;
 		struct {
+			struct object* trace;
 			struct object* message;
 		} internal_error;
 	} data;
@@ -285,4 +286,5 @@ object* desyntax(object* obj);
 int internal_position_x(object* obj);
 int internal_position_y(object* obj);
 
+object* internal_error_trace(object* obj);
 object* internal_error_message(object* obj);

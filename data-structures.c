@@ -403,6 +403,11 @@ int internal_position_y(object* obj) {
 	return obj->data.internal_position.y;
 }
 
+object* internal_error_trace(object* obj) {
+	check_type(type_internal_error, obj);
+	return obj->data.internal_error.trace;
+}
+
 object* internal_error_message(object* obj) {
 	check_type(type_internal_error, obj);
 	return obj->data.internal_error.message;

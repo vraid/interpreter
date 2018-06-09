@@ -166,6 +166,7 @@ void traverse_syntax_object(target_space space, object* obj, object_location loc
 }
 
 void traverse_internal_error(target_space space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.internal_error.trace, location);
 	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
 

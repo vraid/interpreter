@@ -29,9 +29,9 @@ object* repl_catch_error(object* args, object* cont) {
 	delist_3(args, &value, &error_string, &environment);
 	
 	if (is_internal_error(value)) {		
-		printf("%s:\n", string_value(error_string));
+		printf("error:\n");
 		
-		object* print_args = alloc_list_2(internal_error_message(value), environment);
+		object* print_args = alloc_list_2(value, environment);
 		object* print_call = alloc_call(&repl_print_entry_proc, print_args, cont);
 		
 		return perform_call(print_call);
@@ -75,7 +75,8 @@ object* repl_validate_entry(object* args, object* cont) {
 	object* catch_call = alloc_call(&repl_catch_error_proc, catch_args, eval_cont);
 	object* catch_cont = alloc_catching_cont(catch_call);
 	
-	object* validate_call = alloc_call(&validate_expression_proc, args, catch_cont);
+	object* validate_args = alloc_list_3(value, environment, empty_list());
+	object* validate_call = alloc_call(&validate_expression_proc, validate_args, catch_cont);
 	
 	return perform_call(validate_call);
 }
@@ -93,7 +94,8 @@ object* repl_eval_entry(object* args, object* cont) {
 	object* error_call = alloc_call(&repl_catch_error_proc, error_args, print_cont);
 	object* error_cont = alloc_catching_cont(error_call);
 	
-	object* eval_call = alloc_call(&eval_proc, args, error_cont);
+	object* eval_args = alloc_list_3(value, environment, empty_list());
+	object* eval_call = alloc_call(&eval_proc, eval_args, error_cont);
 	
 	return perform_call(eval_call);
 }

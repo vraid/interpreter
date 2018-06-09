@@ -47,7 +47,6 @@ object* rest(object* args, object* cont) {
 	}
 }
 
-
 object take_single_proc;
 object take_rest_proc;
 

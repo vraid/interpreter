@@ -181,8 +181,9 @@ object* init_internal_position(object* obj, int x, int y) {
 	return obj;
 }
 
-object* init_internal_error(object* obj, object* message) {
+object* init_internal_error(object* obj, object* trace, object* message) {
 	init_object(location_stack, type_internal_error, obj);
+	obj->data.internal_error.trace = trace;
 	obj->data.internal_error.message = message;
 	return obj;
 }
@@ -254,7 +255,6 @@ object* init_trace_list(object* cell, object* a, object* trace) {
 			}
 			trace = list_rest(trace);
 		}
-		
 		return init_list_cell(cell, a, last);
 	}
 }

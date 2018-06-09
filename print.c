@@ -7,6 +7,7 @@
 #include "global-variables.h"
 #include "call.h"
 #include "delist.h"
+#include "list-util.h"
 #include "object-init.h"
 #include "vectors.h"
 #include "integers.h"
@@ -239,6 +240,81 @@ object* print_complex(object* args, object* cont) {
 	return perform_call(call);
 }
 
+object trace_to_origin_proc;
+
+object* trace_to_origin(object* args, object* cont) {
+	object* result;
+	object* trace;
+	delist_2(args, &result, &trace);
+	
+	if (is_empty_list(trace)) {
+		object* call_args = alloc_list_1(result);
+		object* call = alloc_call(&reverse_list_proc, call_args, cont);
+		
+		return perform_call(call);
+	}
+	else {
+		object* first = list_first(trace);
+		object* res = alloc_list_cell(syntax_object_origin(first), result);
+		
+		object* call_args = alloc_list_2(res, list_rest(trace));
+		object* call = alloc_call(&trace_to_origin_proc, call_args, cont);
+		
+		return perform_call(call);
+	}
+}
+
+object print_internal_position_proc;
+
+object* print_internal_position(object* args, object* cont) {
+	object* pos;
+	delist_1(args, &pos);
+	
+	printf("(pos %i %i)", internal_position_y(pos), internal_position_x(pos));
+	
+	return call_discarding_cont(cont);
+}
+
+object print_error_trace_proc;
+
+object* print_error_trace(object* args, object* cont) {
+	object* trace;
+	delist_1(args, &trace);
+	
+	if (is_empty_list(trace)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		printf("\nin ");
+		
+		object* print_call = alloc_call(&print_sequence_proc, empty_list(), cont);
+		object* print_cont = alloc_cont(print_call);
+		
+		object* origin_args = alloc_list_2(empty_list(), trace);
+		object* origin_call = alloc_call(&trace_to_origin_proc, origin_args, print_cont);
+		
+		return perform_call(origin_call);
+	}
+}
+
+object print_internal_error_proc;
+
+object* print_internal_error(object* args, object* cont) {
+	object* e;
+	delist_1(args, &e);
+	
+	object* trace = internal_error_trace(e);
+	trace = is_false(trace) ? empty_list() : trace;
+	
+	object* trace_args = alloc_list_1(trace);
+	object* trace_call = alloc_call(&print_error_trace_proc, trace_args, cont);
+	object* trace_cont = alloc_discarding_cont(trace_call);
+	
+	object* print_args = alloc_list_1(internal_error_message(e));
+	
+	return print_value(print_args, trace_cont);
+}
+
 object* print_newline(object* args, object* cont) {
 	printf("\n");
 	return call_discarding_cont(cont);
@@ -302,6 +378,12 @@ object* print_value(object* args, object* cont) {
 			object* ls = alloc_list_1(function_parameters(obj));
 			return print_sequence(ls, cont);
 			break;
+		case type_internal_position:
+			return print_internal_position(print_args, cont);
+			break;
+		case type_internal_error:
+			return print_internal_error(print_args, cont);
+			break;
 		default:
 			fprintf(stderr, "%s", object_type_name(obj));
 	}
@@ -348,4 +430,8 @@ void init_print_procedures(void) {
 	init_primitive(&print_fraction_denominator, &print_fraction_denominator_proc);
 
 	init_primitive(&print_complex, &print_complex_proc);
+	init_primitive(&trace_to_origin, &trace_to_origin_proc);
+	init_primitive(&print_internal_position, &print_internal_position_proc);
+	init_primitive(&print_internal_error, &print_internal_error_proc);
+	init_primitive(&print_error_trace, &print_error_trace_proc);
 }

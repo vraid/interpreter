@@ -18,7 +18,8 @@ object* map_single(object* args, object* cont) {
 	object* last;
 	object* unmapped;
 	object* function;
-	delist_3(args, &last, &unmapped, &function);
+	object* trace;
+	delist_4(args, &last, &unmapped, &function, &trace);
 	
 	if (is_empty_sequence(unmapped)) {
 		return call_discarding_cont(cont);
@@ -26,7 +27,7 @@ object* map_single(object* args, object* cont) {
 	else {
 		object* rest = alloc_next_iterator(unmapped);
 		
-		object* map_args = alloc_list_2(rest, function);
+		object* map_args = alloc_list_3(rest, function, trace);
 		object* map_call = alloc_call(&map_single_proc, map_args, cont);
 		object* map_cont = alloc_cont(map_call);
 		
@@ -35,7 +36,7 @@ object* map_single(object* args, object* cont) {
 		object* add_cont = alloc_cont(add_call);
 		
 		object* function_args = alloc_list_1(sequence_first(unmapped));
-		object* eval_args = alloc_list_2(function_args, function);
+		object* eval_args = alloc_list_3(function_args, function, trace);
 		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, add_cont);
 		
 		return perform_call(eval_call);
@@ -44,7 +45,8 @@ object* map_single(object* args, object* cont) {
 
 object* map(object* args, object* cont) {
 	object* syntax_procedure;
-	delist_1(args, &syntax_procedure);
+	object* trace;
+	delist_2(args, &syntax_procedure, &trace);
 	
 	object* function;
 	object* sequence;
@@ -64,13 +66,13 @@ object* map(object* args, object* cont) {
 		else {
 			object* rest = alloc_next_iterator(sequence);
 			
-			object* map_args = alloc_list_2(rest, function);
+			object* map_args = alloc_list_3(rest, function, trace);
 			object* list_args = alloc_list_2(&map_single_proc, map_args);
 			object* list_call = alloc_call(&make_list_proc, list_args, convert_cont);
 			object* list_cont = alloc_cont(list_call);
 			
 			object* function_args = alloc_list_1(sequence_first(sequence));
-			object* eval_args = alloc_list_2(function_args, function);
+			object* eval_args = alloc_list_3(function_args, function, trace);
 			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, list_cont);
 			
 			return perform_call(eval_call);
@@ -84,7 +86,8 @@ object* fold_single(object* args, object* cont) {
 	object* value;
 	object* elements;
 	object* function;
-	delist_3(args, &value, &elements, &function);
+	object* trace;
+	delist_4(args, &value, &elements, &function, &trace);
 	
 	if (is_empty_sequence(elements)) {
 		return call_cont(cont, value);
@@ -92,12 +95,12 @@ object* fold_single(object* args, object* cont) {
 	else {
 		object* rest = alloc_sequence_rest(elements);
 		
-		object* fold_args = alloc_list_2(rest, function);
+		object* fold_args = alloc_list_3(rest, function, trace);
 		object* fold_call = alloc_call(&fold_single_proc, fold_args, cont);
 		object* fold_cont = alloc_cont(fold_call);
 		
 		object* function_args = alloc_list_2(value, sequence_first(elements));
-		object* eval_args = alloc_list_2(function_args, function);
+		object* eval_args = alloc_list_3(function_args, function, trace);
 		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, fold_cont);
 		
 		return perform_call(eval_call);
@@ -106,7 +109,8 @@ object* fold_single(object* args, object* cont) {
 
 object* fold(object* args, object* cont) {
 	object* syntax_procedure;
-	delist_1(args, &syntax_procedure);
+	object* trace;
+	delist_2(args, &syntax_procedure, &trace);
 	
 	object* function;
 	object* initial;
@@ -114,12 +118,13 @@ object* fold(object* args, object* cont) {
 	delist_3(syntax_procedure, &function, &initial, &elements);
 	
 	if (is_stream(elements)) {
-		object* call = alloc_call(&stream_fold_proc, syntax_procedure, cont);
+		object* call_args = alloc_list_4(function, initial, elements, trace);
+		object* call = alloc_call(&stream_fold_proc, call_args, cont);
 		
 		return perform_call(call);
 	}
 	else {
-		object* fold_args = alloc_list_3(initial, elements, function);
+		object* fold_args = alloc_list_4(initial, elements, function, trace);
 		object* fold_call = alloc_call(&fold_single_proc, fold_args, cont);
 		
 		return perform_call(fold_call);
@@ -151,7 +156,8 @@ object* filter_single(object* args, object* cont) {
 	object* last;
 	object* unfiltered;
 	object* function;
-	delist_3(args, &last, &unfiltered, &function);
+	object* trace;
+	delist_4(args, &last, &unfiltered, &function, &trace);
 	
 	if (is_empty_sequence(unfiltered)) {
 		return call_discarding_cont(cont);
@@ -159,7 +165,7 @@ object* filter_single(object* args, object* cont) {
 	else {
 		object* rest = alloc_sequence_rest(unfiltered);
 		
-		object* filter_args = alloc_list_2(rest, function);
+		object* filter_args = alloc_list_3(rest, function, trace);
 		object* filter_call = alloc_call(&filter_single_proc, filter_args, cont);
 		object* filter_cont = alloc_cont(filter_call);
 		
@@ -169,7 +175,7 @@ object* filter_single(object* args, object* cont) {
 		object* add_cont = alloc_cont(add_call);
 		
 		object* function_args = alloc_list_1(value);
-		object* eval_args = alloc_list_2(function_args, function);
+		object* eval_args = alloc_list_3(function_args, function, trace);
 		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, add_cont);
 		
 		return perform_call(eval_call);
@@ -183,7 +189,8 @@ object* filter_first(object* args, object* cont) {
 	object* value;
 	object* unfiltered;
 	object* function;
-	delist_4(args, &result, &value, &unfiltered, &function);
+	object* trace;
+	delist_5(args, &result, &value, &unfiltered, &function, &trace);
 	
 	// continue without starting a list
 	if (is_false(result)) {
@@ -194,12 +201,12 @@ object* filter_first(object* args, object* cont) {
 			object* value = sequence_first(unfiltered);
 			object* rest = alloc_sequence_rest(unfiltered);
 			
-			object* filter_args = alloc_list_3(value, rest, function);
+			object* filter_args = alloc_list_4(value, rest, function, trace);
 			object* filter_call = alloc_call(&filter_first_proc, filter_args, cont);
 			object* filter_cont = alloc_cont(filter_call);
 			
 			object* function_args = alloc_list_1(value);
-			object* eval_args = alloc_list_2(function_args, function);
+			object* eval_args = alloc_list_3(function_args, function, trace);
 			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, filter_cont);
 			
 			return perform_call(eval_call);
@@ -207,7 +214,7 @@ object* filter_first(object* args, object* cont) {
 	}
 	// start making a list
 	else {
-		object* filter_args = alloc_list_2(unfiltered, function);
+		object* filter_args = alloc_list_3(unfiltered, function, trace);
 		object* list_args = alloc_list_3(value, &filter_single_proc, filter_args);
 		object* list_call = alloc_call(&make_list_proc, list_args, cont);
 		
@@ -217,14 +224,16 @@ object* filter_first(object* args, object* cont) {
 
 object* filter(object* args, object* cont) {
 	object* syntax_procedure;
-	delist_1(args, &syntax_procedure);
+	object* trace;
+	delist_2(args, &syntax_procedure, &trace);
 	
 	object* function;
 	object* elements;
 	delist_2(syntax_procedure, &function, &elements);
 	
 	if (is_stream(elements)) {
-		object* call = alloc_call(&stream_filter_proc, syntax_procedure, cont);
+		object* call_args = alloc_list_3(function, elements, trace);
+		object* call = alloc_call(&stream_filter_proc, call_args, cont);
 		
 		return perform_call(call);
 	}
@@ -239,12 +248,12 @@ object* filter(object* args, object* cont) {
 			object* value = sequence_first(elements);
 			object* rest = alloc_sequence_rest(elements);
 			
-			object* filter_args = alloc_list_3(value, rest, function);
+			object* filter_args = alloc_list_4(value, rest, function, trace);
 			object* filter_call = alloc_call(&filter_first_proc, filter_args, convert_cont);
 			object* filter_cont = alloc_cont(filter_call);
 			
 			object* function_args = alloc_list_1(value);
-			object* eval_args = alloc_list_2(function_args, function);
+			object* eval_args = alloc_list_3(function_args, function, trace);
 			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, filter_cont);
 			
 			return perform_call(eval_call);

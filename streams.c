@@ -22,7 +22,8 @@ object* make_stream(object* args, object* cont) {
 
 object* stream_map(object* args, object* cont) {
 	object* syntax;
-	delist_1(args, &syntax);
+	object* trace;
+	delist_2(args, &syntax, &trace);
 	
 	object* function;
 	object* stream;
@@ -34,7 +35,7 @@ object* stream_map(object* args, object* cont) {
 	else {
 		object* rest_list = alloc_list_2(&eval_stream_rest_proc, stream);
 		object* map_list = alloc_list_3(syntax_procedure_obj(syntax_map), function, rest_list);
-		object* delay_args = alloc_list_2(map_list, empty_environment());
+		object* delay_args = alloc_list_3(map_list, empty_environment(), trace);
 		object* delay = alloc_delay(delay_args);
 		
 		object* make_args = alloc_list_1(delay);
@@ -42,7 +43,7 @@ object* stream_map(object* args, object* cont) {
 		object* make_cont = alloc_cont(make_call);
 		
 		object* function_args = alloc_list_1(stream_first(stream));
-		object* eval_args = alloc_list_2(function_args, function);
+		object* eval_args = alloc_list_3(function_args, function, trace);
 		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, make_cont);
 		
 		return perform_call(eval_call);
@@ -55,9 +56,10 @@ object* stream_fold_three(object* args, object* cont) {
 	object* stream;
 	object* function;
 	object* value;
-	delist_3(args, &stream, &function, &value);
+	object* trace;
+	delist_4(args, &stream, &function, &value, &trace);
 	
-	object* call_args = alloc_list_3(function, value, stream);
+	object* call_args = alloc_list_4(function, value, stream, trace);
 	object* call = alloc_call(&stream_fold_proc, call_args, cont);
 	
 	return perform_call(call);
@@ -69,9 +71,10 @@ object* stream_fold_two(object* args, object* cont) {
 	object* value;
 	object* function;
 	object* stream;
-	delist_3(args, &value, &function, &stream);
+	object* trace;
+	delist_4(args, &value, &function, &stream, &trace);
 	
-	object* next_args = alloc_list_2(function, value);
+	object* next_args = alloc_list_3(function, value, trace);
 	object* next_call = alloc_call(&stream_fold_three_proc, next_args, cont);
 	object* next_cont = alloc_cont(next_call);
 		
@@ -85,18 +88,19 @@ object* stream_fold(object* args, object* cont) {
 	object* function;
 	object* initial;
 	object* stream;
-	delist_3(args, &function, &initial, &stream);
+	object* trace;
+	delist_4(args, &function, &initial, &stream, &trace);
 	
 	if (is_empty_stream(stream)) {
 		return call_cont(cont, initial);
 	}
 	else {
-		object* next_args = alloc_list_2(function, stream);
+		object* next_args = alloc_list_3(function, stream, trace);
 		object* next_call = alloc_call(&stream_fold_two_proc, next_args, cont);
 		object* next_cont = alloc_cont(next_call);
 		
 		object* function_args = alloc_list_2(initial, stream_first(stream));
-		object* eval_list = alloc_list_2(function_args, function);
+		object* eval_list = alloc_list_3(function_args, function, trace);
 		object* eval_call = alloc_call(&eval_function_call_proc, eval_list, next_cont);
 		
 		return perform_call(eval_call);	
@@ -111,10 +115,11 @@ object* stream_filter_build(object* args, object* cont) {
 	object* value;
 	object* stream;
 	object* function;
-	delist_4(args, &result, &value, &stream, &function);
+	object* trace;
+	delist_5(args, &result, &value, &stream, &function, &trace);
 	
 	if (is_false(result)) {
-		object* rest_args = alloc_list_2(stream, function);
+		object* rest_args = alloc_list_3(stream, function, trace);
 		object* rest_call = alloc_call(&stream_filter_rest_eval_proc, rest_args, cont);
 		
 		return perform_call(rest_call);
@@ -122,7 +127,7 @@ object* stream_filter_build(object* args, object* cont) {
 	else {
 		object* rest_list = alloc_list_2(&eval_stream_rest_proc, stream);
 		object* filter_list = alloc_list_3(syntax_procedure_obj(syntax_filter), function, rest_list);
-		object* delay_args = alloc_list_2(filter_list, empty_environment());
+		object* delay_args = alloc_list_3(filter_list, empty_environment(), trace);
 		object* delay = alloc_delay(delay_args);
 
 		object* stream = alloc_stream(value, delay);
@@ -136,7 +141,8 @@ object stream_filter_func_eval_proc;
 object* stream_filter_func_eval(object* args, object* cont) {
 	object* stream;
 	object* function;
-	delist_2(args, &stream, &function);
+	object* trace;
+	delist_3(args, &stream, &function, &trace);
 	
 	if (is_empty_stream(stream)) {
 		return call_cont(cont, empty_stream());
@@ -144,12 +150,12 @@ object* stream_filter_func_eval(object* args, object* cont) {
 	else {
 		object* first = stream_first(stream);
 		
-		object* stream_args = alloc_list_3(first, stream, function);
+		object* stream_args = alloc_list_4(first, stream, function, trace);
 		object* stream_call = alloc_call(&stream_filter_build_proc, stream_args, cont);
 		object* stream_cont = alloc_cont(stream_call);
 
 		object* function_args = alloc_list_1(first);
-		object* eval_args = alloc_list_2(function_args, function);
+		object* eval_args = alloc_list_3(function_args, function, trace);
 		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, stream_cont);
 		
 		return perform_call(eval_call);
@@ -159,9 +165,10 @@ object* stream_filter_func_eval(object* args, object* cont) {
 object* stream_filter_rest_eval(object* args, object* cont) {
 	object* stream;
 	object* function;
-	delist_2(args, &stream, &function);
+	object* trace;
+	delist_3(args, &stream, &function, &trace);
 	
-	object* eval_args = alloc_list_1(function);
+	object* eval_args = alloc_list_2(function, trace);
 	object* eval_call = alloc_call(&stream_filter_func_eval_proc, eval_args, cont);
 	object* eval_cont = alloc_cont(eval_call);
 	
@@ -174,13 +181,14 @@ object* stream_filter_rest_eval(object* args, object* cont) {
 object* stream_filter(object* args, object* cont) {
 	object* function;
 	object* stream;
-	delist_2(args, &function, &stream);
+	object* trace;
+	delist_3(args, &function, &stream, &trace);
 	
 	if (is_empty_stream(stream)) {
 		return call_cont(cont, empty_stream());
 	}
 	else {
-		object* eval_args = alloc_list_2(stream, function);
+		object* eval_args = alloc_list_3(stream, function, trace);
 		object* eval_call = alloc_call(&stream_filter_func_eval_proc, eval_args, cont);
 		
 		return perform_call(eval_call);
@@ -205,7 +213,7 @@ object* eval_stream_rest(object* args, object* cont) {
 	if (delay_evaluated(rest)) {
 		return call_cont(cont, delay_value(rest));
 	}
-	else {		
+	else {
 		object* eval_args = alloc_list_1(rest);
 		object* eval_call = alloc_call(&eval_force_proc, eval_args, cont);
 		

@@ -55,25 +55,26 @@ object* perform_call(object* call) {
 	}
 }
 
+object* throw_trace_error_string(object* cont, object* origin, char* str);
+
 object* throw_error(object* cont, object* message) {
-	return throw_origin_error(cont, empty_list(), message);
+	return throw_trace_error(cont, false(), message);
 }
 
 object* throw_error_string(object* cont, char* str) {
-	return throw_origin_error_string(cont, empty_list(), str);
+	return throw_trace_error_string(cont, false(), str);
 }
 
-object* throw_origin_error(object* cont, object* origin, object* message) {
-	object* ls = alloc_list_2(message, origin);
-	object* e = alloc_internal_error(ls);
+object* throw_trace_error(object* cont, object* trace, object* message) {
+	object* e = alloc_internal_error(trace, message);
 	
 	return call_cont(cont, e);
 }
 
-object* throw_origin_error_string(object* cont, object* origin, char* str) {
+object* throw_trace_error_string(object* cont, object* trace, char* str) {
 	object* obj = alloc_string(str);
 	
-	return throw_origin_error(cont, origin, obj);
+	return throw_trace_error(cont, trace, obj);
 }
 
 object* call_cont(object* cont, object* arg) {

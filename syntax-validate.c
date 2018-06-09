@@ -10,6 +10,7 @@
 #include "environments.h"
 #include "higher-order.h"
 #include "generic-arguments.h"
+#include "base-util.h"
 #include "print.h"
 
 object* throw_length_error(object* cont) {
@@ -88,12 +89,15 @@ void init_syntax_lengths() {
 	syntax_length[syntax_filter] = 2;
 }
 
+object return_syntax_proc;
+
 object validate_list_elements_proc;
 
 object* no_validate(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	return call_cont(cont, stx);
 }
@@ -101,10 +105,11 @@ object* no_validate(object* args, object* cont) {
 object* standard_validate(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* rest = list_rest(stx);
-	object* call_args = alloc_list_2(rest, env);
+	object* call_args = alloc_list_3(rest, env, trace);
 	object* call = alloc_call(&validate_list_elements_proc, call_args, cont);
 	return perform_call(call);
 }
@@ -112,7 +117,8 @@ object* standard_validate(object* args, object* cont) {
 object* validate_define(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* signature;
 	object* value;
@@ -124,7 +130,7 @@ object* validate_define(object* args, object* cont) {
 		return throw_error(cont, ls);
 	}
 	
-	object* call_args = alloc_list_2(value, env);
+	object* call_args = alloc_list_3(value, env, trace);
 	object* call = alloc_call(&validate_expression_proc, call_args, cont);
 	return perform_call(call);
 }
@@ -132,7 +138,8 @@ object* validate_define(object* args, object* cont) {
 object* validate_lambda(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* param;
 	object* body;
@@ -150,7 +157,7 @@ object* validate_lambda(object* args, object* cont) {
 		return throw_error(cont, ls);
 	}
 	
-	object* call_args = alloc_list_2(body, env);
+	object* call_args = alloc_list_3(body, env, trace);
 	object* call = alloc_call(&validate_expression_proc, call_args, cont);
 	return perform_call(call);
 }
@@ -161,7 +168,8 @@ object* validate_let_bindings(object* args, object* cont) {
 	object* stx;
 	object* bindings;
 	object* env;
-	delist_3(args, &stx, &bindings, &env);
+	object* trace;
+	delist_4(args, &stx, &bindings, &env, &trace);
 	
 	if (is_empty_list(bindings)) {
 		return call_discarding_cont(cont);
@@ -171,11 +179,11 @@ object* validate_let_bindings(object* args, object* cont) {
 	
 	object* value = desyntax(list_ref(1, first));
 	
-	object* next_args = alloc_list_2(rest, env);
+	object* next_args = alloc_list_3(rest, env, trace);
 	object* next_call = alloc_call(&validate_let_bindings_proc, next_args, cont);
 	object* next_cont = alloc_cont(next_call);
 	
-	object* call_args = alloc_list_2(value, env);
+	object* call_args = alloc_list_3(value, env, trace);
 	object* call = alloc_call(&validate_expression_proc, call_args, next_cont);
 	
 	return perform_call(call);
@@ -184,7 +192,8 @@ object* validate_let_bindings(object* args, object* cont) {
 object* validate_let(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* bindings;
 	object* body;
@@ -196,11 +205,11 @@ object* validate_let(object* args, object* cont) {
 		return throw_error(cont, ls);
 	}
 	
-	object* next_args = alloc_list_2(body, env);
+	object* next_args = alloc_list_3(body, env, trace);
 	object* next_call = alloc_call(&validate_expression_proc, next_args, cont);
 	object* next_cont = alloc_discarding_cont(next_call);
 	
-	object* call_args = alloc_list_3(stx, bindings, env);
+	object* call_args = alloc_list_4(stx, bindings, env, trace);
 	object* call = alloc_call(&validate_let_bindings_proc, call_args, next_cont);
 	
 	return perform_call(call);
@@ -212,7 +221,8 @@ object* validate_letrec_two(object* args, object* cont) {
 	object* names_values;
 	object* stx;
 	object* env;
-	delist_3(args, &names_values, &stx, &env);
+	object* trace;
+	delist_4(args, &names_values, &stx, &env, &trace);
 	
 	object* names;
 	object* values;
@@ -229,11 +239,11 @@ object* validate_letrec_two(object* args, object* cont) {
 	object* body;
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
-	object* next_args = alloc_list_2(body, env);
+	object* next_args = alloc_list_3(body, env, trace);
 	object* next_call = alloc_call(&validate_expression_proc, next_args, cont);
 	object* next_cont = alloc_discarding_cont(next_call);
 	
-	object* call_args = alloc_list_3(stx, bindings, env);
+	object* call_args = alloc_list_4(stx, bindings, env, trace);
 	object* call = alloc_call(&validate_let_bindings_proc, call_args, next_cont);
 	
 	return perform_call(call);
@@ -242,7 +252,8 @@ object* validate_letrec_two(object* args, object* cont) {
 object* validate_letrec(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* bindings;
 	object* body;
@@ -266,7 +277,8 @@ object* validate_letrec(object* args, object* cont) {
 object* validate_rec(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* name;
 	object* bindings;
@@ -284,11 +296,11 @@ object* validate_rec(object* args, object* cont) {
 		return throw_error(cont, ls);
 	}
 	
-	object* next_args = alloc_list_2(body, env);
+	object* next_args = alloc_list_3(body, env, trace);
 	object* next_call = alloc_call(&validate_expression_proc, next_args, cont);
 	object* next_cont = alloc_discarding_cont(next_call);
 	
-	object* binding_args = alloc_list_3(stx, bindings, env);
+	object* binding_args = alloc_list_4(stx, bindings, env, trace);
 	object* binding_call = alloc_call(&validate_let_bindings_proc, binding_args, next_cont);
 	
 	return perform_call(binding_call);
@@ -297,7 +309,8 @@ object* validate_rec(object* args, object* cont) {
 object* validate_struct(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	int n = list_length(stx)-1;
 	if (n < 2 || n > 3) {
@@ -341,19 +354,44 @@ object* validate_struct(object* args, object* cont) {
 
 object syntax_validate[syntax_count];
 
+object validate_list_element_proc;
+
+object* validate_list_element(object* args, object* cont) {
+	object* elem;
+	object* elements;
+	object* env;
+	object* trace;
+	delist_4(args, &elem, &elements, &env, &trace);
+	
+	if (is_empty_list(elements)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		object* next_args = alloc_list_3(list_rest(elements), env, trace);
+		object* next_call = alloc_call(&validate_list_element_proc, next_args, cont);
+		object* next_cont = alloc_cont(next_call);
+		
+		object* validate_args = alloc_list_3(list_first(elements), env, trace);
+		object* validate_call = alloc_call(&validate_expression_proc, validate_args, next_cont);
+		
+		return perform_call(validate_call);
+	}
+}
+
 object* validate_list_elements(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
-	object* body = alloc_list_3(&validate_expression_proc, generic_args[0], env);
-	object* func = alloc_function(empty_environment(), generic_arg_list[1], body);
+	object* return_args = alloc_list_1(stx);
+	object* return_call = alloc_call(&identity_proc, return_args, cont);
+	object* return_cont = alloc_discarding_cont(return_call);
 	
-	object* map_list = alloc_list_2(func, stx);
-	object* map_args = alloc_list_1(map_list);
-	object* map_call = alloc_call(&map_proc, map_args, cont);
+	object* validate_args = alloc_list_4(no_object(), desyntax(stx), env, trace);
+	object* validate_call = alloc_call(&validate_list_element_proc, validate_args, return_cont);
 	
-	return perform_call(map_call);
+	return perform_call(validate_call);
 }
 
 object validate_list_proc;
@@ -361,7 +399,10 @@ object validate_list_proc;
 object* validate_list(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
+	
+	stx = desyntax(stx);
 	
 	if (is_empty_list(stx)) {
 		return throw_error_string(cont, "expression cannot be empty list");
@@ -378,7 +419,8 @@ object* validate_list(object* args, object* cont) {
 					if (syntax_length[id] > 0 && syntax_length[id]+1 != n) {
 						return throw_length_error(cont);
 					}
-					object* call = alloc_call(&syntax_validate[id], args, cont);
+					object* validate_args = alloc_list_3(stx, env, trace);
+					object* call = alloc_call(&syntax_validate[id], validate_args, cont);
 					return perform_call(call);
 				}
 			}
@@ -393,12 +435,11 @@ object validate_atom_proc;
 object* validate_atom(object* args, object* cont) {
 	object* atom;
 	object* env;
-	delist_2(args, &atom, &env);
+	object* trace;
+	delist_3(args, &atom, &env, &trace);
 	
 	return call_cont(cont, atom);
 }
-
-object return_syntax_proc;
 
 object* return_syntax(object* args, object* cont) {
 	object* throw;
@@ -411,7 +452,8 @@ object* return_syntax(object* args, object* cont) {
 object* validate_expression(object* args, object* cont) {
 	object* stx;
 	object* env;
-	delist_2(args, &stx, &env);
+	object* trace;
+	delist_3(args, &stx, &env, &trace);
 	
 	object* obj = desyntax(stx);
 
@@ -419,7 +461,7 @@ object* validate_expression(object* args, object* cont) {
 	object* return_call = alloc_call(&return_syntax_proc, return_args, cont);
 	object* return_cont = alloc_cont(return_call);
 	
-	object* call_args = alloc_list_2(obj, env);
+	object* call_args = alloc_list_3(obj, env, trace);
 	object* call = alloc_call(is_list(obj) ? &validate_list_proc : &validate_atom_proc, call_args, return_cont);
 	
 	return perform_call(call);
@@ -447,4 +489,5 @@ void init_validate_procedures(void) {
 	init_primitive(&validate_atom, &validate_atom_proc);
 	init_primitive(&validate_list, &validate_list_proc);
 	init_primitive(&validate_list_elements, &validate_list_elements_proc);
+	init_primitive(&validate_list_element, &validate_list_element_proc);
 }

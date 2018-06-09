@@ -82,8 +82,8 @@ object* init_syntax_object(object* obj, object* syntax, object* origin);
 object* init_internal_position(object* obj, int x, int y);
 #define alloc_internal_position(a, b) init_internal_position(alloc_obj(), a, b)
 
-object* init_internal_error(object* obj, object* message);
-#define alloc_internal_error(a) init_internal_error(alloc_obj(), a)
+object* init_internal_error(object* obj, object* trace, object* message);
+#define alloc_internal_error(a, b) init_internal_error(alloc_obj(), a, b)
 
 object* init_delay(object* obj, object* value);
 #define alloc_delay(a) init_delay(alloc_obj(), a)
@@ -111,4 +111,3 @@ object* init_list_5(object* ls, object* first, object* second, object* third, ob
 
 object* init_trace_list(object* cell, object* a, object* trace);
 #define alloc_trace_list(a, b) init_trace_list(alloc_obj(), a, b)
-
