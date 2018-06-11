@@ -97,7 +97,7 @@ object* bind_struct_is_type(object* args, object* cont) {
 	delist_3(args, &name, &value, &environment);
 	
 	object* bind_args = alloc_list_3(value, name, environment);
-	object* bind_call = alloc_call(&extend_environment_proc, bind_args, cont);
+	object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, cont);
 	
 	return perform_call(bind_call);
 }
@@ -171,7 +171,7 @@ object* define_field_accessor(object* args, object* cont) {
 	delist_4(args, &name, &count, &type, &environment);
 	
 	object* bind_args = alloc_list_2(name, environment);
-	object* bind_call = alloc_call(&extend_environment_proc, bind_args, cont);
+	object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, cont);
 	object* bind_cont = alloc_cont(bind_call);
 	
 	object* make_args = alloc_list_2(count, type);
@@ -227,7 +227,7 @@ object* define_struct_next(object* args, object* cont) {
 	object* type_cont = alloc_cont(type_call);
 	
 	object* bind_args = alloc_list_2(struct_definition_name(type), environment);
-	object* bind_call = alloc_call(&extend_environment_proc, bind_args, type_cont);
+	object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, type_cont);
 	object* bind_cont = alloc_cont(bind_call);
 	
 	object* constructor_args = alloc_list_2(renamed_fields, type);

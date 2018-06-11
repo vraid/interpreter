@@ -14,96 +14,22 @@
 #include "eval.h"
 #include "structs.h"
 
-object bind_value_proc;
-
-object* bind_value(object* args, object* cont) {
-	object* value;
-	object* name;
-	object* environment;
-	delist_3(args, &value, &name, &environment);
-	
-	object* call = alloc_call(&extend_environment_proc, args, cont);
-	return perform_call(call);
-}
-
 object update_binding_proc;
 
 object* update_binding(object* args, object* cont) {
 	object* value;
-	object* name;
-	object* environment;
-	delist_3(args, &value, &name, &environment);
-	
-	object* binding = find_in_environment(environment, name, 1);
+	object* binding;
+	delist_2(args, &value, &binding);
 	
 	if (is_no_binding(binding) || !is_placeholder_value(binding_value(binding))) {
 		object* str = alloc_string("updating non-placeholder binding");
-		object* ls = alloc_list_3(str, name, value);
+		object* ls = alloc_list_3(str, binding_name(binding), value);
 		return throw_error(cont, ls);
 	}
 	binding->data.binding.value = value;
 	alloc_stack_reference(binding, value);
 	
-	// the environment is not the latest one, so it is discarded
 	return call_discarding_cont(cont);
-}
-
-object bind_continued_proc;
-
-object* bind_continued(object* args, object* cont) {
-	object* environment;
-	object* body;
-	object* name;
-	object* trace;
-	delist_4(args, &environment, &body, &name, &trace);
-	
-	object* return_args = alloc_list_1(environment);
-	object* return_call = alloc_call(&identity_proc, return_args, cont);
-	object* return_cont = alloc_discarding_cont(return_call);
-	
-	object* update_args = alloc_list_2(name, environment);
-	object* update_call = alloc_call(&update_binding_proc, update_args, return_cont);
-	object* update_cont = alloc_cont(update_call);
-	
-	object* eval_args = alloc_list_3(body, environment, trace);
-	object* eval_call = alloc_call(&eval_proc, eval_args, update_cont);
-	
-	return perform_call(eval_call);
-}
-
-object bind_placeholder_proc;
-
-object* bind_placeholder(object* args, object* cont) {
-	object* environment;
-	object* name;
-	delist_2(args, &environment, &name);
-	
-	object* bind_args = alloc_list_3(placeholder_value(), name, environment);
-	object* bind_call = alloc_call(&extend_environment_proc, bind_args, cont);
-	
-	return perform_call(bind_call);
-}
-
-object bind_placeholders_proc;
-
-object* bind_placeholders(object* args, object* cont) {
-	object* environment;
-	object* names;
-	delist_2(args, &environment, &names);
-	
-	if (is_empty_list(names)) {
-		return call_cont(cont, environment);
-	}
-	else {
-		object* next_args = alloc_list_1(list_rest(names));
-		object* next_call = alloc_call(&bind_placeholders_proc, next_args, cont);
-		object* next_cont = alloc_cont(next_call);
-		
-		object* bind_args = alloc_list_3(placeholder_value(), desyntax(list_first(names)), environment);
-		object* bind_call = alloc_call(&extend_environment_proc, bind_args, next_cont);
-		
-		return perform_call(bind_call);
-	}
 }
 
 object* define(object* args, object* cont) {
@@ -129,14 +55,21 @@ object* define(object* args, object* cont) {
 		return perform_call(call);
 	}
 	else {
-		object* continued_args = alloc_list_3(body, name, trace);
-		object* bind_continued_call = alloc_call(&bind_continued_proc, continued_args, cont);
-		object* continued_cont = alloc_cont(bind_continued_call);
+		object* binding = alloc_placeholder_binding(name);
+		environment = alloc_environment(alloc_list_cell(binding, environment_bindings(environment)));
 		
-		object* bind_args = alloc_list_2(environment, name);
-		object* bind_call = alloc_call(&bind_placeholder_proc, bind_args, continued_cont);
+		object* return_args = alloc_list_1(environment);
+		object* return_call = alloc_call(&identity_proc, return_args, cont);
+		object* return_cont = alloc_discarding_cont(return_call);
 		
-		return perform_call(bind_call);
+		object* update_args = alloc_list_1(binding);
+		object* update_call = alloc_call(&update_binding_proc, update_args, return_cont);
+		object* update_cont = alloc_cont(update_call);
+		
+		object* eval_args = alloc_list_3(body, environment, trace);
+		object* eval_call = alloc_call(&eval_proc, eval_args, update_cont);
+		
+		return perform_call(eval_call);
 	}
 }
 
@@ -249,7 +182,7 @@ object* let_bind(object* args, object* cont) {
 		object* let_cont = alloc_cont(let_call);
 		
 		object* bind_args = alloc_list_2(name, environment);
-		object* bind_call = alloc_call(&extend_environment_proc, bind_args, let_cont);
+		object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, let_cont);
 		object* bind_cont = alloc_cont(bind_call);
 		
 		object* eval_args = alloc_list_3(value, environment, trace);
@@ -281,28 +214,51 @@ object* let(object* args, object* cont) {
 	return perform_call(let_call);
 }
 
-object letrec_eval_single_proc;
+object make_placeholder_bindings_proc;
 
-object* letrec_eval_single(object* args, object* cont) {
-	object* environment;
-	object* bindings;
+object* make_placeholder_bindings(object* args, object* cont) {
+	object* names;
 	object* trace;
-	delist_3(args, &environment, &bindings, &trace);
+	delist_2(args, &names, &trace);
 	
-	if (is_empty_list(bindings)) {
-		return call_cont(cont, environment);
+	names = desyntax(names);
+	
+	object* dup = find_duplicate(names);
+	if (!is_false(dup)) {
+		return throw_error_string(cont, "duplicate binding");
+	}
+	
+	object* bindings = empty_list();
+	while (!is_empty_list(names)) {
+		object* binding = alloc_placeholder_binding(desyntax(list_first(names)));
+		bindings = alloc_list_cell(binding, bindings);
+		names = list_rest(names);
+	}
+	
+	return call_cont(cont, bindings);
+}
+
+object eval_bindings_proc;
+
+object* eval_bindings(object* args, object* cont) {
+	object* values;
+	object* bindings;
+	object* environment;
+	object* trace;
+	delist_4(args, &values, &bindings, &environment, &trace);
+	
+	if (is_empty_list(values)) {
+		return call_discarding_cont(cont);
 	}
 	else {
-		object* first = desyntax(list_first(bindings));
-		object* name;
-		object* value;
-		delist_desyntax_2(first, &name, &value);
+		object* value = desyntax(list_first(values));
+		object* binding = desyntax(list_first(bindings));
 		
-		object* next_args = alloc_list_3(environment, list_rest(bindings), trace);
-		object* next_call = alloc_call(&letrec_eval_single_proc, next_args, cont);
+		object* next_args = alloc_list_4(list_rest(values), list_rest(bindings), environment, trace);
+		object* next_call = alloc_call(&eval_bindings_proc, next_args, cont);
 		object* next_cont = alloc_discarding_cont(next_call);
 		
-		object* update_args = alloc_list_2(name, environment);
+		object* update_args = alloc_list_1(binding);
 		object* update_call = alloc_call(&update_binding_proc, update_args, next_cont);
 		object* update_cont = alloc_cont(update_call);
 		
@@ -313,25 +269,55 @@ object* letrec_eval_single(object* args, object* cont) {
 	}
 }
 
+object letrec_eval_proc;
+
+object* letrec_eval(object* args, object* cont) {
+	object* bindings;
+	object* values;
+	object* environment;
+	object* trace;
+	delist_4(args, &bindings, &values, &environment, &trace);
+	
+	object* ls = bindings;
+	while (!is_empty_list(ls)) {
+		environment = alloc_environment(alloc_list_cell(list_first(ls), environment_bindings(environment)));
+		ls = list_rest(ls);
+	}
+	
+	object* return_args = alloc_list_1(environment);
+	object* return_call = alloc_call(&identity_proc, return_args, cont);
+	object* return_cont = alloc_discarding_cont(return_call);
+	
+	object* eval_bindings_args = alloc_list_3(bindings, environment, trace);
+	object* eval_bindings_call = alloc_call(&eval_bindings_proc, eval_bindings_args, return_cont);
+	object* eval_bindings_cont = alloc_cont(eval_bindings_call);
+	
+	object* reverse_args = alloc_list_1(values);
+	object* reverse_call = alloc_call(&reverse_list_proc, reverse_args, eval_bindings_cont);
+	
+	return perform_call(reverse_call);
+}
+
 object letrec_bind_proc;
 
 object* letrec_bind(object* args, object* cont) {
 	object* names_values;
 	object* environment;
-	delist_2(args, &names_values, &environment);
+	object* trace;
+	delist_3(args, &names_values, &environment, &trace);
 	
-	object* names = desyntax(list_first(names_values));
+	object* names;
+	object* values;
+	delist_2(names_values, &names, &values);
 	
-	object* dup = find_duplicate(names);
-	if (!is_false(dup)) {
-		return throw_error_string(cont, "duplicate binding");
-	}
-	else {
-		object* bind_args = alloc_list_2(environment, names);
-		object* bind_call = alloc_call(&bind_placeholders_proc, bind_args, cont);
-		
-		return perform_call(bind_call);
-	}
+	object* eval_args = alloc_list_3(values, environment, trace);
+	object* eval_call = alloc_call(&letrec_eval_proc, eval_args, cont);
+	object* eval_cont = alloc_cont(eval_call);
+	
+	object* bind_args = alloc_list_2(names, trace);
+	object* bind_call = alloc_call(&make_placeholder_bindings_proc, bind_args, eval_cont);
+	
+	return perform_call(bind_call);
 }
 
 object* letrec(object* args, object* cont) {
@@ -339,7 +325,7 @@ object* letrec(object* args, object* cont) {
 	object* environment;
 	object* trace;
 	delist_3(args, &syntax, &environment, &trace);
-
+	
 	object* bindings;
 	object* body;
 	delist_desyntax_2(syntax, &bindings, &body);
@@ -348,56 +334,14 @@ object* letrec(object* args, object* cont) {
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	object* eval_cont = alloc_cont(eval_call);
 	
-	object* eval_values_args = alloc_list_2(bindings, trace);
-	object* eval_values_call = alloc_call(&letrec_eval_single_proc, eval_values_args, eval_cont);
-	object* eval_values_cont = alloc_cont(eval_values_call);
-	
-	object* bind_args = alloc_list_1(environment);
-	object* bind_call = alloc_call(&letrec_bind_proc, bind_args, eval_values_cont);
+	object* bind_args = alloc_list_2(environment, trace);
+	object* bind_call = alloc_call(&letrec_bind_proc, bind_args, eval_cont);
 	object* bind_cont = alloc_cont(bind_call);
 	
 	object* unzip_args = alloc_list_1(bindings);
-	object* unzip_call = alloc_call(&unzip_2_proc, unzip_args, bind_cont);
+	object* unzip_call = alloc_call(&unzip_2_reversed_proc, unzip_args, bind_cont);
 	
 	return perform_call(unzip_call);
-}
-
-object rec_three_proc;
-
-object* rec_three(object* args, object* cont) {
-	object* environment;
-	object* function;
-	object* arguments;
-	object* trace;
-	delist_4(args, &environment, &function, &arguments, &trace);
-	
-	function->data.function.environment = environment;
-	alloc_stack_reference(function, environment);
-	
-	object* eval_args = alloc_list_3(arguments, function, trace);
-	object* eval_call = alloc_call(&eval_function_call_proc, eval_args, cont);
-	
-	return perform_call(eval_call);
-}
-
-object rec_two_proc;
-
-object* rec_two(object* args, object* cont) {
-	object* arguments;
-	object* function;
-	object* name;
-	object* environment;
-	object* trace;
-	delist_5(args, &arguments, &function, &name, &environment, &trace);
-	
-	object* rec_args = alloc_list_3(function, arguments, trace);
-	object* rec_call = alloc_call(&rec_three_proc, rec_args, cont);
-	object* rec_cont = alloc_cont(rec_call);
-	
-	object* bind_args = alloc_list_3(function, name, environment);
-	object* bind_call = alloc_call(&extend_environment_proc, bind_args, rec_cont);
-	
-	return perform_call(bind_call);
 }
 
 object rec_one_proc;
@@ -414,16 +358,15 @@ object* rec_one(object* args, object* cont) {
 	object* arguments;
 	delist_desyntax_2(pars_args, &parameters, &arguments);
 	
-	object* function = alloc_function(empty_environment(), parameters, body);
+	object* eval_args = alloc_list_2(alloc_list_cell(name, arguments), trace);
+	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
+	object* eval_cont = alloc_cont(eval_call);
 	
-	object* rec_args = alloc_list_4(function, name, environment, trace);
-	object* rec_call = alloc_call(&rec_two_proc, rec_args, cont);
-	object* rec_cont = alloc_cont(rec_call);
+	object* function_syntax = alloc_list_2(alloc_list_cell(name, parameters), body);
+	object* define_args = alloc_list_3(function_syntax, environment, trace);
+	object* define_call = alloc_call(syntax_procedure_obj(syntax_define), define_args, eval_cont);
 	
-	object* eval_args = alloc_list_3(arguments, environment, trace);
-	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, rec_cont);
-	
-	return perform_call(eval_call);
+	return perform_call(define_call);
 }
 
 object* rec(object* args, object* cont) {
@@ -743,7 +686,7 @@ void init_base_syntax_procedures(void) {
 	add_syntax("delay", syntax_delay, &delay);
 	add_syntax("force", syntax_force, &force);
 	add_syntax("let", syntax_let, &let);
-	add_syntax("let-rec", syntax_letrec, &letrec);
+	add_syntax("letrec", syntax_letrec, &letrec);
 	add_syntax("rec", syntax_rec, &rec);
 	add_syntax("lambda", syntax_lambda, &lambda);
 	add_syntax("curry", syntax_curry, &curry);
@@ -758,23 +701,19 @@ void init_base_syntax_procedures(void) {
 	
 	init_primitive(&let_bind, &let_bind_proc);
 
+	init_primitive(&eval_bindings, &eval_bindings_proc);
+	
+	init_primitive(&letrec_eval, &letrec_eval_proc);
 	init_primitive(&letrec_bind, &letrec_bind_proc);
-	init_primitive(&letrec_eval_single, &letrec_eval_single_proc);
 	
 	init_primitive(&rec_one, &rec_one_proc);
-	init_primitive(&rec_two, &rec_two_proc);
-	init_primitive(&rec_three, &rec_three_proc);
 
-	init_primitive(&bind_value, &bind_value_proc);
 	init_primitive(&eval_if, &eval_if_proc);
 	
 	init_primitive(&eval_and, &eval_and_proc);
 	init_primitive(&eval_or, &eval_or_proc);
-	
-	init_primitive(&bind_placeholder, &bind_placeholder_proc);
-	init_primitive(&bind_placeholders, &bind_placeholders_proc);
 
-	init_primitive(&bind_continued, &bind_continued_proc);
+	init_primitive(&make_placeholder_bindings, &make_placeholder_bindings_proc);
 	init_primitive(&update_binding, &update_binding_proc);
 	
 	init_primitive(&start_curry, &start_curry_proc);

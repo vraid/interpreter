@@ -9,6 +9,7 @@ object reverse_list_proc;
 object list_append_proc;
 object list_append_first_reversed_proc;
 object unzip_2_proc;
+object unzip_2_reversed_proc;
 
 void init_list_util_procedures(void);
 

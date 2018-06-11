@@ -40,16 +40,41 @@ object* add_static_binding(object* value, char* name) {
 }
 
 object* extend_environment(object* args, object* cont) {
+	object* binding;
+	object* env;
+	delist_2(args, &binding, &env);
+
+	object* cell = alloc_list_cell(binding, environment_bindings(env));
+	object* new_env = alloc_environment(cell);
+	
+	return call_cont(cont, new_env);
+}
+
+object make_binding_proc;
+
+object* make_binding(object* args, object* cont) {
+	object* value;
+	object* name;
+	delist_2(args, &value, &name);
+	
+	object* binding = alloc_binding(desyntax(name), desyntax(value));
+	return call_cont(cont, binding);
+}
+
+object* bind_and_extend_environment(object* args, object* cont) {
 	object* value;
 	object* name;
 	object* env;
 	delist_3(args, &value, &name, &env);
 	
-	object* binding = alloc_binding(desyntax(name), desyntax(value));
-	object* cell = alloc_list_cell(binding, environment_bindings(env));
-	object* new_env = alloc_environment(cell);
+	object* bind_args = alloc_list_1(env);
+	object* bind_call = alloc_call(&extend_environment_proc, bind_args, cont);
+	object* bind_cont = alloc_cont(bind_call);
 	
-	return call_cont(cont, new_env);
+	object* make_args = alloc_list_2(value, name);
+	object* make_call = alloc_call(&make_binding_proc, make_args, bind_cont);
+	
+	return perform_call(make_call);
 }
 
 object bind_single_value_proc;
@@ -71,10 +96,14 @@ object* bind_single_value(object* args, object* cont) {
 		object* next_call = alloc_call(&bind_single_value_proc, next_ls, cont);
 		object* next_cont = alloc_cont(next_call);
 		
-		object* bind_ls = alloc_list_3(list_first(values), list_first(names), environment);
+		object* bind_ls = alloc_list_1(environment);
 		object* bind_call = alloc_call(&extend_environment_proc, bind_ls, next_cont);
+		object* bind_cont = alloc_cont(bind_call);
 		
-		return perform_call(bind_call);
+		object* make_binding_args = alloc_list_2(list_first(values), list_first(names));
+		object* make_binding_call = alloc_call(&make_binding_proc, make_binding_args, bind_cont);
+		
+		return perform_call(make_binding_call);
 	}
 }
 
@@ -108,6 +137,8 @@ void init_environment_procedures(void) {
 	make_static(&_static_environment);
 	
 	init_primitive(&extend_environment, &extend_environment_proc);
+	init_primitive(&bind_and_extend_environment, &bind_and_extend_environment_proc);
+	init_primitive(&make_binding, &make_binding_proc);
 	init_primitive(&bind_values, &bind_values_proc);
 	init_primitive(&bind_single_value, &bind_single_value_proc);
 }

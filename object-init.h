@@ -40,6 +40,7 @@ object* init_symbol(object* obj, object* name);
 
 object* init_binding(object* obj, object* name, object* value);
 #define alloc_binding(a, b) init_binding(alloc_obj(), a, b)
+#define alloc_placeholder_binding(a) init_binding(alloc_obj(), a, placeholder_value())
 
 object* init_stream(object* obj, object* first, object* rest);
 #define alloc_stream(a, b) init_stream(alloc_obj(), a, b)

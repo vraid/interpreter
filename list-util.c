@@ -56,15 +56,6 @@ object* find_duplicate_2(object* a, object* b) {
 	return false();
 }
 
-object return_list_proc;
-
-object* return_list(object* args, object* cont) {
-	object* first;
-	delist_1(args, &first);
-	
-	return call_cont(cont, first);
-}
-
 object* make_list(object* args, object* cont) {
 	object* value;
 	object* proc;
@@ -74,7 +65,7 @@ object* make_list(object* args, object* cont) {
 	object* first = alloc_list_1(value);
 	
 	object* return_args = alloc_list_1(first);
-	object* return_call = alloc_call(&return_list_proc, return_args, cont);
+	object* return_call = alloc_call(&identity_proc, return_args, cont);
 	object* return_cont = alloc_discarding_cont(return_call);
 	
 	object* call_args = alloc_list_cell(first, proc_args);
@@ -120,34 +111,61 @@ object* reverse_list(object* args, object* cont) {
 	return call_cont(cont, next);
 }
 
-object unzip_2_step_proc;
+object unzip_2_next_proc;
 
-object* unzip_2_step(object* args, object* cont) {
-	object* one;
-	object* two;
+object* unzip_2_next(object* args, object* cont) {
 	object* list;
-	delist_3(args, &one, &two, &list);
+	delist_1(args, &list);
 	
-	if (is_empty_list(list)) {
-		return call_discarding_cont(cont);
+	object* ls[2];
+	delist_2(list, &ls[0], &ls[1]);
+	
+	object* next[2];
+	next[0] = empty_list();
+	next[1] = empty_list();
+	
+	while (!is_empty_list(ls[0])) {
+		int i;
+		for (i = 0; i < 2; i++) {
+			next[i] = alloc_list_cell(list_first(ls[i]), next[i]);
+			ls[i] = list_rest(ls[i]);
+		}
 	}
-	else {
+	
+	object* res = alloc_list_2(next[0], next[1]);
+	return call_cont(cont, res);
+}
+
+object* unzip_2(object* args, object* cont) {	
+	object* reverse_call = alloc_call(&unzip_2_next_proc, empty_list(), cont);
+	object* reverse_cont = alloc_cont(reverse_call);
+	
+	object* unzip_call = alloc_call(&unzip_2_reversed_proc, args, reverse_cont);
+	
+	return perform_call(unzip_call);
+}
+
+object* unzip_2_reversed(object* args, object* cont) {
+	object* list;
+	delist_1(args, &list);
+	
+	object* next[2];
+	next[0] = empty_list();
+	next[1] = empty_list();
+	
+	while (!is_empty_list(list)) {
 		object* first = desyntax(list_first(list));
-		object* a;
-		object* b;
-		delist_2(first, &a, &b);
-		object* one_next = alloc_list_1(a);
-		object* two_next = alloc_list_1(b);
-		one->data.list.rest = one_next;
-		alloc_stack_reference(one, one_next);
-		two->data.list.rest = two_next;
-		alloc_stack_reference(two, two_next);
-		
-		object* call_args = alloc_list_3(one_next, two_next, list_rest(list));
-		object* call = alloc_call(&unzip_2_step_proc, call_args, cont);
-		
-		return perform_call(call);
+		object* a[2];
+		delist_2(first, &a[0], &a[1]);
+		int i;
+		for (i = 0; i < 2; i++) {
+			next[i] = alloc_list_cell(a[i], next[i]);
+		}
+		list = list_rest(list);
 	}
+	
+	object* res = alloc_list_2(next[0], next[1]);
+	return call_cont(cont, res);
 }
 
 // full stack allocation, may fail on large lists
@@ -221,42 +239,14 @@ object* list_append_first_reversed(object* args, object* cont) {
 	}
 }
 
-object* unzip_2(object* args, object* cont) {
-	object* list;
-	delist_1(args, &list);
-	
-	if (is_empty_list(list)) {
-		object* res = alloc_list_2(empty_list(), empty_list());
-		return call_cont(cont, res);
-	}
-	else {
-		object* first = desyntax(list_first(list));
-		object* a;
-		object* b;
-		delist_2(first, &a, &b);
-		object* one = alloc_list_1(a);
-		object* two = alloc_list_1(b);
-		
-		object* result = alloc_list_2(one, two);
-		object* result_args = alloc_list_1(result);
-		object* result_call = alloc_call(&identity_proc, result_args, cont);
-		object* result_cont = alloc_discarding_cont(result_call);
-		
-		object* unzip_args = alloc_list_3(one, two, list_rest(list));
-		object* unzip_call = alloc_call(&unzip_2_step_proc, unzip_args, result_cont);
-		
-		return perform_call(unzip_call);
-	}
-}
-
 void init_list_util_procedures(void) {
 	init_primitive(&make_list, &make_list_proc);
 	init_primitive(&link_list, &link_list_proc);
 	init_primitive(&add_to_list, &add_to_list_proc);
-	init_primitive(&return_list, &return_list_proc);
 	init_primitive(&reverse_list, &reverse_list_proc);
 	init_primitive(&list_append, &list_append_proc);
 	init_primitive(&list_append_first_reversed, &list_append_first_reversed_proc);
 	init_primitive(&unzip_2, &unzip_2_proc);
-	init_primitive(&unzip_2_step, &unzip_2_step_proc);
+	init_primitive(&unzip_2_next, &unzip_2_next_proc);
+	init_primitive(&unzip_2_reversed, &unzip_2_reversed_proc);
 }
