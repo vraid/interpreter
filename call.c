@@ -43,12 +43,10 @@ object* perform_call(object* call) {
 	if (is_function(function)) {
 		return call;
 	}
-	else if (is_primitive_procedure(function)) {
-		return (*(function->data.primitive_procedure.proc))(call_arguments(call), call_continuation(call));
+	else if (is_primitive_procedure(function) || is_syntax_procedure(function)) {
+		primitive_proc* proc = (is_primitive_procedure(function) ? primitive_procedure_proc : syntax_procedure_proc)(function);
+		return (*proc)(call_arguments(call), call_continuation(call));
 	}
-	else if (is_syntax_procedure(function)) {
-		return (*(function->data.syntax_procedure.proc))(call_arguments(call), call_continuation(call));
-	}		
 	else {
 		fprintf(stderr, "faulty call\n");
 		return no_object();
