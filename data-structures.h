@@ -73,6 +73,8 @@ typedef enum {
 	syntax_filter,
 	syntax_count} static_syntax_procedure;
 
+char* syntax_names[syntax_count];
+
 typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
 typedef long long fixnum_type;

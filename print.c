@@ -378,6 +378,9 @@ object* print_value(object* args, object* cont) {
 			object* ls = alloc_list_1(function_parameters(obj));
 			return print_sequence(ls, cont);
 			break;
+		case type_syntax_procedure:
+			printf("syntax:%s", syntax_names[syntax_procedure_id(obj)]);
+			break;
 		case type_internal_position:
 			return print_internal_position(print_args, cont);
 			break;
