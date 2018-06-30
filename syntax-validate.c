@@ -31,6 +31,7 @@ char is_symbol_list(object* ls) {
 }
 
 object* invalid_function_signature(object* ls) {
+	ls = desyntax(ls);
 	if (is_symbol(ls)) {
 		return false();
 	}
@@ -39,8 +40,8 @@ object* invalid_function_signature(object* ls) {
 	}
 	object* a;
 	while (is_list(ls)) {
-		a = list_first(ls);
-		object* rest = list_rest(ls);
+		a = desyntax(list_first(ls));
+		object* rest = desyntax(list_rest(ls));
 		if (is_empty_list(a) || !is_symbol_list(rest)) {
 			return true();
 		}
@@ -50,7 +51,7 @@ object* invalid_function_signature(object* ls) {
 		}
 		ls = a;
 	}
-	return is_symbol(desyntax(a)) ? false() : true();
+	return is_symbol(a) ? false() : true();
 }
 
 char list_has_width(int width, object* ls) {
