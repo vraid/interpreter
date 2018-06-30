@@ -38,39 +38,33 @@ object* define(object* args, object* cont) {
 	object* trace;
 	delist_3(args, &syntax, &environment, &trace);
 	
-	object* name;
+	object* signature;
 	object* body;
-	delist_2(syntax, &name, &body);
+	delist_2(syntax, &signature, &body);
 	
-	name = desyntax(name);
+	signature = desyntax(signature);
 	
 	// handles cases like (define ((f a) b) ..)
-	if (is_list(name)) {
-		object* desugared = alloc_list_3(syntax_procedure_obj(syntax_lambda), list_rest(name), body);
-		object* new_syntax = alloc_list_2(list_first(name), desugared);
-		
-		object* call_args = alloc_list_3(new_syntax, environment, trace);
-		object* call = alloc_call(syntax_procedure_obj(syntax_define), call_args, cont);
-		
-		return perform_call(call);
+	while (is_list(signature)) {
+		body = alloc_list_3(syntax_procedure_obj(syntax_lambda), list_rest(signature), body);
+		signature = desyntax(list_first(signature));
 	}
-	else {
-		object* binding = alloc_placeholder_binding(name);
-		environment = alloc_environment(alloc_list_cell(binding, environment_bindings(environment)));
-		
-		object* return_args = alloc_list_1(environment);
-		object* return_call = alloc_call(&identity_proc, return_args, cont);
-		object* return_cont = alloc_discarding_cont(return_call);
-		
-		object* update_args = alloc_list_1(binding);
-		object* update_call = alloc_call(&update_binding_proc, update_args, return_cont);
-		object* update_cont = alloc_cont(update_call);
-		
-		object* eval_args = alloc_list_3(body, environment, trace);
-		object* eval_call = alloc_call(&eval_proc, eval_args, update_cont);
-		
-		return perform_call(eval_call);
-	}
+	
+	object* binding = alloc_placeholder_binding(signature);
+	environment = alloc_environment(alloc_list_cell(binding, environment_bindings(environment)));
+	
+	object* return_args = alloc_list_1(environment);
+	object* return_call = alloc_call(&identity_proc, return_args, cont);
+	object* return_cont = alloc_discarding_cont(return_call);
+	
+	object* update_args = alloc_list_1(binding);
+	object* update_call = alloc_call(&update_binding_proc, update_args, return_cont);
+	object* update_cont = alloc_cont(update_call);
+	
+	object* eval_args = alloc_list_3(body, environment, trace);
+	object* eval_call = alloc_call(&eval_proc, eval_args, update_cont);
+	
+	return perform_call(eval_call);
 }
 
 object* quote(object* args, object* cont) {
