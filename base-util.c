@@ -23,7 +23,12 @@ object* identity(object* args, object* cont) {
 	return call_cont(cont, obj);
 }
 
+object* discard(object* args, object* cont) {
+	return call_discarding_cont(cont);
+}
+
 void init_base_util_procedures(void) {
 	init_primitive(&quote_object, &quote_object_proc);
 	init_primitive(&identity, &identity_proc);
+	init_primitive(&discard, &discard_proc);
 }
