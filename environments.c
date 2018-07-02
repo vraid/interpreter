@@ -119,6 +119,19 @@ object* bind_values(object* args, object* cont) {
 	return perform_call(call);
 }
 
+object* environment_get(object* args, object* cont) {
+	object* environment;
+	object* name;
+	delist_2(args, &environment, &name);
+	
+	object* binding = find_in_environment(environment, name, 1);
+	if (is_no_binding(binding)) {
+		object* str = alloc_string("not found in environment");
+		return throw_error(cont, alloc_list_2(str, name));
+	}
+	return call_cont(cont, binding_value(binding));
+}
+
 object* find_in_environment(object* env, object* symbol, char return_placeholders) {
 	object* ls = environment_bindings(env);
 	while (!is_empty_list(ls)) {
@@ -141,4 +154,5 @@ void init_environment_procedures(void) {
 	init_primitive(&make_binding, &make_binding_proc);
 	init_primitive(&bind_values, &bind_values_proc);
 	init_primitive(&bind_single_value, &bind_single_value_proc);
+	init_primitive(&environment_get, &environment_get_proc);
 }

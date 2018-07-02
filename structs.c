@@ -10,6 +10,7 @@
 #include "vectors.h"
 #include "strings.h"
 #include "symbols.h"
+#include "base-util.h"
 #include "list-util.h"
 #include "string-util.h"
 #include "environments.h"
@@ -208,18 +209,60 @@ object* define_field_accessors(object* args, object* cont) {
 	}
 }
 
+object define_struct_accessors_proc;
+
+object* define_struct_accessors(object* args, object* cont) {
+	object* environment;
+	object* fields;
+	object* type;
+	delist_3(args, &environment, &fields, &type);
+		
+	object* access_start = alloc_fixnum(list_length(struct_definition_fields(struct_definition_parent(type))));
+	
+	object* field_args = alloc_list_4(environment, fields, access_start, type);
+	object* field_call = alloc_call(&define_field_accessors_proc, field_args, cont);
+	
+	return perform_call(field_call);
+}
+
+object set_struct_parent_proc;
+
+object* set_struct_parent(object* args, object* cont) {
+	object* parent;
+	object* struct_type;
+	delist_2(args, &parent, &struct_type);
+	
+	if (!is_struct_definition(parent)) {
+		object* str = alloc_string("invalid struct parent");
+		return throw_error(cont, str);
+	}
+	
+	object* a = parent;
+	while (!is_empty_struct_definition(a)) {
+		if (a == struct_type) {
+			object* str = alloc_string("recursive struct definition");
+			return throw_error(cont, str);
+		}
+		a = struct_definition_parent(a);
+	}
+	
+	struct_type->data.struct_definition.parent = parent;
+	alloc_stack_reference(struct_type, parent);
+	
+	return call_discarding_cont(cont);
+}
+
 object define_struct_next_proc;
 
 object* define_struct_next(object* args, object* cont) {
 	object* renamed_fields;
+	object* parent;
 	object* type;
 	object* environment;
-	delist_3(args, &renamed_fields, &type, &environment);
+	delist_4(args, &renamed_fields, &parent, &type, &environment);
 	
-	object* access_start = alloc_fixnum(list_length(struct_definition_fields(struct_definition_parent(type))));
-	
-	object* field_args = alloc_list_3(renamed_fields, access_start, type);
-	object* field_call = alloc_call(&define_field_accessors_proc, field_args, cont);
+	object* field_args = alloc_list_2(renamed_fields, type);
+	object* field_call = alloc_call(&define_struct_accessors_proc, field_args, cont);
 	object* field_cont = alloc_cont(field_call);
 	
 	object* type_args = alloc_list_1(type);
@@ -232,8 +275,23 @@ object* define_struct_next(object* args, object* cont) {
 	
 	object* constructor_args = alloc_list_2(renamed_fields, type);
 	object* constructor_call = alloc_call(&add_struct_constructor_proc, constructor_args, bind_cont);
+	object* constructor_cont = alloc_discarding_cont(constructor_call);
 	
-	return perform_call(constructor_call);
+	object* parent_call;
+	
+	if (is_no_object(parent)) {
+		parent_call = alloc_call(&discard_proc, empty_list(), constructor_cont);
+	}
+	else {
+		object* set_parent_args = alloc_list_1(type);
+		object* set_parent_call = alloc_call(&set_struct_parent_proc, set_parent_args, constructor_cont);
+		object* set_parent_cont = alloc_cont(set_parent_call);
+		
+		object* get_parent_args = alloc_list_2(environment, parent);
+		parent_call = alloc_call(&environment_get_proc, get_parent_args, set_parent_cont);
+	}
+	
+	return perform_call(parent_call);
 }
 
 object struct_field_names_proc;
@@ -270,31 +328,29 @@ object* struct_field_names(object* args, object* cont) {
 object* define_struct(object* args, object* cont) {
 	object* syntax;
 	object* environment;
-	delist_2(args, &syntax, &environment);
+	object* trace;
+	delist_3(args, &syntax, &environment, &trace);
 	
 	int length = list_length(syntax);
 	
 	object* name;
+	object* parent = no_object();
 	object* fields;
-	object* parent;
 	
 	if (length == 2) {
 		delist_desyntax_2(syntax, &name, &fields);
-		parent = empty_struct_definition();
 	}
 	else if (length == 3) {
 		delist_desyntax_3(syntax, &name, &parent, &fields);
-		parent = binding_value(find_in_environment(environment, parent, 0));
 	}
 	else {
 		object* str = alloc_string("invalid struct definition");
-		object* ls = alloc_list_2(str, syntax);
-		return throw_error(cont, ls);
+		return throw_error(cont, str);
 	}
 	
-	object* struct_type = alloc_struct_definition(name, empty_list(), no_object(), parent);
+	object* struct_type = alloc_struct_definition(name, empty_list(), no_object(), empty_struct_definition());
 	
-	object* next_args = alloc_list_2(struct_type, environment);
+	object* next_args = alloc_list_3(parent, struct_type, environment);
 	object* next_call = alloc_call(&define_struct_next_proc, next_args, cont);
 	object* next_cont = alloc_cont(next_call);
 	
@@ -309,6 +365,7 @@ void init_struct_procedures(void) {
 	init_primitive(&add_struct_constructor, &add_struct_constructor_proc);
 	init_primitive(&add_struct_constructor_next, &add_struct_constructor_next_proc);
 	init_primitive(&struct_access, &struct_access_proc);
+	init_primitive(&define_struct_accessors, &define_struct_accessors_proc);
 	init_primitive(&define_field_accessors, &define_field_accessors_proc);
 	init_primitive(&define_field_accessor, &define_field_accessor_proc);
 	init_primitive(&make_field_accessor, &make_field_accessor_proc);
@@ -318,4 +375,5 @@ void init_struct_procedures(void) {
 	init_primitive(&struct_field_names, &struct_field_names_proc);
 	init_primitive(&define_struct, &define_struct_proc);
 	init_primitive(&define_struct_next, &define_struct_next_proc);
+	init_primitive(&set_struct_parent, &set_struct_parent_proc);
 }

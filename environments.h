@@ -5,6 +5,7 @@
 object bind_values_proc;
 object extend_environment_proc;
 object bind_and_extend_environment_proc;
+object environment_get_proc;
 
 object update_binding_proc;
 
