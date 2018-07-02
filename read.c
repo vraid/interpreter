@@ -320,7 +320,7 @@ object* read_add_to_list(object* args, object* cont) {
 	
 	object* next = alloc_list_cell(value, empty_list());
 	last->data.list.rest = next;
-	alloc_stack_reference(last, next);
+	alloc_mutation_reference(last, next);
 	
 	object* ls = alloc_list_2(next, input);
 	object* call = alloc_call(&read_list_proc, ls, cont);

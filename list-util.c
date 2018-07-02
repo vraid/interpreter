@@ -91,7 +91,7 @@ object* add_to_list(object* args, object* cont) {
 	
 	object* cell = alloc_list_1(value);
 	last->data.list.rest = cell;
-	alloc_stack_reference(last, cell);
+	alloc_mutation_reference(last, cell);
 	
 	return call_cont(cont, cell);
 }

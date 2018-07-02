@@ -7,15 +7,15 @@
 #include "global-variables.h"
 #include "symbols.h"
 
-object* stack_references;
+object* mutation_references;
 
-void add_stack_reference(object* ls, object* obj, object* reference) {
+void add_mutation_reference(object* ls, object* obj, object* reference) {
 	if (obj->location > location_heap) {
 		fprintf(stderr, "stack reference at %s\n", location_name[obj->location]);
 		exit(0);
 	}
 	else if ((obj->location == location_heap) && (reference->location == location_stack)) {
-		stack_references = init_list_cell(ls, obj, stack_references);
+		mutation_references = init_list_cell(ls, obj, mutation_references);
 	}
 }
 
@@ -266,15 +266,15 @@ void perform_gc(object** root) {
 	}
 	else {
 		location = location_stack;
-		while (!is_empty_list(stack_references)) {
+		while (!is_empty_list(mutation_references)) {
 			// move all stack objects referenced by the heap
-			clear_garbage(&main_memory_space, &(stack_references->data.list.first), location, 0);
-			stack_references = list_rest(stack_references);
+			clear_garbage(&main_memory_space, &(mutation_references->data.list.first), location, 0);
+			mutation_references = list_rest(mutation_references);
 		}
 	}
 	clear_garbage(&main_memory_space, &symbol_list, location, 1);
 	clear_garbage(&main_memory_space, root, location, 1);
-	stack_references = empty_list();
+	mutation_references = empty_list();
 	if (resize) {
 		free(old_memory);
 	}
@@ -285,7 +285,7 @@ void perform_gc(object** root) {
 }
 
 void init_memory_handling() {
-	stack_references = empty_list();
+	mutation_references = empty_list();
 	
 	object_type t;
 	for (t = type_none; t < type_count; t++) {

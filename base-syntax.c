@@ -27,7 +27,7 @@ object* update_binding(object* args, object* cont) {
 		return throw_error(cont, ls);
 	}
 	binding->data.binding.value = value;
-	alloc_stack_reference(binding, value);
+	alloc_mutation_reference(binding, value);
 	
 	return call_discarding_cont(cont);
 }
@@ -104,7 +104,7 @@ object* update_delay(object* args, object* cont) {
 	delay->data.delay.value = value;
 	delay->data.delay.evaluated = 1;
 	
-	alloc_stack_reference(delay, value);
+	alloc_mutation_reference(delay, value);
 	
 	return call_cont(cont, value);
 }

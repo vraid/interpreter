@@ -43,9 +43,9 @@ object* add_struct_constructor_next(object* args, object* cont) {
 	object* function = alloc_function(empty_environment(), fields, body);
 	
 	type->data.struct_definition.fields = fields;
-	alloc_stack_reference(type, fields);
+	alloc_mutation_reference(type, fields);
 	type->data.struct_definition.constructor = function;
-	alloc_stack_reference(type, function);
+	alloc_mutation_reference(type, function);
 	
 	return call_cont(cont, type);
 }
@@ -247,7 +247,7 @@ object* set_struct_parent(object* args, object* cont) {
 	}
 	
 	struct_type->data.struct_definition.parent = parent;
-	alloc_stack_reference(struct_type, parent);
+	alloc_mutation_reference(struct_type, parent);
 	
 	return call_discarding_cont(cont);
 }
