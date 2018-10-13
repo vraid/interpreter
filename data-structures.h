@@ -24,7 +24,6 @@ typedef enum {
 	type_call,
 	type_continuation,
 	type_binding,
-	type_environment,
 	type_file_port,
 	type_syntax_object,
 	type_internal_position,
@@ -164,9 +163,6 @@ typedef struct object {
 			struct object* value;
 		} binding;
 		struct {
-			struct object* bindings;
-		} environment;
-		struct {
 			struct object* value;
 			char evaluated;
 		} delay;
@@ -216,7 +212,6 @@ char is_syntax_procedure(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
-char is_environment(object* obj);
 char is_delay(object* obj);
 char is_file_port(object* obj);
 char is_call(object* obj);
@@ -278,7 +273,6 @@ object* continuation_call(object* obj);
 
 object* binding_name(object* obj);
 object* binding_value(object* obj);
-object* environment_bindings(object* obj);
 
 object* syntax_object_syntax(object* obj);
 object* syntax_object_origin(object* obj);

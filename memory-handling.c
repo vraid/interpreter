@@ -136,10 +136,6 @@ void traverse_function(target_space space, object* obj, object_location location
 	move_if_necessary(space, &obj->data.function.body, location);
 }
 
-void traverse_environment(target_space space, object* obj, object_location location) {
-	move_if_necessary(space, &obj->data.environment.bindings, location);
-}
-
 void traverse_call(target_space space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.call.function, location);
 	move_if_necessary(space, &obj->data.call.arguments, location);
@@ -303,7 +299,6 @@ void init_memory_handling() {
 	traversal[type_struct_instance] = &traverse_struct_instance;
 	traversal[type_function] = &traverse_function;
 	traversal[type_binding] = &traverse_binding;
-	traversal[type_environment] = &traverse_environment;
 	traversal[type_call] = &traverse_call;
 	traversal[type_continuation] = &traverse_continuation;
 	traversal[type_syntax_object] = &traverse_syntax_object;

@@ -664,7 +664,7 @@ void bind_primitive(char* name, int arity, object* obj) {
 	object* body = &primitive_bodies[primitive_count];
 	init_list_cell(body, obj, par);
 	make_static(body);
-	init_function(function, empty_environment(), par, body);
+	init_function(function, empty_list(), par, body);
 	make_static(function);
 	
 	add_static_binding(function, name);

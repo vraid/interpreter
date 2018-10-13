@@ -107,7 +107,7 @@ object* repl_print_or_read(object* args, object* cont) {
 	
 	object* call;
 	
-	if (is_environment(value)) {
+	if (is_nonempty_list(value) && is_binding(list_first(value))) {
 		object* ls = alloc_list_1(value);
 		call = alloc_call(&repl_read_entry_proc, ls, cont);
 	}

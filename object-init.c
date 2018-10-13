@@ -116,12 +116,6 @@ object* init_struct_instance(object* obj, object* type, object* data) {
 	return obj;
 }
 
-object* init_environment(object* obj, object* bindings) {
-	init_object(location_stack, type_environment, obj);
-	obj->data.environment.bindings = bindings;
-	return obj;
-}
-
 object* init_syntax_procedure(object* obj, primitive_proc* proc, static_syntax_procedure id) {
 	init_object(location_static, type_syntax_procedure, obj);
 	obj->data.syntax_procedure.proc = proc;

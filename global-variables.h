@@ -28,7 +28,6 @@ object* no_object(void);
 object* no_symbol(void);
 object* no_binding(void);
 object* placeholder_value(void);
-object* empty_environment(void);
 object* empty_struct_definition(void);
 
 object* define_symbol(void);

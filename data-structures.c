@@ -39,7 +39,6 @@ void init_type_names(void) {
 	type_names[type_call] = "call";
 	type_names[type_continuation] = "continuation";
 	type_names[type_binding] = "binding";
-	type_names[type_environment] = "environment";
 	type_names[type_file_port] = "file port";
 	type_names[type_syntax_object] = "syntax object";
 	type_names[type_internal_position] = "internal position";
@@ -143,9 +142,6 @@ char is_primitive_procedure(object* obj) {
 }
 char is_binding(object* obj) {
 	return obj->type == type_binding;
-}
-char is_environment(object* obj) {
-	return obj->type == type_environment;
 }
 char is_file_port(object* obj) {
 	return obj->type == type_file_port;
@@ -369,10 +365,6 @@ object* binding_name(object* obj) {
 object* binding_value(object* obj) {
 	check_type(type_binding, obj);
 	return obj->data.binding.value;
-}
-object* environment_bindings(object* obj) {
-	check_type(type_environment, obj);
-	return obj->data.environment.bindings;
 }
 
 object* syntax_object_syntax(object* obj) {

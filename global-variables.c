@@ -93,9 +93,6 @@ void init_global_variables(void) {
 	_empty_string.data.string.value = &nullchar;
 	_empty_string.data.string.length = 0;
 	
-	init_object(location_static, type_environment, &_empty_environment);
-	_empty_environment.data.environment.bindings = empty_list();
-	
 	init_object(location_static, type_struct_definition, &_empty_struct_definition);
 	_empty_struct_definition.data.struct_definition.name = no_symbol();
 	_empty_struct_definition.data.struct_definition.fields = empty_list();
@@ -207,9 +204,6 @@ object* no_binding(void) {
 }
 object* placeholder_value(void) {
 	return &_placeholder_value;
-}
-object* empty_environment(void) {
-	return &_empty_environment;
 }
 object* empty_struct_definition(void) {
 	return &_empty_struct_definition;

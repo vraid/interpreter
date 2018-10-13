@@ -51,7 +51,7 @@ object* define(object* args, object* cont) {
 	}
 	
 	object* binding = alloc_placeholder_binding(signature);
-	environment = alloc_environment(alloc_list_cell(binding, environment_bindings(environment)));
+	environment = alloc_list_cell(binding, environment);
 	
 	object* return_args = alloc_list_1(environment);
 	object* return_call = alloc_call(&identity_proc, return_args, cont);
@@ -172,7 +172,7 @@ object* let_bind(object* args, object* cont) {
 		}
 		
 		object* binding = alloc_placeholder_binding(name);
-		object* new_env = alloc_environment(alloc_list_cell(binding, environment_bindings(environment)));
+		object* new_env = alloc_list_cell(binding, environment);
 		
 		object* let_args = alloc_list_3(new_env, list_rest(bindings), trace);
 		object* let_call = alloc_call(&let_bind_proc, let_args, cont);
@@ -252,7 +252,7 @@ object* letrec_bind(object* args, object* cont) {
 	
 	bindings = desyntax(bindings);
 	
-	object* ls = environment_bindings(environment);
+	object* env = environment;
 	object* names = empty_list();
 	object* updates = empty_list();
 	object* name;
@@ -264,7 +264,7 @@ object* letrec_bind(object* args, object* cont) {
 		names = alloc_list_cell(name, names);
 		
 		object* binding = alloc_placeholder_binding(name);
-		ls = alloc_list_cell(binding, ls);
+		env = alloc_list_cell(binding, env);
 		updates = alloc_list_cell(alloc_list_2(binding, value), updates);
 		
 		bindings = list_rest(bindings);
@@ -275,9 +275,7 @@ object* letrec_bind(object* args, object* cont) {
 		return throw_error_string(cont, "duplicate binding");
 	}
 	
-	object* new_env = alloc_environment(ls);
-	
-	object* eval_args = alloc_list_2(new_env, trace);
+	object* eval_args = alloc_list_2(env, trace);
 	object* eval_call = alloc_call(&letrec_eval_proc, eval_args, cont);
 	object* eval_cont = alloc_cont(eval_call);
 	
@@ -318,7 +316,7 @@ object* rec_one(object* args, object* cont) {
 	delist_5(args, &pars_args, &name, &body, &environment, &trace);
 	
 	object* binding = alloc_placeholder_binding(name);
-	environment = alloc_environment(alloc_list_cell(binding, environment_bindings(environment)));
+	environment = alloc_list_cell(binding, environment);
 	
 	object* parameters;
 	object* arguments;

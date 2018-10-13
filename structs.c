@@ -40,7 +40,7 @@ object* add_struct_constructor_next(object* args, object* cont) {
 	
 	object* vector_list = alloc_list_cell(syntax_procedure_obj(syntax_vector), fields);
 	object* body = alloc_list_3(&make_struct_instance_proc, type, vector_list);
-	object* function = alloc_function(empty_environment(), fields, body);
+	object* function = alloc_function(empty_list(), fields, body);
 	
 	type->data.struct_definition.fields = fields;
 	alloc_mutation_reference(type, fields);
@@ -113,7 +113,7 @@ object* define_struct_is_type(object* args, object* cont) {
 	object* name = struct_definition_name(type);
 	
 	object* body = alloc_list_3(&struct_is_type_proc, type, generic_args[0]);
-	object* function = alloc_function(empty_environment(), generic_arg_list[1], body);
+	object* function = alloc_function(empty_list(), generic_arg_list[1], body);
 	
 	object* bind_args = alloc_list_2(function, environment);
 	object* bind_call = alloc_call(&bind_struct_is_type_proc, bind_args, cont);
@@ -157,7 +157,7 @@ object* make_field_accessor(object* args, object* cont) {
 	object* arg_list = alloc_list_1(arg);
 	
 	object* body = alloc_list_4(&struct_access_proc, type, count, arg);
-	object* function = alloc_function(empty_environment(), arg_list, body);
+	object* function = alloc_function(empty_list(), arg_list, body);
 	
 	return call_cont(cont, function);
 }

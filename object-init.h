@@ -57,9 +57,6 @@ object* init_struct_definition(object* obj, object* name, object* fields, object
 object* init_struct_instance(object* obj, object* type, object* data);
 #define alloc_struct_instance(a, b) init_struct_instance(alloc_obj(), a, b)
 
-object* init_environment(object* obj, object* bindings);
-#define alloc_environment(a) init_environment(alloc_obj(), a)
-
 object* init_syntax_procedure(object* obj, primitive_proc* proc, static_syntax_procedure id);
 
 object* init_function(object* obj, object* environment, object* parameters, object* body);
