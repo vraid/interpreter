@@ -8,7 +8,7 @@
 #include "delist.h"
 #include "memory-handling.h"
 #include "eval.h"
-#include "base-syntax.h"
+#include "syntax-base.h"
 
 object* make_stream(object* args, object* cont) {
 	object* first;

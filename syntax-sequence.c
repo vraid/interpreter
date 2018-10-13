@@ -1,7 +1,7 @@
-#include "sequence-syntax.h"
+#include "syntax-sequence.h"
 
 #include <stdlib.h>
-#include "base-syntax.h"
+#include "syntax-base.h"
 #include "data-structures.h"
 #include "global-variables.h"
 #include "delist.h"

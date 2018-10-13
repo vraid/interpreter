@@ -50,6 +50,7 @@ typedef enum {
 } cont_type;
 
 typedef enum {
+	syntax_include,
 	syntax_define,
 	syntax_quote,
 	syntax_delay,

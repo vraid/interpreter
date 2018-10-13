@@ -14,7 +14,7 @@
 #include "list-util.h"
 #include "string-util.h"
 #include "environments.h"
-#include "base-syntax.h"
+#include "syntax-base.h"
 #include "standard-library.h"
 #include "generic-arguments.h"
 #include "eval.h"
