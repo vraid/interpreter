@@ -19,24 +19,30 @@ void add_mutation_reference(object* ls, object* obj, object* reference) {
 	}
 }
 
+object* malloc_references;
+
+void add_malloc_reference(object* ls, object* obj, long size, char* reference) {
+	malloc_references = init_list_cell(ls, init_memory_reference(obj, size, reference), malloc_references);
+}
+
 typedef struct {
 	int direction;
 	char** target;
 } target_space;
 
 typedef struct {
-	int size;
-	int half_size;
-	int quarter_size;
+	long size;
+	long half_size;
+	long quarter_size;
 	int direction;
-	char fill_and_resize;
+	char fill;
 	char* memory;
 	char* next_free;
 } memory_space;
 
 memory_space main_memory_space;
 
-size_t object_size(object* obj) {
+int object_size(object* obj) {
 	switch (obj->type) {
 		case type_string: return sizeof(object) + sizeof(char) * (1 + string_length(obj));
 		case type_vector: return sizeof(object) + sizeof(object*) * vector_length(obj);
@@ -64,10 +70,10 @@ void move_object(object* to, object* from, int direction) {
 	}
 }
 
-void move_if_necessary(target_space space, object** obj, object_location location) {
+void move_if_necessary(target_space* space, object** obj, object_location location) {
 	if ((**obj).location <= location) {
-		move_object((object*)*(space.target), *obj, space.direction);
-		*(space.target) += space.direction * object_size((**obj).data.forward_reference.ref);
+		move_object((object*)*(space->target), *obj, space->direction);
+		*(space->target) += space->direction * object_size(*obj);
 	}
 	
 	// update the external pointer
@@ -76,98 +82,98 @@ void move_if_necessary(target_space space, object** obj, object_location locatio
 	}
 }
 
-void traverse_symbol(target_space space, object* obj, object_location location) {
+void traverse_symbol(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.symbol.name, location);
 }
 
-void traverse_integer(target_space space, object* obj, object_location location) {
+void traverse_integer(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.integer.digits, location);
 }
 
-void traverse_fraction(target_space space, object* obj, object_location location) {
+void traverse_fraction(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.fraction.numerator, location);
 	move_if_necessary(space, &obj->data.fraction.denominator, location);
 }
 
-void traverse_complex(target_space space, object* obj, object_location location) {
+void traverse_complex(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.complex.real_part, location);
 	move_if_necessary(space, &obj->data.complex.imag_part, location);
 }
 
-void traverse_list(target_space space, object* obj, object_location location) {
+void traverse_list(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.list.first, location);
 	move_if_necessary(space, &obj->data.list.rest, location);
 }
 
-void traverse_stream(target_space space, object* obj, object_location location) {
+void traverse_stream(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.stream.first, location);
 	move_if_necessary(space, &obj->data.stream.rest, location);
 }
 
-void traverse_vector(target_space space, object* obj, object_location location) {
+void traverse_vector(target_space* space, object* obj, object_location location) {
 	int i;
 	for (i = 0; i < vector_length(obj); i++) {
 		move_if_necessary(space, &obj->data.vector.data[i], location);
 	}
 }
 
-void traverse_vector_iterator(target_space space, object* obj, object_location location) {
+void traverse_vector_iterator(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.vector_iterator.vector, location);
 }
 
-void traverse_struct_definition(target_space space, object* obj, object_location location) {
+void traverse_struct_definition(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.struct_definition.name, location);
 	move_if_necessary(space, &obj->data.struct_definition.fields, location);
 }
 
-void traverse_struct_instance(target_space space, object* obj, object_location location) {
+void traverse_struct_instance(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.struct_instance.type, location);
 	move_if_necessary(space, &obj->data.struct_instance.data, location);
 }
 
-void traverse_binding(target_space space, object* obj, object_location location) {
+void traverse_binding(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.binding.name, location);
 	move_if_necessary(space, &obj->data.binding.value, location);
 }
 
-void traverse_function(target_space space, object* obj, object_location location) {
+void traverse_function(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.function.parameters, location);
 	move_if_necessary(space, &obj->data.function.environment, location);
 	move_if_necessary(space, &obj->data.function.body, location);
 }
 
-void traverse_call(target_space space, object* obj, object_location location) {
+void traverse_call(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.call.function, location);
 	move_if_necessary(space, &obj->data.call.arguments, location);
 	move_if_necessary(space, &obj->data.call.continuation, location);
 }
 
-void traverse_continuation(target_space space, object* obj, object_location location) {
+void traverse_continuation(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.continuation.call, location);
 }
 
-void traverse_syntax_object(target_space space, object* obj, object_location location) {
+void traverse_syntax_object(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.syntax_object.syntax, location);
 	move_if_necessary(space, &obj->data.syntax_object.origin, location);
 }
 
-void traverse_internal_error(target_space space, object* obj, object_location location) {
+void traverse_internal_error(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.internal_error.trace, location);
 	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
 
-void traverse_delay(target_space space, object* obj, object_location location) {
+void traverse_delay(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.delay.value, location);
 }
 
-void traverse_nothing(target_space space, object* obj, object_location location) {
+void traverse_nothing(target_space* space, object* obj, object_location location) {
 }
 
-typedef void (traversal_function)(target_space space, object* obj, object_location location);
+typedef void (traversal_function)(target_space* space, object* obj, object_location location);
 
 traversal_function* traversal[type_count];
 
-void traverse_object(target_space space, object* obj, object_location location) {
+void traverse_object(target_space* space, object* obj, object_location location) {
 	(*traversal[obj->type])(space, obj, location);
 }
 
@@ -179,21 +185,21 @@ void clear_garbage(memory_space* memory, object** root, object_location location
 	char* next_traversed = next_free;
 	
 	if (move_root) {
-		move_if_necessary(space, root, location);
+		move_if_necessary(&space, root, location);
 	}
 	else {
-		traverse_object(space, *root, location);
+		traverse_object(&space, *root, location);
 	}
 	
 	while (next_free != next_traversed) {
 		object* obj = (object*)next_traversed;
-		traverse_object(space, obj, location);
+		traverse_object(&space, obj, location);
 		next_traversed += space.direction * object_size(obj);
 	}
 	memory->next_free = next_free;
 }
 
-int used_heap_data(memory_space* space) {
+long used_heap_data(memory_space* space) {
 	int offset = space->next_free - space->memory;
 	if (space->direction == 1) {
 		return offset;
@@ -203,15 +209,11 @@ int used_heap_data(memory_space* space) {
 	}
 }
 
-char heap_full(memory_space* space) {
-	int max_size;
-	if (space->fill_and_resize) {
-		max_size = space->size;
-	}
-	else {
-		max_size = space->half_size;
-	}
-	return used_heap_data(space) + max_stack_data > max_size;
+char heap_full(memory_space* space, long additional_data) {
+	long total_data = used_heap_data(space) + additional_data;
+	char space_exceeded = total_data > space->size;
+	char half_space_exceeded = total_data + max_stack_data > space->half_size;
+	return space->fill ? space_exceeded : half_space_exceeded;
 }
 
 char resize_at_next_major_gc(memory_space* space) {
@@ -228,7 +230,7 @@ void init_memory_space(memory_space* space, int quarter_size) {
 	space->half_size = 2 * quarter_size;
 	space->size = 4 * quarter_size;
 	space->direction = 1;
-	space->fill_and_resize = 0;
+	space->fill = 0;
 	space->memory = malloc(space->size);
 	space->next_free = space->memory;
 	if (space->memory == 0) {
@@ -240,48 +242,78 @@ void init_memory_space(memory_space* space, int quarter_size) {
 
 #define print_gc 0
 
-void perform_gc(object** root) {
-	object_location location;
-	char resize = 0;
+typedef struct {
 	char* old_memory;
-	char is_major = heap_full(&main_memory_space);
+} gc_result;
+
+gc_result perform_gc_traversal(char is_major, long additional_data, object** root) {
+	gc_result res;
+	res.old_memory = NULL;
+	object_location location;
 	if (is_major) {
-		int used_data = used_heap_data(&main_memory_space);
+		long used_data = used_heap_data(&main_memory_space);
 		location = location_heap;
-		if (main_memory_space.fill_and_resize) {
+		if (main_memory_space.fill) {
 			if (print_gc) printf("major resizing gc\n");
-			resize = 1;
-			old_memory = main_memory_space.memory;
-			init_memory_space(&main_memory_space, main_memory_space.half_size);
+			res.old_memory = main_memory_space.memory;
+			long quarter_size = main_memory_space.half_size;
+			while (used_data + additional_data > 4*quarter_size) {
+				quarter_size *= 2;
+			}
+			init_memory_space(&main_memory_space, quarter_size);
 		}
 		else {
 			if (print_gc) printf("major gc\n");
 			reset_memory_space(&main_memory_space);
 		}
-		if (print_gc) printf("used heap data pre-gc: %i\n", used_data);
+		if (print_gc) printf("used heap data pre-gc: %lu\n", used_data);
 	}
 	else {
 		location = location_stack;
-		while (!is_empty_list(mutation_references)) {
+		object* ls = mutation_references;
+		while (!is_empty_list(ls)) {
 			// move all stack objects referenced by the heap
-			clear_garbage(&main_memory_space, &(mutation_references->data.list.first), location, 0);
-			mutation_references = list_rest(mutation_references);
+			clear_garbage(&main_memory_space, &(ls->data.list.first), location, 0);
+			ls = list_rest(ls);
 		}
 	}
 	clear_garbage(&main_memory_space, &symbol_list, location, 1);
 	clear_garbage(&main_memory_space, root, location, 1);
 	mutation_references = empty_list();
-	if (resize) {
-		free(old_memory);
+	object* ls = malloc_references;
+	while (!is_empty_list(ls)) {
+		free(memory_reference_value(list_first(ls)));
+		ls = list_rest(ls);
 	}
+	malloc_references = empty_list();
+	return res;
+}
+
+long living_stack_memory(object** root) {
+	long size = max_stack_data;
+	object* ls = malloc_references;
+	while (!is_empty_list(ls)) {
+		// move all stack objects referenced by the heap
+		size += memory_reference_size(list_first(ls));
+		ls = list_rest(ls);
+	}
+	return size;
+}
+	
+void perform_gc(object** root) {
+	long additional_data = living_stack_memory(root);
+	char is_major = heap_full(&main_memory_space, additional_data);
+	gc_result res = perform_gc_traversal(is_major, additional_data, root);
+	free(res.old_memory);
 	if (is_major) {
-		main_memory_space.fill_and_resize = resize_at_next_major_gc(&main_memory_space);
-		if (print_gc) printf("used heap data post-gc: %i\n", used_heap_data(&main_memory_space));
+		main_memory_space.fill = resize_at_next_major_gc(&main_memory_space);
+		if (print_gc) printf("used heap data post-gc: %ld\n", used_heap_data(&main_memory_space));
 	}
 }
 
 void init_memory_handling() {
 	mutation_references = empty_list();
+	malloc_references = empty_list();
 	
 	object_type t;
 	for (t = type_none; t < type_count; t++) {

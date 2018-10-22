@@ -25,6 +25,7 @@ typedef enum {
 	type_continuation,
 	type_binding,
 	type_file_port,
+	type_memory_reference,
 	type_syntax_object,
 	type_internal_position,
 	type_internal_error,
@@ -171,6 +172,10 @@ typedef struct object {
 			FILE* file;
 		} file_port;
 		struct {
+			long size;
+			char* value;
+		} memory_reference;
+		struct {
 			struct object* syntax;
 			struct object* origin;
 		} syntax_object;
@@ -215,6 +220,7 @@ char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
 char is_delay(object* obj);
 char is_file_port(object* obj);
+char is_memory_reference(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
 char is_continuation(object* obj);
@@ -229,6 +235,9 @@ int string_length(object* obj);
 char* string_value(object* obj);
 object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
+
+long memory_reference_size(object* obj);
+char* memory_reference_value(object* obj);
 
 fixnum_type fixnum_value(object* obj);
 int integer_sign(object* obj);

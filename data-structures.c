@@ -146,6 +146,9 @@ char is_binding(object* obj) {
 char is_file_port(object* obj) {
 	return obj->type == type_file_port;
 }
+char is_memory_reference(object* obj) {
+	return obj->type == type_memory_reference;
+}
 char is_call(object* obj) {
 	return obj->type == type_call;
 }
@@ -190,6 +193,16 @@ object* symbol_name(object* obj) {
 FILE* file_port_file(object* obj) {
 	check_type(type_file_port, obj);
 	return obj->data.file_port.file;
+}
+
+long memory_reference_size(object* obj) {
+	check_type(type_memory_reference, obj);
+	return obj->data.memory_reference.size;
+}
+
+char* memory_reference_value(object* obj) {
+	check_type(type_memory_reference, obj);
+	return obj->data.memory_reference.value;
 }
 
 fixnum_type fixnum_value(object* obj) {

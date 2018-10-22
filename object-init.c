@@ -182,6 +182,13 @@ object* init_internal_error(object* obj, object* trace, object* message) {
 	return obj;
 }
 
+object* init_memory_reference(object* obj, long size, char* reference) {
+	init_object(location_stack, type_memory_reference, obj);
+	obj->data.memory_reference.size = size;
+	obj->data.memory_reference.value = reference;
+	return obj;
+}
+
 object* init_delay(object* obj, object* value) {
 	init_object(location_stack, type_delay, obj);
 	obj->data.delay.value = value;
