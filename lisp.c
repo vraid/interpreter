@@ -28,6 +28,7 @@
 #include "syntax-sequence.h"
 #include "syntax-validate.h"
 #include "read.h"
+#include "read-tables.h"
 #include "eval.h"
 #include "print.h"
 #include "repl-top.h"
@@ -52,6 +53,7 @@ int main(int argc, char** argv) {
 	init_vector_procedures();
 	init_base_util_procedures();
 	init_read_procedures();
+	init_read_table_procedures();
 	init_print_procedures();
 	init_eval_procedures();
 	init_repl_procedures();
@@ -77,7 +79,8 @@ int main(int argc, char** argv) {
 	
 	object* read_args = alloc_list_1(environment);
 	object* read_call = alloc_call(&repl_read_entry_proc, read_args, end_cont());
-	top_call(read_call);
+	object* read_table_call = alloc_call(&default_read_table_proc, empty_list(), alloc_cont(read_call));
+	top_call(read_table_call);
 	
 	return 0;
 }

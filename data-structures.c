@@ -195,6 +195,15 @@ FILE* file_port_file(object* obj) {
 	return obj->data.file_port.file;
 }
 
+read_type reader_entry_read_type(object* obj) {
+	check_type(type_reader_entry, obj);
+	return obj->data.reader_entry.read_type;
+}
+object* reader_entry_proc(object* obj) {
+	check_type(type_reader_entry, obj);
+	return obj->data.reader_entry.proc;
+}
+
 long memory_reference_size(object* obj) {
 	check_type(type_memory_reference, obj);
 	return obj->data.memory_reference.size;

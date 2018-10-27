@@ -152,6 +152,10 @@ void traverse_continuation(target_space* space, object* obj, object_location loc
 	move_if_necessary(space, &obj->data.continuation.call, location);
 }
 
+void traverse_reader_entry(target_space* space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.reader_entry.proc, location);
+}
+
 void traverse_syntax_object(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.syntax_object.syntax, location);
 	move_if_necessary(space, &obj->data.syntax_object.origin, location);
@@ -333,6 +337,7 @@ void init_memory_handling() {
 	traversal[type_binding] = &traverse_binding;
 	traversal[type_call] = &traverse_call;
 	traversal[type_continuation] = &traverse_continuation;
+	traversal[type_reader_entry] = &traverse_reader_entry;
 	traversal[type_syntax_object] = &traverse_syntax_object;
 	traversal[type_internal_error] = &traverse_internal_error;
 	traversal[type_delay] = &traverse_delay;

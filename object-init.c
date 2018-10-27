@@ -182,6 +182,13 @@ object* init_internal_error(object* obj, object* trace, object* message) {
 	return obj;
 }
 
+object* init_reader_entry(object* obj, read_type t, object* proc) {
+	init_object(location_stack, type_reader_entry, obj);
+	obj->data.reader_entry.read_type = t;
+	obj->data.reader_entry.proc = proc;
+	return obj;
+}
+
 object* init_memory_reference(object* obj, long size, char* reference) {
 	init_object(location_stack, type_memory_reference, obj);
 	obj->data.memory_reference.size = size;

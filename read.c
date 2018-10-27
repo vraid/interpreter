@@ -23,6 +23,7 @@ object start_list_proc;
 object read_finish_list_proc;
 object read_list_start_proc;
 
+object read_value_proc;
 object read_string_proc;
 object read_nonstring_proc;
 object read_number_proc;
@@ -145,6 +146,15 @@ char* get_string(char string, FILE* in) {
 	return input_buffer;
 }
 
+
+object* read_true(object* args, object* cont) {
+	return call_cont(cont, true());
+}
+
+object* read_false(object* args, object* cont) {
+	return call_cont(cont, false());
+}
+
 object* string(char* cs, object* cont) {
 	char* str = alloc_copy_str(cs);
 	object* s = alloc_string(str);
@@ -228,18 +238,82 @@ object* read_number(object* args, object* cont) {
 	}
 }
 
+object read_atom_type_proc;
+
+object* read_atom_type(object* args, object* cont) {
+	object* proc;
+	object* input_port;
+	object* read_table;
+	delist_3(args, &proc, &input_port, &read_table);
+	
+	object* call = alloc_call(proc, empty_list(), cont);
+	return perform_call(call);
+}
+
+object assert_is_list_proc;
+
+object* assert_is_list(object* args, object* cont) {
+	object* value;
+	delist_1(args, &value);
+	
+	if (!is_list(desyntax(value))) {
+		object* str = alloc_string("expected list");
+		object* ls = alloc_list_2(str, value);
+		return throw_error(cont, ls);
+	}
+	else {
+		return call_cont(cont, value);
+	}
+}
+
+object read_list_type_proc;
+
+object* read_list_type(object* args, object* cont) {
+	object* proc;
+	object* input_port;
+	object* read_table;
+	delist_3(args, &proc, &input_port, &read_table);
+	
+	object* next = alloc_call(proc, empty_list(), cont);
+	object* assertion = alloc_call(&assert_is_list_proc, empty_list(), alloc_cont(next));
+	object* call = alloc_call(&read_value_proc, list_rest(args), alloc_cont(assertion));
+	return perform_call(call);
+}
+
 object* read_hashed(object* args, object* cont) {
 	object* string;
-	delist_1(args, &string);
+	object* trailing_parenthesis;
+	object* input_port;
+	object* read_table;
+	delist_4(args, &string, &trailing_parenthesis, &input_port, &read_table);
 	
-	if (string_length(string) == 2) {
-		char* str = string_value(string);
-		switch (str[1]) {
-			case 't' : return call_cont(cont, true());
-			case 'f' : return call_cont(cont, false());
+	char* sym = string_value(string)+1;
+	
+	while (!is_empty_list(read_table)) {
+		object* a = list_first(read_table);
+		object* id;
+		object* entry;
+		delist_2(a, &id, &entry);
+		if (!strcmp(sym, string_value(id))) {
+			read_type t = reader_entry_read_type(entry);
+			object* proc;
+			if (t == read_type_atom) {
+				proc = &read_atom_type_proc;
+			}
+			else {
+				proc = &read_list_type_proc;
+				if (is_false(trailing_parenthesis)) {
+					object* str = alloc_string("expected parenthesis");
+					object* ls = alloc_list_2(str, string);
+					return throw_error(cont, ls);
+				}
+			}
+			object* call = alloc_call(proc, alloc_list_3(reader_entry_proc(entry), input_port, read_table), cont);
+			return perform_call(call);
 		}
+		read_table = list_rest(read_table);
 	}
-	object* str = alloc_string("invalid value");
+	object* str = alloc_string("invalid read syntax");
 	object* ls = alloc_list_2(str, string);
 	return throw_error(cont, ls);
 }
@@ -255,11 +329,10 @@ object* make_syntax(object* args, object* cont) {
 	return call_cont(cont, obj);
 }
 
-object read_value_proc;
-
 object* read_value(object* args, object* cont) {
 	object* input_port;
-	delist_1(args, &input_port);
+	object* read_table;
+	delist_2(args, &input_port, &read_table);
 	
 	FILE* in = file_port_file(input_port);
 	consume_whitespace(in);
@@ -293,11 +366,13 @@ object* read_value(object* args, object* cont) {
 		char* str = get_string(q, in);
 		
 		object* primitive;
+		object* primitive_args = empty_list();
 		if (q) {
 			primitive = &read_string_proc;
 		}
 		else if (is_hash_char(c)) {
 			primitive = &read_hashed_proc;
+			primitive_args = alloc_list_3(boolean(peek(in) == '('), input_port, read_table);
 		}
 		else if (is_digit(c) || ((c == '-') && (strlen(str) > 1))) {
 			primitive = &read_number_proc;
@@ -305,7 +380,7 @@ object* read_value(object* args, object* cont) {
 		else {
 			primitive = &read_nonstring_proc;
 		}
-		object* call = alloc_call(primitive, empty_list(), syntax_cont);
+		object* call = alloc_call(primitive, primitive_args, syntax_cont);
 		object* next_cont = alloc_cont(call);
 		
 		return string(str, next_cont);
@@ -316,13 +391,14 @@ object* read_add_to_list(object* args, object* cont) {
 	object* value;
 	object* last;
 	object* input;
-	delist_3(args, &value, &last, &input);
+	object* read_table;
+	delist_4(args, &value, &last, &input, &read_table);
 	
 	object* next = alloc_list_cell(value, empty_list());
 	last->data.list.rest = next;
 	alloc_mutation_reference(last, next);
 	
-	object* ls = alloc_list_2(next, input);
+	object* ls = alloc_list_3(next, input, read_table);
 	object* call = alloc_call(&read_list_proc, ls, cont);
 	
 	return perform_call(call);
@@ -331,13 +407,13 @@ object* read_add_to_list(object* args, object* cont) {
 object* read_list_value(object* args, object* cont) {
 	object* last;
 	object* input;
-	delist_2(args, &last, &input);
+	object* read_table;
+	delist_3(args, &last, &input, &read_table);
 	
 	object* next_call = alloc_call(&read_add_to_list_proc, args, cont);
 	object* next_cont = alloc_cont(next_call);
 
-	object* ls = alloc_list_1(input);
-	object* call = alloc_call(&read_value_proc, ls, next_cont);
+	object* call = alloc_call(&read_value_proc, list_rest(args), next_cont);
 	
 	return perform_call(call);
 }
@@ -345,7 +421,8 @@ object* read_list_value(object* args, object* cont) {
 object* read_list(object* args, object* cont) {
 	object* last;
 	object* input;
-	delist_2(args, &last, &input);
+	object* read_table;
+	delist_3(args, &last, &input, &read_table);
 	
 	FILE* in = file_port_file(input);
 	consume_whitespace(in);
@@ -362,7 +439,8 @@ object* read_list(object* args, object* cont) {
 object* start_list(object* args, object* cont) {
 	object* value;
 	object* input;
-	delist_2(args, &value, &input);
+	object* read_table;
+	delist_3(args, &value, &input, &read_table);
 	
 	object* first = alloc_list_cell(value, empty_list());
 	
@@ -372,7 +450,7 @@ object* start_list(object* args, object* cont) {
 	object* finish_call = alloc_call(&read_finish_list_proc, finish_args, cont);
 	object* finish_cont = alloc_discarding_cont(finish_call);
 	
-	object* read_args = alloc_list_2(first, input);
+	object* read_args = alloc_list_3(first, input, read_table);
 	
 	// keep on building the list
 	object* call = alloc_call(&read_list_proc, read_args, finish_cont);
@@ -389,7 +467,8 @@ object* read_finish_list(object* args, object* cont) {
 
 object* read_list_start(object* args, object* cont) {
 	object* input;
-	delist_1(args, &input);
+	object* read_table;
+	delist_2(args, &input, &read_table);
 	
 	FILE* in = file_port_file(input);
 	consume_whitespace(in);
@@ -409,7 +488,8 @@ object* read_list_start(object* args, object* cont) {
 
 object* read_entry(object* args, object* cont) {
 	object* input_port;
-	delist_1(args, &input_port);
+	object* read_table;
+	delist_2(args, &input_port, &read_table);
 	
 	consume_whitespace(file_port_file(input_port));
 	reset_read_state();
@@ -432,4 +512,9 @@ void init_read_procedures(void) {
 	init_primitive(&read_number, &read_number_proc);
 	init_primitive(&read_integer, &read_integer_proc);
 	init_primitive(&read_hashed, &read_hashed_proc);
+	init_primitive(&read_atom_type, &read_atom_type_proc);
+	init_primitive(&read_list_type, &read_list_type_proc);
+	init_primitive(&assert_is_list, &assert_is_list_proc);
+	init_primitive(&read_true, &read_true_proc);
+	init_primitive(&read_false, &read_false_proc);
 }

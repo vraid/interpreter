@@ -25,6 +25,7 @@ typedef enum {
 	type_continuation,
 	type_binding,
 	type_file_port,
+	type_reader_entry,
 	type_memory_reference,
 	type_syntax_object,
 	type_internal_position,
@@ -75,6 +76,10 @@ typedef enum {
 	syntax_count} static_syntax_procedure;
 
 char* syntax_names[syntax_count];
+
+typedef enum {
+	read_type_atom,
+	read_type_list} read_type;
 
 typedef struct object* (primitive_proc)(struct object* args, struct object* cont);
 
@@ -172,6 +177,10 @@ typedef struct object {
 			FILE* file;
 		} file_port;
 		struct {
+			read_type read_type;
+			struct object* proc;
+		} reader_entry;
+		struct {
 			long size;
 			char* value;
 		} memory_reference;
@@ -220,6 +229,7 @@ char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
 char is_delay(object* obj);
 char is_file_port(object* obj);
+char is_reader_entry(object* obj);
 char is_memory_reference(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
@@ -235,6 +245,9 @@ int string_length(object* obj);
 char* string_value(object* obj);
 object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
+
+read_type reader_entry_read_type(object* obj);
+object* reader_entry_proc(object* obj);
 
 long memory_reference_size(object* obj);
 char* memory_reference_value(object* obj);

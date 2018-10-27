@@ -83,6 +83,9 @@ object* init_internal_position(object* obj, int x, int y);
 object* init_internal_error(object* obj, object* trace, object* message);
 #define alloc_internal_error(a, b) init_internal_error(alloc_obj(), a, b)
 
+object* init_reader_entry(object* obj, read_type t, object* proc);
+#define alloc_reader_entry(a, b) init_reader_entry(alloc_obj(), a, b)
+
 object* init_memory_reference(object* obj, long size, char* reference);
 
 object* init_delay(object* obj, object* value);

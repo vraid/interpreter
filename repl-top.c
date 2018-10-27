@@ -25,13 +25,14 @@ object repl_catch_error_proc;
 object* repl_catch_error(object* args, object* cont) {
 	object* value;
 	object* error_string;
+	object* read_table;
 	object* environment;
-	delist_3(args, &value, &error_string, &environment);
+	delist_4(args, &value, &error_string, &read_table, &environment);
 	
 	if (is_internal_error(value)) {		
 		printf("error:\n");
 		
-		object* print_args = alloc_list_2(value, environment);
+		object* print_args = alloc_list_3(value, read_table, environment);
 		object* print_call = alloc_call(&repl_print_entry_proc, print_args, cont);
 		
 		return perform_call(print_call);
@@ -42,13 +43,14 @@ object* repl_catch_error(object* args, object* cont) {
 }
 
 object* repl_read_entry(object* args, object* cont) {
+	object* read_table;	
 	object* environment;
-	delist_1(args, &environment);
+	delist_2(args, &read_table, &environment);
 	
 	object* validate_call = alloc_call(&repl_validate_entry_proc, args, cont);
 	object* validate_cont = alloc_cont(validate_call);
 	
-	object* error_args = alloc_list_2(&read_error_string, environment);
+	object* error_args = alloc_list_3(&read_error_string, read_table, environment);
 	object* error_call = alloc_call(&repl_catch_error_proc, error_args, validate_cont);
 	object* error_cont = alloc_catching_cont(error_call);
 	
@@ -56,7 +58,7 @@ object* repl_read_entry(object* args, object* cont) {
 	init_object(location_stack, type_file_port, &input_port);
 	input_port.data.file_port.file = stdin;
 	
-	object* read_args = alloc_list_1(&input_port);
+	object* read_args = alloc_list_2(&input_port, read_table);
 	object* read_call = alloc_call(&read_entry_proc, read_args, error_cont);
 	
 	return perform_call(read_call);
@@ -64,14 +66,15 @@ object* repl_read_entry(object* args, object* cont) {
 
 object* repl_validate_entry(object* args, object* cont) {
 	object* value;
+	object* read_table;
 	object* environment;
-	delist_2(args, &value, &environment);
+	delist_3(args, &value, &read_table, &environment);
 	
-	object* eval_args = alloc_list_1(environment);
+	object* eval_args = list_rest(args);
 	object* eval_call = alloc_call(&repl_eval_entry_proc, eval_args, cont);
 	object* eval_cont = alloc_cont(eval_call);
 	
-	object* catch_args = alloc_list_2(&syntax_error_string, environment);
+	object* catch_args = alloc_list_3(&syntax_error_string, read_table, environment);
 	object* catch_call = alloc_call(&repl_catch_error_proc, catch_args, eval_cont);
 	object* catch_cont = alloc_catching_cont(catch_call);
 	
@@ -83,14 +86,15 @@ object* repl_validate_entry(object* args, object* cont) {
 
 object* repl_eval_entry(object* args, object* cont) {
 	object* value;
+	object* read_table;
 	object* environment;
-	delist_2(args, &value, &environment);
+	delist_3(args, &value, &read_table, &environment);
 	
-	object* print_args = alloc_list_1(environment);
+	object* print_args = list_rest(args);
 	object* print_call = alloc_call(&repl_print_or_read_proc, print_args, cont);
 	object* print_cont = alloc_cont(print_call);
 	
-	object* error_args = alloc_list_2(&eval_error_string, environment);
+	object* error_args = alloc_list_3(&eval_error_string, read_table, environment);
 	object* error_call = alloc_call(&repl_catch_error_proc, error_args, print_cont);
 	object* error_cont = alloc_catching_cont(error_call);
 	
@@ -102,14 +106,15 @@ object* repl_eval_entry(object* args, object* cont) {
 
 object* repl_print_or_read(object* args, object* cont) {
 	object* value;
+	object* read_table;
 	object* environment;
-	delist_2(args, &value, &environment);
+	delist_3(args, &value, &read_table, &environment);
 	
 	object* call;
 	
 	if (is_nonempty_list(value) && is_binding(list_first(value))) {
-		object* ls = alloc_list_1(value);
-		call = alloc_call(&repl_read_entry_proc, ls, cont);
+		object* read_args = alloc_list_2(read_table, value);
+		call = alloc_call(&repl_read_entry_proc, read_args, cont);
 	}
 	else {
 		call = alloc_call(&repl_print_entry_proc, args, cont);
@@ -120,11 +125,11 @@ object* repl_print_or_read(object* args, object* cont) {
 
 object* repl_print_entry(object* args, object* cont) {
 	object* value;
+	object* read_table;
 	object* environment;
-	delist_2(args, &value, &environment);
+	delist_3(args, &value, &read_table, &environment);
 	
-	object* read_args = alloc_list_1(environment);
-	
+	object* read_args = list_rest(args);
 	object* read_call = alloc_call(&repl_read_entry_proc, read_args, cont);
 	object* next_cont = alloc_discarding_cont(read_call);
 	
