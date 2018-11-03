@@ -304,8 +304,7 @@ object* remove_leading_zeroes_and_reverse(object* args, object* cont) {
 	delist_1(args, &digits);
 	
 	object* reverse_call = alloc_call(&reverse_list_proc, empty_list(), cont);
-	object* reverse_cont = alloc_cont(reverse_call);
-	object* remove_zeroes_call = alloc_call(&remove_leading_zeroes_proc, args, reverse_cont);
+	object* remove_zeroes_call = alloc_call(&remove_leading_zeroes_proc, args, alloc_cont(reverse_call));
 	return perform_call(remove_zeroes_call);
 }
 
@@ -346,10 +345,8 @@ object* integer_add_signless(object* args, object* cont) {
 	delist_2(args, &a, &b);
 	
 	object* reverse_call = alloc_call(&remove_leading_zeroes_and_reverse_proc, empty_list(), cont);
-	object* reverse_cont = alloc_cont(reverse_call);
-	
 	object* add_args = alloc_list_2(a, b);
-	object* add_call = alloc_call(&integer_add_digits_proc, add_args, reverse_cont);
+	object* add_call = alloc_call(&integer_add_digits_proc, add_args, alloc_cont(reverse_call));
 	
 	return perform_call(add_call);
 }
@@ -364,10 +361,9 @@ object* integer_add_with_sign(object* args, object* cont) {
 	
 	object* make_args = alloc_list_1(sign);
 	object* make_call = alloc_call(&make_integer_proc, make_args, cont);
-	object* make_cont = alloc_cont(make_call);
 	
 	object* add_args = alloc_list_2(a, b);
-	object* add_call = alloc_call(&integer_add_signless_proc, add_args, make_cont);
+	object* add_call = alloc_call(&integer_add_signless_proc, add_args, alloc_cont(make_call));
 	
 	return perform_call(add_call);
 }
@@ -446,16 +442,12 @@ object* integer_subtract_with_sign(object* args, object* cont) {
 	
 	object* make_args = alloc_list_1(sign);
 	object* make_call = alloc_call(&make_integer_proc, make_args, cont);
-	object* make_cont = alloc_cont(make_call);
 	
-	object* reverse_call = alloc_call(&remove_leading_zeroes_and_reverse_proc, empty_list(), make_cont);
-	object* reverse_cont = alloc_cont(reverse_call);
-	
-	object* trim_call = alloc_call(&remove_leading_zeroes_proc, empty_list(), reverse_cont);
-	object* trim_cont = alloc_cont(trim_call);
+	object* reverse_call = alloc_call(&remove_leading_zeroes_and_reverse_proc, empty_list(), alloc_cont(make_call));
+	object* trim_call = alloc_call(&remove_leading_zeroes_proc, empty_list(), alloc_cont(reverse_call));
 	
 	object* subtract_args = alloc_list_2(subtrahend, minuend);
-	object* subtract_call = alloc_call(&integer_subtract_digits_proc, subtract_args, trim_cont);
+	object* subtract_call = alloc_call(&integer_subtract_digits_proc, subtract_args, alloc_cont(trim_call));
 	
 	return perform_call(subtract_call);
 }
@@ -558,10 +550,9 @@ object* integer_multiply(object* args, object* cont) {
 	
 	object* make_args = alloc_list_1(sign_object(sign));
 	object* make_call = alloc_call(&make_integer_proc, make_args, cont);
-	object* make_cont = alloc_cont(make_call);
 	
 	object* multiply_args = alloc_list_2(a_digits, b_digits);
-	object* multiply_call = alloc_call(&integer_multiply_digits_proc, multiply_args, make_cont);
+	object* multiply_call = alloc_call(&integer_multiply_digits_proc, multiply_args, alloc_cont(make_call));
 	
 	return perform_call(multiply_call);
 }
@@ -768,10 +759,9 @@ object* integer_divide(object* args, object* cont) {
 	
 	object* result_args = alloc_list_2(sign_object(quotient_sign), sign_object(remainder_sign));
 	object* result_call = alloc_call(&integer_make_division_result_proc, result_args, cont);
-	object* result_cont = alloc_cont(result_call);
 	
 	object* divide_args = alloc_list_2(positive_divisor, positive_dividend);
-	object* divide_call = alloc_call(&integer_perform_division_proc, divide_args, result_cont);
+	object* divide_call = alloc_call(&integer_perform_division_proc, divide_args, alloc_cont(result_call));
 	
 	return perform_call(divide_call);
 }
@@ -794,10 +784,9 @@ object* integer_gcd_step(object* args, object* cont) {
 	else {
 		object* gcd_args = alloc_list_2(remainder, smaller);
 		object* gcd_call = alloc_call(&integer_gcd_step_proc, gcd_args, cont);
-		object* gcd_cont = alloc_cont(gcd_call);
 		
 		object* divide_args = alloc_list_2(remainder, smaller);
-		object* divide_call = alloc_call(&integer_divide_proc, divide_args, gcd_cont);
+		object* divide_call = alloc_call(&integer_divide_proc, divide_args, alloc_cont(gcd_call));
 		
 		return perform_call(divide_call);
 	}
@@ -818,9 +807,7 @@ object* integer_quotient(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	object* next_call = alloc_call(&integer_quotient_continued_proc, empty_list(), cont);
-	object* next_cont = alloc_cont(next_call);
-	
-	object* call = alloc_call(&integer_divide_proc, args, next_cont);
+	object* call = alloc_call(&integer_divide_proc, args, alloc_cont(next_call));
 	
 	return perform_call(call);
 }
@@ -840,9 +827,7 @@ object* integer_remainder(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	object* next_call = alloc_call(&integer_remainder_continued_proc, empty_list(), cont);
-	object* next_cont = alloc_cont(next_call);
-	
-	object* call = alloc_call(&integer_divide_proc, args, next_cont);
+	object* call = alloc_call(&integer_divide_proc, args, alloc_cont(next_call));
 	
 	return perform_call(call);
 }
@@ -905,10 +890,9 @@ object* integer_digits_to_new_base(object* args, object* cont) {
 	else {
 		object* next_args = alloc_list_2(cell, base);
 		object* next_call = alloc_call(&integer_digits_to_new_base_proc, next_args, cont);
-		object* next_cont = alloc_cont(next_call);
 		
 		object* divide_args = alloc_list_2(base, quotient);
-		object* divide_call = alloc_call(&integer_divide_proc, divide_args, next_cont);
+		object* divide_call = alloc_call(&integer_divide_proc, divide_args, alloc_cont(next_call));
 		
 		return perform_call(divide_call);
 	}
@@ -929,14 +913,12 @@ object* integer_to_new_base(object* args, object* cont) {
 	else {
 		object* make_args = alloc_list_1(sign_object(integer_sign(num)));
 		object* make_call = alloc_call(&make_integer_proc, make_args, cont);
-		object* make_cont = alloc_cont(make_call);
 		
 		object* next_args = alloc_list_2(empty_list(), base);
-		object* next_call = alloc_call(&integer_digits_to_new_base_proc, next_args, make_cont);
-		object* next_cont = alloc_cont(next_call);
+		object* next_call = alloc_call(&integer_digits_to_new_base_proc, next_args, alloc_cont(make_call));
 		
 		object* divide_args = alloc_list_2(base, num);
-		object* divide_call = alloc_call(&integer_divide_proc, divide_args, next_cont);
+		object* divide_call = alloc_call(&integer_divide_proc, divide_args, alloc_cont(next_call));
 		
 		return perform_call(divide_call);
 	}
@@ -990,9 +972,8 @@ object* integer_to_string(object* args, object* cont) {
 	
 	object* string_args = alloc_list_1(sign);
 	object* string_call = alloc_call(&decimal_to_string_proc, string_args, cont);
-	object* string_cont = alloc_cont(string_call);
 	
-	object* decimal_call = alloc_call(&integer_to_new_base_proc, args, string_cont);
+	object* decimal_call = alloc_call(&integer_to_new_base_proc, args, alloc_cont(string_call));
 	
 	return perform_call(decimal_call);
 }

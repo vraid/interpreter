@@ -182,10 +182,9 @@ object* validate_let_bindings(object* args, object* cont) {
 	
 	object* next_args = alloc_list_3(rest, env, trace);
 	object* next_call = alloc_call(&validate_let_bindings_proc, next_args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
 	object* call_args = alloc_list_3(value, env, trace);
-	object* call = alloc_call(&validate_expression_proc, call_args, next_cont);
+	object* call = alloc_call(&validate_expression_proc, call_args, alloc_cont(next_call));
 	
 	return perform_call(call);
 }
@@ -267,10 +266,8 @@ object* validate_letrec(object* args, object* cont) {
 	}
 	
 	object* next_call = alloc_call(&validate_letrec_two_proc, args, cont);
-	object* next_cont = alloc_cont(next_call);
-	
 	object* unzip_args = alloc_list_1(bindings);
-	object* unzip_call = alloc_call(&unzip_2_proc, unzip_args, next_cont);
+	object* unzip_call = alloc_call(&unzip_2_proc, unzip_args, alloc_cont(next_call));
 	
 	return perform_call(unzip_call);
 }
@@ -370,10 +367,9 @@ object* validate_list_element(object* args, object* cont) {
 	else {
 		object* next_args = alloc_list_3(list_rest(elements), env, trace);
 		object* next_call = alloc_call(&validate_list_element_proc, next_args, cont);
-		object* next_cont = alloc_cont(next_call);
 		
 		object* validate_args = alloc_list_3(list_first(elements), env, trace);
-		object* validate_call = alloc_call(&validate_expression_proc, validate_args, next_cont);
+		object* validate_call = alloc_call(&validate_expression_proc, validate_args, alloc_cont(next_call));
 		
 		return perform_call(validate_call);
 	}
@@ -460,10 +456,9 @@ object* validate_expression(object* args, object* cont) {
 
 	object* return_args = alloc_list_1(stx);	
 	object* return_call = alloc_call(&return_syntax_proc, return_args, cont);
-	object* return_cont = alloc_cont(return_call);
 	
 	object* call_args = alloc_list_3(obj, env, trace);
-	object* call = alloc_call(is_list(obj) ? &validate_list_proc : &validate_atom_proc, call_args, return_cont);
+	object* call = alloc_call(is_list(obj) ? &validate_list_proc : &validate_atom_proc, call_args, alloc_cont(return_call));
 	
 	return perform_call(call);
 }

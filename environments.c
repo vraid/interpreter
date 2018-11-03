@@ -68,10 +68,9 @@ object* bind_and_extend_environment(object* args, object* cont) {
 	
 	object* bind_args = alloc_list_1(env);
 	object* bind_call = alloc_call(&extend_environment_proc, bind_args, cont);
-	object* bind_cont = alloc_cont(bind_call);
 	
 	object* make_args = alloc_list_2(value, name);
-	object* make_call = alloc_call(&make_binding_proc, make_args, bind_cont);
+	object* make_call = alloc_call(&make_binding_proc, make_args, alloc_cont(bind_call));
 	
 	return perform_call(make_call);
 }
@@ -93,14 +92,12 @@ object* bind_single_value(object* args, object* cont) {
 	else {
 		object* next_ls = alloc_list_2(list_rest(values), list_rest(names));
 		object* next_call = alloc_call(&bind_single_value_proc, next_ls, cont);
-		object* next_cont = alloc_cont(next_call);
 		
 		object* bind_ls = alloc_list_1(environment);
-		object* bind_call = alloc_call(&extend_environment_proc, bind_ls, next_cont);
-		object* bind_cont = alloc_cont(bind_call);
+		object* bind_call = alloc_call(&extend_environment_proc, bind_ls, alloc_cont(next_call));
 		
 		object* make_binding_args = alloc_list_2(list_first(values), list_first(names));
-		object* make_binding_call = alloc_call(&make_binding_proc, make_binding_args, bind_cont);
+		object* make_binding_call = alloc_call(&make_binding_proc, make_binding_args, alloc_cont(bind_call));
 		
 		return perform_call(make_binding_call);
 	}

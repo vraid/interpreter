@@ -48,10 +48,9 @@ object* repl_read_entry(object* args, object* cont) {
 	delist_2(args, &read_table, &environment);
 	
 	object* validate_call = alloc_call(&repl_validate_entry_proc, args, cont);
-	object* validate_cont = alloc_cont(validate_call);
 	
 	object* error_args = alloc_list_3(&read_error_string, read_table, environment);
-	object* error_call = alloc_call(&repl_catch_error_proc, error_args, validate_cont);
+	object* error_call = alloc_call(&repl_catch_error_proc, error_args, alloc_cont(validate_call));
 	object* error_cont = alloc_catching_cont(error_call);
 	
 	object input_port;
@@ -72,10 +71,9 @@ object* repl_validate_entry(object* args, object* cont) {
 	
 	object* eval_args = list_rest(args);
 	object* eval_call = alloc_call(&repl_eval_entry_proc, eval_args, cont);
-	object* eval_cont = alloc_cont(eval_call);
 	
 	object* catch_args = alloc_list_3(&syntax_error_string, read_table, environment);
-	object* catch_call = alloc_call(&repl_catch_error_proc, catch_args, eval_cont);
+	object* catch_call = alloc_call(&repl_catch_error_proc, catch_args, alloc_cont(eval_call));
 	object* catch_cont = alloc_catching_cont(catch_call);
 	
 	object* validate_args = alloc_list_3(value, environment, empty_list());
@@ -92,10 +90,9 @@ object* repl_eval_entry(object* args, object* cont) {
 	
 	object* print_args = list_rest(args);
 	object* print_call = alloc_call(&repl_print_or_read_proc, print_args, cont);
-	object* print_cont = alloc_cont(print_call);
 	
 	object* error_args = alloc_list_3(&eval_error_string, read_table, environment);
-	object* error_call = alloc_call(&repl_catch_error_proc, error_args, print_cont);
+	object* error_call = alloc_call(&repl_catch_error_proc, error_args, alloc_cont(print_call));
 	object* error_cont = alloc_catching_cont(error_call);
 	
 	object* eval_args = alloc_list_3(value, environment, empty_list());

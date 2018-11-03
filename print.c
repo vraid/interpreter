@@ -180,9 +180,7 @@ object* print_integer(object* args, object* cont) {
 	}
 	
 	object* print_call = alloc_call(&print_integer_digits_proc, empty_list(), cont);
-	object* print_cont = alloc_cont(print_call);
-	
-	object* call = alloc_call(&integer_to_decimal_proc, args, print_cont);
+	object* call = alloc_call(&integer_to_decimal_proc, args, alloc_cont(print_call));
 	
 	return perform_call(call);
 }
@@ -288,10 +286,9 @@ object* print_error_trace(object* args, object* cont) {
 		printf("\nin ");
 		
 		object* print_call = alloc_call(&print_sequence_proc, empty_list(), cont);
-		object* print_cont = alloc_cont(print_call);
 		
 		object* origin_args = alloc_list_2(empty_list(), trace);
-		object* origin_call = alloc_call(&trace_to_origin_proc, origin_args, print_cont);
+		object* origin_call = alloc_call(&trace_to_origin_proc, origin_args, alloc_cont(print_call));
 		
 		return perform_call(origin_call);
 	}

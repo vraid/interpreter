@@ -483,9 +483,8 @@ object* std_modulo(object* args, object* cont) {
 	
 	object* next_args = alloc_list_1(divisor);
 	object* next_call = alloc_call(&std_modulo_continued_proc, next_args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
-	object* call = alloc_call(&integer_divide_proc, args, next_cont);
+	object* call = alloc_call(&integer_divide_proc, args, alloc_cont(next_call));
 	
 	return perform_call(call);
 }
@@ -509,9 +508,8 @@ object* std_gcd(object* args, object* cont) {
 object* compare_numbers(object* nums, object* result, object* cont) {
 	object* eq_args = alloc_list_1(result);
 	object* eq_call = alloc_call(&std_is_identical_proc, eq_args, cont);
-	object* eq_cont = alloc_cont(eq_call);
 	
-	object* comp_call = alloc_call(&number_compare_proc, nums, eq_cont);
+	object* comp_call = alloc_call(&number_compare_proc, nums, alloc_cont(eq_call));
 	
 	return perform_call(comp_call);
 }
@@ -570,8 +568,8 @@ object* std_greater_or_equal(object* args, object* cont) {
 	}
 	
 	object* not_call = alloc_call(&std_not_proc, empty_list(), cont);
-	object* not_cont = alloc_cont(not_call);
-	return std_less(args, not_cont);
+	
+	return std_less(args, alloc_cont(not_call));
 }
 
 object std_less_or_equal_proc;
@@ -586,8 +584,8 @@ object* std_less_or_equal(object* args, object* cont) {
 	}
 	
 	object* not_call = alloc_call(&std_not_proc, empty_list(), cont);
-	object* not_cont = alloc_cont(not_call);
-	return std_greater(args, not_cont);
+	
+	return std_greater(args, alloc_cont(not_call));
 }
 
 object std_is_zero_proc;
@@ -644,8 +642,8 @@ object* std_newline(object* args, object* cont) {
 
 object* std_display_newline(object* args, object* cont) {
 	object* call = alloc_call(&std_newline_proc, empty_list(), cont);
-	object* next_cont = alloc_cont(call);
-	return std_display(args, next_cont);
+	
+	return std_display(args, alloc_cont(call));
 }
 
 #define primitive_max 1024

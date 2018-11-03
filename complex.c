@@ -107,10 +107,9 @@ object* complex_conjugate(object* args, object* cont) {
 	
 	object* next_args = alloc_list_1(complex_real_part(a));
 	object* next_call = alloc_call(&complex_conjugate_two_proc, next_args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
 	object* negate_args = alloc_list_1(complex_imag_part(a));
-	object* negate_call = alloc_call(&number_negate_proc, negate_args, next_cont);
+	object* negate_call = alloc_call(&number_negate_proc, negate_args, alloc_cont(next_call));
 	
 	return perform_call(negate_call);
 }

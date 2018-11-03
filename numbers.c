@@ -116,10 +116,9 @@ object* number_subtract(object* args, object* cont) {
 	
 	object* add_args = alloc_list_1(minuend);
 	object* add_call = alloc_call(&number_add_proc, add_args, cont);
-	object* add_cont = alloc_cont(add_call);
 	
 	object* negate_args = alloc_list_1(subtrahend);
-	object* negate_call = alloc_call(&number_negate_proc, negate_args, add_cont);
+	object* negate_call = alloc_call(&number_negate_proc, negate_args, alloc_cont(add_call));
 	
 	return perform_call(negate_call);
 }

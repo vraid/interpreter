@@ -38,19 +38,16 @@ object* stream(object* args, object* cont) {
 	
 	object* stream_args = alloc_list_1(delay);
 	object* stream_call = alloc_call(&make_stream_proc, stream_args, cont);
-	object* stream_cont = alloc_cont(stream_call);
 	
 	object* eval_args = alloc_list_3(first, environment, trace);
-	object* eval_call = alloc_call(&eval_proc, eval_args, stream_cont);
+	object* eval_call = alloc_call(&eval_proc, eval_args, alloc_cont(stream_call));
 	
 	return perform_call(eval_call);
 }
 
 object* vector(object* args, object* cont) {
-	object* vector_call = alloc_call(&list_to_vector_proc, empty_list(), cont);
-	object* vector_cont = alloc_cont(vector_call);
-	
-	object* list_call = alloc_call(syntax_procedure_obj(syntax_list), args, vector_cont);
+	object* vector_call = alloc_call(&list_to_vector_proc, empty_list(), cont);	
+	object* list_call = alloc_call(syntax_procedure_obj(syntax_list), args, alloc_cont(vector_call));
 	
 	return perform_call(list_call);
 }
@@ -63,10 +60,9 @@ object* eval_and_map(object* args, object* cont) {
 	
 	object* map_args = alloc_list_1(trace);
 	object* map_call = alloc_call(&map_proc, map_args, cont);
-	object* map_cont = alloc_cont(map_call);
 	
 	object* eval_args = alloc_list_3(syntax, environment, trace);
-	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, map_cont);
+	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, alloc_cont(map_call));
 	
 	return perform_call(eval_call);
 }
@@ -79,10 +75,9 @@ object* eval_and_fold(object* args, object* cont) {
 	
 	object* fold_args = alloc_list_1(trace);
 	object* fold_call = alloc_call(&fold_proc, fold_args, cont);
-	object* fold_cont = alloc_cont(fold_call);
 	
 	object* eval_args = alloc_list_3(syntax, environment, trace);
-	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, fold_cont);
+	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, alloc_cont(fold_call));
 	
 	return perform_call(eval_call);
 }
@@ -95,10 +90,9 @@ object* eval_and_filter(object* args, object* cont) {
 	
 	object* filter_args = alloc_list_1(trace);
 	object* filter_call = alloc_call(&filter_proc, filter_args, cont);
-	object* filter_cont = alloc_cont(filter_call);
 	
 	object* eval_args = alloc_list_3(syntax, environment, trace);
-	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, filter_cont);
+	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, alloc_cont(filter_call));
 	
 	return perform_call(eval_call);
 }

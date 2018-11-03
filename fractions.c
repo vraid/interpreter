@@ -71,10 +71,9 @@ object* fraction_reduce(object* args, object* cont) {
 
 	object* reduce_args = alloc_list_2(numerator, denominator);
 	object* reduce_call = alloc_call(&fraction_reduce_two_proc, reduce_args, cont);
-	object* reduce_cont = alloc_cont(reduce_call);
 	
 	object* gcd_args = alloc_list_2(numerator, denominator);
-	object* gcd_call = alloc_call(&integer_greatest_common_divisor_proc, gcd_args, reduce_cont);
+	object* gcd_call = alloc_call(&integer_greatest_common_divisor_proc, gcd_args, alloc_cont(reduce_call));
 	
 	return perform_call(gcd_call);
 }
@@ -229,14 +228,13 @@ object* fraction_quotient_remainder_two(object* args, object* cont) {
 	
 	object* next_args = alloc_list_1(denominator_product);
 	object* next_call = alloc_call(&fraction_quotient_remainder_three_proc, next_args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
 	object* a_list = alloc_list_3(&integer_multiply_proc, a_num, b_denom);
 	object* b_list = alloc_list_3(&integer_multiply_proc, b_num, a_denom);
 	object* divide_list = alloc_list_3(&integer_divide_proc, a_list, b_list);
 	
 	object* eval_args = alloc_list_3(empty_list(), divide_list, false());
-	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, next_cont);
+	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, alloc_cont(next_call));
 	
 	return perform_call(eval_call);
 }
@@ -252,10 +250,9 @@ object* fraction_quotient_remainder(object* args, object* cont) {
 	object* b_denom = fraction_denominator(b);
 	
 	object* next_call = alloc_call(&fraction_quotient_remainder_two_proc, args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
 	object* multiply_args = alloc_list_2(a_denom, b_denom);
-	object* multiply_call = alloc_call(&integer_multiply_proc, multiply_args, next_cont);
+	object* multiply_call = alloc_call(&integer_multiply_proc, multiply_args, alloc_cont(next_call));
 	
 	return perform_call(multiply_call);
 }
@@ -275,9 +272,7 @@ object* fraction_quotient(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	object* next_call = alloc_call(&fraction_quotient_continued_proc, empty_list(), cont);
-	object* next_cont = alloc_cont(next_call);
-	
-	object* call = alloc_call(&fraction_quotient_remainder_proc, args, next_cont);
+	object* call = alloc_call(&fraction_quotient_remainder_proc, args, alloc_cont(next_call));
 	
 	return perform_call(call);
 }
@@ -297,9 +292,7 @@ object* fraction_remainder(object* args, object* cont) {
 	delist_2(args, &divisor, &dividend);
 	
 	object* next_call = alloc_call(&fraction_remainder_continued_proc, empty_list(), cont);
-	object* next_cont = alloc_cont(next_call);
-	
-	object* call = alloc_call(&fraction_quotient_remainder_proc, args, next_cont);
+	object* call = alloc_call(&fraction_quotient_remainder_proc, args, alloc_cont(next_call));
 	
 	return perform_call(call);
 }

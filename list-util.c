@@ -138,9 +138,7 @@ object* unzip_2_next(object* args, object* cont) {
 
 object* unzip_2(object* args, object* cont) {	
 	object* reverse_call = alloc_call(&unzip_2_next_proc, empty_list(), cont);
-	object* reverse_cont = alloc_cont(reverse_call);
-	
-	object* unzip_call = alloc_call(&unzip_2_reversed_proc, args, reverse_cont);
+	object* unzip_call = alloc_call(&unzip_2_reversed_proc, args, alloc_cont(reverse_call));
 	
 	return perform_call(unzip_call);
 }

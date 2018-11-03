@@ -59,11 +59,10 @@ object* add_struct_constructor(object* args, object* cont) {
 	
 	object* next_args = alloc_list_1(type);
 	object* next_call = alloc_call(&add_struct_constructor_next_proc, next_args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
 	object* append_list = alloc_list_2(struct_definition_fields(struct_definition_parent(type)), fields);
 	object* append_args = alloc_list_1(append_list);
-	object* append_call = alloc_call(&list_append_proc, append_args, next_cont);
+	object* append_call = alloc_call(&list_append_proc, append_args, alloc_cont(next_call));
 	
 	return perform_call(append_call);
 }
@@ -117,11 +116,10 @@ object* define_struct_is_type(object* args, object* cont) {
 	
 	object* bind_args = alloc_list_2(function, environment);
 	object* bind_call = alloc_call(&bind_struct_is_type_proc, bind_args, cont);
-	object* bind_cont = alloc_cont(bind_call);
 	
 	object* is_name = alloc_append_string_2(symbol_name(name), question_mark_string());
 	object* symbol_args = alloc_list_1(is_name);
-	object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, bind_cont);
+	object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, alloc_cont(bind_call));
 	
 	return perform_call(symbol_call);
 }
@@ -173,10 +171,9 @@ object* define_field_accessor(object* args, object* cont) {
 	
 	object* bind_args = alloc_list_2(name, environment);
 	object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, cont);
-	object* bind_cont = alloc_cont(bind_call);
 	
 	object* make_args = alloc_list_2(count, type);
-	object* make_call = alloc_call(&make_field_accessor_proc, make_args, bind_cont);
+	object* make_call = alloc_call(&make_field_accessor_proc, make_args, alloc_cont(bind_call));
 	
 	return perform_call(make_call);
 }
@@ -200,10 +197,9 @@ object* define_field_accessors(object* args, object* cont) {
 		
 		object* next_args = alloc_list_3(list_rest(fields), next_count, type);
 		object* next_call = alloc_call(&define_field_accessors_proc, next_args, cont);
-		object* next_cont = alloc_cont(next_call);
 		
 		object* field_args = alloc_list_4(first, count, type, environment);
-		object* field_call = alloc_call(&define_field_accessor_proc, field_args, next_cont);
+		object* field_call = alloc_call(&define_field_accessor_proc, field_args, alloc_cont(next_call));
 		
 		return perform_call(field_call);
 	}
@@ -263,18 +259,15 @@ object* define_struct_next(object* args, object* cont) {
 	
 	object* field_args = alloc_list_2(renamed_fields, type);
 	object* field_call = alloc_call(&define_struct_accessors_proc, field_args, cont);
-	object* field_cont = alloc_cont(field_call);
 	
 	object* type_args = alloc_list_1(type);
-	object* type_call = alloc_call(&define_struct_is_type_proc, type_args, field_cont);
-	object* type_cont = alloc_cont(type_call);
+	object* type_call = alloc_call(&define_struct_is_type_proc, type_args, alloc_cont(field_call));
 	
 	object* bind_args = alloc_list_2(struct_definition_name(type), environment);
-	object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, type_cont);
-	object* bind_cont = alloc_cont(bind_call);
+	object* bind_call = alloc_call(&bind_and_extend_environment_proc, bind_args, alloc_cont(type_call));
 	
 	object* constructor_args = alloc_list_2(renamed_fields, type);
-	object* constructor_call = alloc_call(&add_struct_constructor_proc, constructor_args, bind_cont);
+	object* constructor_call = alloc_call(&add_struct_constructor_proc, constructor_args, alloc_cont(bind_call));
 	object* constructor_cont = alloc_discarding_cont(constructor_call);
 	
 	object* parent_call;
@@ -285,10 +278,9 @@ object* define_struct_next(object* args, object* cont) {
 	else {
 		object* set_parent_args = alloc_list_1(type);
 		object* set_parent_call = alloc_call(&set_struct_parent_proc, set_parent_args, constructor_cont);
-		object* set_parent_cont = alloc_cont(set_parent_call);
 		
 		object* get_parent_args = alloc_list_2(environment, parent);
-		parent_call = alloc_call(&environment_get_proc, get_parent_args, set_parent_cont);
+		parent_call = alloc_call(&environment_get_proc, get_parent_args, alloc_cont(set_parent_call));
 	}
 	
 	return perform_call(parent_call);
@@ -311,15 +303,13 @@ object* struct_field_names(object* args, object* cont) {
 	else {
 		object* next_args = alloc_list_2(list_rest(fields), name);
 		object* next_call = alloc_call(&struct_field_names_proc, next_args, cont);
-		object* next_cont = alloc_cont(next_call);
 		
 		object* link_args = alloc_list_1(result);
-		object* link_call = alloc_call(&link_list_proc, link_args, next_cont);
-		object* link_cont = alloc_cont(link_call);
+		object* link_call = alloc_call(&link_list_proc, link_args, alloc_cont(next_call));
 		
 		object* fieldname = alloc_append_string_3(name, dash_string(), symbol_name(desyntax(list_first(fields))));
 		object* symbol_args = alloc_list_1(fieldname);
-		object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, link_cont);
+		object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, alloc_cont(link_call));
 		
 		return perform_call(symbol_call);
 	}
@@ -352,10 +342,9 @@ object* define_struct(object* args, object* cont) {
 	
 	object* next_args = alloc_list_3(parent, struct_type, environment);
 	object* next_call = alloc_call(&define_struct_next_proc, next_args, cont);
-	object* next_cont = alloc_cont(next_call);
 	
 	object* name_args = alloc_list_3(empty_list(), fields, symbol_name(name));
-	object* name_call = alloc_call(&struct_field_names_proc, name_args, next_cont);
+	object* name_call = alloc_call(&struct_field_names_proc, name_args, alloc_cont(next_call));
 	
 	return perform_call(name_call);
 }

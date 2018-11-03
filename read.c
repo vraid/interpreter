@@ -195,14 +195,12 @@ object* read_integer(object* args, object* cont) {
 		
 		object* read_args = alloc_list_2(next_index, string);
 		object* read_call = alloc_call(&read_integer_proc, read_args, cont);
-		object* read_cont = alloc_cont(read_call);
 		
 		object* add_args = alloc_list_1(ls);
-		object* add_call = alloc_call(&integer_add_signless_proc, add_args, read_cont);
-		object* add_cont = alloc_cont(add_call);
+		object* add_call = alloc_call(&integer_add_signless_proc, add_args, alloc_cont(read_call));
 		
 		object* multiply_args = alloc_list_2(num, integer_ten_list());
-		object* multiply_call = alloc_call(&integer_multiply_digits_proc, multiply_args, add_cont);
+		object* multiply_call = alloc_call(&integer_multiply_digits_proc, multiply_args, alloc_cont(add_call));
 		
 		return perform_call(multiply_call);
 	}
@@ -220,14 +218,12 @@ object* read_number(object* args, object* cont) {
 		
 		object* fraction_args = alloc_list_1(integer_one());
 		object* fraction_call = alloc_call(&make_fraction_proc, fraction_args, cont);
-		object* fraction_cont = alloc_cont(fraction_call);
 		
 		object* make_args = alloc_list_1(sign_object(sign));
-		object* make_call = alloc_call(&make_integer_proc, make_args, fraction_cont);
-		object* make_cont = alloc_cont(make_call);
+		object* make_call = alloc_call(&make_integer_proc, make_args, alloc_cont(fraction_call));
 		
 		object* read_args = alloc_list_3(integer_zero_list(), index, string);
-		object* read_call = alloc_call(&read_integer_proc, read_args, make_cont);
+		object* read_call = alloc_call(&read_integer_proc, read_args, alloc_cont(make_call));
 		
 		return perform_call(read_call);
 	}
@@ -357,8 +353,7 @@ object* read_value(object* args, object* cont) {
 	else if (is_quote_char(c)) {
 		get_input(in);
 		object* quote_call = alloc_call(&quote_object_proc, empty_list(), syntax_cont);
-		object* quote_cont = alloc_cont(quote_call);
-		object* read_call = alloc_call(&read_value_proc, args, quote_cont);
+		object* read_call = alloc_call(&read_value_proc, args, alloc_cont(quote_call));
 		return perform_call(read_call);
 	}
 	else {
@@ -381,9 +376,8 @@ object* read_value(object* args, object* cont) {
 			primitive = &read_nonstring_proc;
 		}
 		object* call = alloc_call(primitive, primitive_args, syntax_cont);
-		object* next_cont = alloc_cont(call);
 		
-		return string(str, next_cont);
+		return string(str, alloc_cont(call));
 	}
 }
 
@@ -411,9 +405,7 @@ object* read_list_value(object* args, object* cont) {
 	delist_3(args, &last, &input, &read_table);
 	
 	object* next_call = alloc_call(&read_add_to_list_proc, args, cont);
-	object* next_cont = alloc_cont(next_call);
-
-	object* call = alloc_call(&read_value_proc, list_rest(args), next_cont);
+	object* call = alloc_call(&read_value_proc, list_rest(args), alloc_cont(next_call));
 	
 	return perform_call(call);
 }
@@ -479,8 +471,7 @@ object* read_list_start(object* args, object* cont) {
 	}
 	else {
 		object* next_call = alloc_call(&start_list_proc, args, cont);
-		object* next_cont = alloc_cont(next_call);
-		object* call = alloc_call(&read_value_proc, args, next_cont);
+		object* call = alloc_call(&read_value_proc, args, alloc_cont(next_call));
 		
 		return perform_call(call);
 	}

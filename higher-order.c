@@ -29,15 +29,13 @@ object* map_single(object* args, object* cont) {
 		
 		object* map_args = alloc_list_3(rest, function, trace);
 		object* map_call = alloc_call(&map_single_proc, map_args, cont);
-		object* map_cont = alloc_cont(map_call);
 		
 		object* add_args = alloc_list_1(last);
-		object* add_call = alloc_call(&add_to_list_proc, add_args, map_cont);
-		object* add_cont = alloc_cont(add_call);
+		object* add_call = alloc_call(&add_to_list_proc, add_args, alloc_cont(map_call));
 		
 		object* function_args = alloc_list_1(sequence_first(unmapped));
 		object* eval_args = alloc_list_3(function_args, function, trace);
-		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, add_cont);
+		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, alloc_cont(add_call));
 		
 		return perform_call(eval_call);
 	}
@@ -69,11 +67,10 @@ object* map(object* args, object* cont) {
 			object* map_args = alloc_list_3(rest, function, trace);
 			object* list_args = alloc_list_2(&map_single_proc, map_args);
 			object* list_call = alloc_call(&make_list_proc, list_args, convert_cont);
-			object* list_cont = alloc_cont(list_call);
 			
 			object* function_args = alloc_list_1(sequence_first(sequence));
 			object* eval_args = alloc_list_3(function_args, function, trace);
-			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, list_cont);
+			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, alloc_cont(list_call));
 			
 			return perform_call(eval_call);
 		}
@@ -97,11 +94,10 @@ object* fold_single(object* args, object* cont) {
 		
 		object* fold_args = alloc_list_3(rest, function, trace);
 		object* fold_call = alloc_call(&fold_single_proc, fold_args, cont);
-		object* fold_cont = alloc_cont(fold_call);
 		
 		object* function_args = alloc_list_2(value, sequence_first(elements));
 		object* eval_args = alloc_list_3(function_args, function, trace);
-		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, fold_cont);
+		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, alloc_cont(fold_call));
 		
 		return perform_call(eval_call);
 	}
@@ -167,16 +163,14 @@ object* filter_single(object* args, object* cont) {
 		
 		object* filter_args = alloc_list_3(rest, function, trace);
 		object* filter_call = alloc_call(&filter_single_proc, filter_args, cont);
-		object* filter_cont = alloc_cont(filter_call);
 		
 		object* value = sequence_first(unfiltered);
 		object* add_args = alloc_list_2(value, last);
-		object* add_call = alloc_call(&add_or_discard_filtered_proc, add_args, filter_cont);
-		object* add_cont = alloc_cont(add_call);
+		object* add_call = alloc_call(&add_or_discard_filtered_proc, add_args, alloc_cont(filter_call));
 		
 		object* function_args = alloc_list_1(value);
 		object* eval_args = alloc_list_3(function_args, function, trace);
-		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, add_cont);
+		object* eval_call = alloc_call(&eval_function_call_proc, eval_args, alloc_cont(add_call));
 		
 		return perform_call(eval_call);
 	}
@@ -203,11 +197,10 @@ object* filter_first(object* args, object* cont) {
 			
 			object* filter_args = alloc_list_4(value, rest, function, trace);
 			object* filter_call = alloc_call(&filter_first_proc, filter_args, cont);
-			object* filter_cont = alloc_cont(filter_call);
 			
 			object* function_args = alloc_list_1(value);
 			object* eval_args = alloc_list_3(function_args, function, trace);
-			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, filter_cont);
+			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, alloc_cont(filter_call));
 			
 			return perform_call(eval_call);
 		}
@@ -250,11 +243,10 @@ object* filter(object* args, object* cont) {
 			
 			object* filter_args = alloc_list_4(value, rest, function, trace);
 			object* filter_call = alloc_call(&filter_first_proc, filter_args, convert_cont);
-			object* filter_cont = alloc_cont(filter_call);
 			
 			object* function_args = alloc_list_1(value);
 			object* eval_args = alloc_list_3(function_args, function, trace);
-			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, filter_cont);
+			object* eval_call = alloc_call(&eval_function_call_proc, eval_args, alloc_cont(filter_call));
 			
 			return perform_call(eval_call);
 		}
