@@ -77,8 +77,8 @@ object* init_catching_cont(object* obj, object* call);
 object* init_syntax_object(object* obj, object* syntax, object* origin);
 #define alloc_syntax_object(a, b) init_syntax_object(alloc_obj(), a, b)
 
-object* init_internal_position(object* obj, int x, int y);
-#define alloc_internal_position(a, b) init_internal_position(alloc_obj(), a, b)
+object* init_internal_position(object* obj, int n);
+#define alloc_internal_position(a) init_internal_position(alloc_obj(), a)
 
 object* init_internal_error(object* obj, object* trace, object* message);
 #define alloc_internal_error(a, b) init_internal_error(alloc_obj(), a, b)
@@ -87,6 +87,8 @@ object* init_reader_entry(object* obj, read_type t, object* proc);
 #define alloc_reader_entry(a, b) init_reader_entry(alloc_obj(), a, b)
 
 object* init_memory_reference(object* obj, long size, char* reference);
+
+object* init_file_port(object* obj, FILE* file);
 
 object* init_delay(object* obj, object* value);
 #define alloc_delay(a) init_delay(alloc_obj(), a)

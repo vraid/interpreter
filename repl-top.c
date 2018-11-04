@@ -54,8 +54,7 @@ object* repl_read_entry(object* args, object* cont) {
 	object* error_cont = alloc_catching_cont(error_call);
 	
 	object input_port;
-	init_object(location_stack, type_file_port, &input_port);
-	input_port.data.file_port.file = stdin;
+	init_file_port(&input_port, stdin);
 	
 	object* read_args = alloc_list_2(&input_port, read_table);
 	object* read_call = alloc_call(&read_entry_proc, read_args, error_cont);

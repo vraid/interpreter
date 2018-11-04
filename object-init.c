@@ -168,10 +168,9 @@ object* init_syntax_object(object* obj, object* syntax, object* origin) {
 	return obj;
 }
 
-object* init_internal_position(object* obj, int x, int y) {
+object* init_internal_position(object* obj, int n) {
 	init_object(location_stack, type_internal_position, obj);
-	obj->data.internal_position.x = x;
-	obj->data.internal_position.y = y;
+	obj->data.internal_position.n = n;
 	return obj;
 }
 
@@ -193,6 +192,13 @@ object* init_memory_reference(object* obj, long size, char* reference) {
 	init_object(location_stack, type_memory_reference, obj);
 	obj->data.memory_reference.size = size;
 	obj->data.memory_reference.value = reference;
+	return obj;
+}
+
+object* init_file_port(object* obj, FILE* file) {
+	init_object(location_stack, type_file_port, obj);
+	obj->data.file_port.file = file;
+	obj->data.file_port.position = 0;
 	return obj;
 }
 

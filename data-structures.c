@@ -194,6 +194,10 @@ FILE* file_port_file(object* obj) {
 	check_type(type_file_port, obj);
 	return obj->data.file_port.file;
 }
+int file_port_position(object* obj) {
+	check_type(type_file_port, obj);
+	return obj->data.file_port.position;
+}
 
 read_type reader_entry_read_type(object* obj) {
 	check_type(type_reader_entry, obj);
@@ -415,13 +419,9 @@ object* desyntax(object* obj) {
 	return obj;
 }
 
-int internal_position_x(object* obj) {
+int internal_position_n(object* obj) {
 	check_type(type_internal_position, obj);
-	return obj->data.internal_position.x;
-}
-int internal_position_y(object* obj) {
-	check_type(type_internal_position, obj);
-	return obj->data.internal_position.y;
+	return obj->data.internal_position.n;
 }
 
 object* internal_error_trace(object* obj) {

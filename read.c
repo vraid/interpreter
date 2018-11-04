@@ -335,7 +335,7 @@ object* read_value(object* args, object* cont) {
 	
 	char c = peek(in);
 	
-	object* current_pos = alloc_internal_position(current_read_state().x, current_read_state().y);
+	object* current_pos = alloc_internal_position(current_read_state());
 	
 	object* syntax_args = alloc_list_1(current_pos);
 	object* syntax_call = alloc_call(&make_syntax_proc, syntax_args, cont);

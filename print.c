@@ -268,7 +268,7 @@ object* print_internal_position(object* args, object* cont) {
 	object* pos;
 	delist_1(args, &pos);
 	
-	printf("(pos %i %i)", internal_position_y(pos), internal_position_x(pos));
+	printf("(pos %i)", internal_position_n(pos));
 	
 	return call_discarding_cont(cont);
 }
@@ -397,7 +397,7 @@ object* print_entry(object* args, object* cont) {
 	
 	if (is_syntax_object(obj)) {
 		object* pos = syntax_object_position(obj);
-		printf("(syntax:%i:%i ", internal_position_x(pos), internal_position_y(pos));
+		printf("(syntax:%i ", internal_position_n(pos));
 		
 		object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
 		object* end_cont = alloc_discarding_cont(end_call);

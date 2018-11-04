@@ -175,6 +175,7 @@ typedef struct object {
 		} delay;
 		struct {
 			FILE* file;
+			int position;
 		} file_port;
 		struct {
 			read_type read_type;
@@ -189,8 +190,7 @@ typedef struct object {
 			struct object* origin;
 		} syntax_object;
 		struct {
-			int x;
-			int y;
+			int n;
 		} internal_position;
 		struct {
 			struct object* trace;
@@ -245,6 +245,7 @@ int string_length(object* obj);
 char* string_value(object* obj);
 object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
+int file_port_position(object* obj);
 
 read_type reader_entry_read_type(object* obj);
 object* reader_entry_proc(object* obj);
@@ -302,8 +303,7 @@ object* syntax_object_origin(object* obj);
 object* syntax_object_position(object* obj);
 object* desyntax(object* obj);
 
-int internal_position_x(object* obj);
-int internal_position_y(object* obj);
+int internal_position_n(object* obj);
 
 object* internal_error_trace(object* obj);
 object* internal_error_message(object* obj);
