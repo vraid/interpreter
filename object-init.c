@@ -199,6 +199,7 @@ object* init_file_port(object* obj, FILE* file) {
 	init_object(location_stack, type_file_port, obj);
 	obj->data.file_port.file = file;
 	obj->data.file_port.position = 0;
+	obj->data.file_port.last_read_char = 0;
 	return obj;
 }
 

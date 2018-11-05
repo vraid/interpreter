@@ -5,7 +5,6 @@
 #include "global-variables.h"
 #include "object-init.h"
 #include "read.h"
-#include "read-state.h"
 #include "eval.h"
 #include "print.h"
 #include "syntax-validate.h"

@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "read-state.h"
+#include "ports.h"
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
@@ -102,15 +102,9 @@ char is_valid_number(object* string) {
 	return 1;
 }
 
-int peek(FILE* in) {
-	int c = get_input(in);
-	unget_input(in);
-	return c;
-}
-
-void consume_whitespace(FILE* in) {
-	while (is_whitespace(peek(in))) {
-		get_input(in);	
+void consume_whitespace(object* obj) {
+	while (is_whitespace(peek(obj))) {
+		get_input(obj);	
 	}
 }
 
@@ -126,10 +120,10 @@ char keep_reading(char string, int c, int escapes) {
 	}
 }
 
-char* get_string(char string, FILE* in) {
-	if (string) get_input(in);
+char* get_string(char string, object* obj) {
+	if (string) get_input(obj);
 	int i = 0;
-	int c = get_input(in);
+	int c = get_input(obj);
 	int escapes = 0;
 	while (keep_reading(string, c, escapes)) {
 		input_buffer[i] = c;
@@ -138,9 +132,9 @@ char* get_string(char string, FILE* in) {
 			fprintf(stderr, "identifier too long, max %i characters\n", input_buffer_size);
 		}
 		escapes = is_escape_char(c) ? escapes + 1 : 0;
-		c = get_input(in);
+		c = get_input(obj);
 	}
-	if (!string) unget_input(in);
+	if (!string) unget_input(obj);
 	
 	input_buffer[i] = 0;
 	return input_buffer;
@@ -330,35 +324,34 @@ object* read_value(object* args, object* cont) {
 	object* read_table;
 	delist_2(args, &input_port, &read_table);
 	
-	FILE* in = file_port_file(input_port);
-	consume_whitespace(in);
+	consume_whitespace(input_port);
 	
-	char c = peek(in);
+	char c = peek(input_port);
 	
-	object* current_pos = alloc_internal_position(current_read_state());
+	object* current_pos = alloc_internal_position(file_port_position(input_port));
 	
 	object* syntax_args = alloc_list_1(current_pos);
 	object* syntax_call = alloc_call(&make_syntax_proc, syntax_args, cont);
 	object* syntax_cont = alloc_cont(syntax_call);
 	
 	if (is_list_end_delimiter(c)) {
-		get_input(in);
+		get_input(input_port);
 		return throw_error_string(cont, "unexpected parenthesis");
 	}
 	else if (is_list_start_delimiter(c)) {
-		get_input(in);
+		get_input(input_port);
 		object* call = alloc_call(&read_list_start_proc, args, syntax_cont);
 		return perform_call(call);
 	}
 	else if (is_quote_char(c)) {
-		get_input(in);
+		get_input(input_port);
 		object* quote_call = alloc_call(&quote_object_proc, empty_list(), syntax_cont);
 		object* read_call = alloc_call(&read_value_proc, args, alloc_cont(quote_call));
 		return perform_call(read_call);
 	}
 	else {
 		char q = is_quotation_mark(c);
-		char* str = get_string(q, in);
+		char* str = get_string(q, input_port);
 		
 		object* primitive;
 		object* primitive_args = empty_list();
@@ -367,7 +360,7 @@ object* read_value(object* args, object* cont) {
 		}
 		else if (is_hash_char(c)) {
 			primitive = &read_hashed_proc;
-			primitive_args = alloc_list_3(boolean(peek(in) == '('), input_port, read_table);
+			primitive_args = alloc_list_3(boolean(peek(input_port) == '('), input_port, read_table);
 		}
 		else if (is_digit(c) || ((c == '-') && (strlen(str) > 1))) {
 			primitive = &read_number_proc;
@@ -416,10 +409,9 @@ object* read_list(object* args, object* cont) {
 	object* read_table;
 	delist_3(args, &last, &input, &read_table);
 	
-	FILE* in = file_port_file(input);
-	consume_whitespace(in);
-	if (is_list_end_delimiter(peek(in))) {
-		get_input(in);
+	consume_whitespace(input);
+	if (is_list_end_delimiter(peek(input))) {
+		get_input(input);
 		return call_discarding_cont(cont);
 	}
 	else {
@@ -462,11 +454,10 @@ object* read_list_start(object* args, object* cont) {
 	object* read_table;
 	delist_2(args, &input, &read_table);
 	
-	FILE* in = file_port_file(input);
-	consume_whitespace(in);
+	consume_whitespace(input);
 	
-	if (is_list_end_delimiter(peek(in))) {
-		get_input(in);
+	if (is_list_end_delimiter(peek(input))) {
+		get_input(input);
 		return call_cont(cont, empty_list());
 	}
 	else {
@@ -482,8 +473,7 @@ object* read_entry(object* args, object* cont) {
 	object* read_table;
 	delist_2(args, &input_port, &read_table);
 	
-	consume_whitespace(file_port_file(input_port));
-	reset_read_state();
+	consume_whitespace(input_port);
 	
 	return read_value(args, cont);
 }

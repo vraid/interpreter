@@ -176,6 +176,7 @@ typedef struct object {
 		struct {
 			FILE* file;
 			int position;
+			char last_read_char;
 		} file_port;
 		struct {
 			read_type read_type;
@@ -246,6 +247,7 @@ char* string_value(object* obj);
 object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
 int file_port_position(object* obj);
+char file_port_last_read_char(object* obj);
 
 read_type reader_entry_read_type(object* obj);
 object* reader_entry_proc(object* obj);

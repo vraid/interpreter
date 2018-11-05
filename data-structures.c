@@ -198,6 +198,10 @@ int file_port_position(object* obj) {
 	check_type(type_file_port, obj);
 	return obj->data.file_port.position;
 }
+char file_port_last_read_char(object* obj) {
+	check_type(type_file_port, obj);
+	return obj->data.file_port.last_read_char;
+}
 
 read_type reader_entry_read_type(object* obj) {
 	check_type(type_reader_entry, obj);
