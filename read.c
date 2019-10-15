@@ -63,12 +63,16 @@ bracket_type list_delimiter_type(int c) {
 	}
 }
 
+char is_eof(int c) {
+	return c == EOF;
+}
+
 char is_whitespace(int c) {
 	return c == ' ' || c == '\n' || c == ',';
 }
 
 char is_delimiter(int c) {
-	return is_whitespace(c) || c == EOF ||
+	return is_whitespace(c) ||
 		is_list_delimiter(c) ||
 		c == '"';
 }
@@ -112,7 +116,10 @@ void consume_whitespace(object* obj) {
 char input_buffer[input_buffer_size];
 
 char keep_reading(char string, int c, int escapes) {
-	if (string) {
+	if (is_eof(c)) {
+		return 0;
+	}
+	else if (string) {
 		return (escapes & 1) || !(is_quotation_mark(c));
 	}
 	else {
@@ -140,13 +147,71 @@ char* get_string(char string, object* obj) {
 	return input_buffer;
 }
 
-
 object* read_true(object* args, object* cont) {
 	return call_cont(cont, true());
 }
 
 object* read_false(object* args, object* cont) {
 	return call_cont(cont, false());
+}
+
+object desyntax_included_proc;
+
+object* desyntax_included(object* args, object* cont) {
+	object* stx;
+	delist_1(args, &stx);
+	
+	return call_cont(cont, desyntax(stx));
+}
+
+object assert_read_empty_proc;
+
+object* assert_read_empty(object* args, object* cont) {
+	object* result;
+	object* filename;
+	object* input_port;
+	delist_3(args, &result, &filename, &input_port);
+	
+	consume_whitespace(input_port);
+	
+	char c = peek(input_port);
+	if (!is_eof(c)) {
+		return throw_error(cont, alloc_list_2(alloc_string("expected single expression in file"), filename));
+	}
+	
+	return call_cont(cont, result);
+}
+
+object* read_include(object* args, object* cont) {
+	object* ls;
+	object* read_table;
+	delist_2(args, &ls, &read_table);
+	object* filename;
+	delist_desyntax_1(desyntax(ls), &filename);
+	
+	FILE* f = fopen(string_value(filename), "r");
+	if (f == NULL) {
+		return throw_error(cont, alloc_list_2(alloc_string("file not found"), filename));
+	}
+	fseek(f, 0, SEEK_END);
+	long size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	
+	char* mem = malloc(size+1);
+	fread(mem, size, 1, f);
+	fclose(f);
+	
+	alloc_malloc_reference(size+1, mem);
+	object* str = alloc_string(mem);
+	
+	object* input_port = alloc_string_port(str);
+	
+	object* desyntax_call = alloc_call(&desyntax_included_proc, empty_list(), cont);
+	object* empty_call = alloc_call(&assert_read_empty_proc, alloc_list_2(filename, input_port), alloc_cont(desyntax_call));
+	
+	object* read_call = alloc_call(&read_entry_proc, alloc_list_2(input_port, read_table), alloc_cont(empty_call));
+	
+	return perform_call(read_call);
 }
 
 object* string(char* cs, object* cont) {
@@ -264,7 +329,7 @@ object* read_list_type(object* args, object* cont) {
 	object* read_table;
 	delist_3(args, &proc, &input_port, &read_table);
 	
-	object* next = alloc_call(proc, empty_list(), cont);
+	object* next = alloc_call(proc, alloc_list_1(read_table), cont);
 	object* assertion = alloc_call(&assert_is_list_proc, empty_list(), alloc_cont(next));
 	object* call = alloc_call(&read_value_proc, list_rest(args), alloc_cont(assertion));
 	return perform_call(call);
@@ -293,7 +358,7 @@ object* read_hashed(object* args, object* cont) {
 			else {
 				proc = &read_list_type_proc;
 				if (is_false(trailing_parenthesis)) {
-					object* str = alloc_string("expected parenthesis");
+					object* str = alloc_string("expected parenthesis after read syntax");
 					object* ls = alloc_list_2(str, string);
 					return throw_error(cont, ls);
 				}
@@ -303,7 +368,7 @@ object* read_hashed(object* args, object* cont) {
 		}
 		read_table = list_rest(read_table);
 	}
-	object* str = alloc_string("invalid read syntax");
+	object* str = alloc_string("unknown read syntax");
 	object* ls = alloc_list_2(str, string);
 	return throw_error(cont, ls);
 }
@@ -328,13 +393,16 @@ object* read_value(object* args, object* cont) {
 	
 	char c = peek(input_port);
 	
-	object* current_pos = alloc_internal_position(file_port_position(input_port));
+	object* current_pos = alloc_internal_position(port_position(input_port));
 	
 	object* syntax_args = alloc_list_1(current_pos);
 	object* syntax_call = alloc_call(&make_syntax_proc, syntax_args, cont);
 	object* syntax_cont = alloc_cont(syntax_call);
 	
-	if (is_list_end_delimiter(c)) {
+	if (is_eof(c)) {
+		return throw_error_string(cont, "unexpected end of file");
+	}
+	else if (is_list_end_delimiter(c)) {
 		get_input(input_port);
 		return throw_error_string(cont, "unexpected parenthesis");
 	}
@@ -498,4 +566,7 @@ void init_read_procedures(void) {
 	init_primitive(&assert_is_list, &assert_is_list_proc);
 	init_primitive(&read_true, &read_true_proc);
 	init_primitive(&read_false, &read_false_proc);
+	init_primitive(&read_include, &read_include_proc);
+	init_primitive(&desyntax_included, &desyntax_included_proc);
+	init_primitive(&assert_read_empty, &assert_read_empty_proc);
 }
