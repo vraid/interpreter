@@ -90,6 +90,9 @@ object* init_memory_reference(object* obj, long size, char* reference);
 
 object* init_file_port(object* obj, FILE* file);
 
+object* init_string_port(object* obj, object* string);
+#define alloc_string_port(a) init_string_port(alloc_obj(), a)
+
 object* init_delay(object* obj, object* value);
 #define alloc_delay(a) init_delay(alloc_obj(), a)
 

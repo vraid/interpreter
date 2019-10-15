@@ -166,6 +166,10 @@ void traverse_internal_error(target_space* space, object* obj, object_location l
 	move_if_necessary(space, &obj->data.internal_error.message, location);
 }
 
+void traverse_string_port(target_space* space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.string_port.string, location);
+}
+
 void traverse_delay(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.delay.value, location);
 }
@@ -340,6 +344,7 @@ void init_memory_handling() {
 	traversal[type_reader_entry] = &traverse_reader_entry;
 	traversal[type_syntax_object] = &traverse_syntax_object;
 	traversal[type_internal_error] = &traverse_internal_error;
+	traversal[type_string_port] = &traverse_string_port;
 	traversal[type_delay] = &traverse_delay;
 }
 

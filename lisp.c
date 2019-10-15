@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
 #include "data-structures.h"
 #include "standard-library.h"
 #include "generic-arguments.h"
@@ -15,6 +17,7 @@
 #include "higher-order.h"
 #include "streams.h"
 #include "strings.h"
+#include "files.h"
 #include "integers.h"
 #include "fractions.h"
 #include "complex.h"
@@ -33,9 +36,30 @@
 #include "print.h"
 #include "repl-top.h"
 
+#include <unistd.h>
+#include <limits.h>
+
 int main(int argc, char** argv) {
 
-	printf("running lisp interpreter. use ctrl-c to exit\n");
+	
+	char cwd[PATH_MAX];
+	getcwd(cwd, sizeof(cwd));
+	char* path = argc < 2 ? cwd : argv[1];
+	
+	DIR* dir = opendir(path);
+	if (dir)
+	{
+    	closedir(dir);
+		printf("running lisp interpreter. use ctrl-c to exit\nworking directory: %s\n", path);
+	}
+	else if (ENOENT == errno)
+	{
+   	printf("not a directory: %s\n", path);
+	}
+	else
+	{
+   	/* opendir() failed for some other reason. */
+	}
 	
 	init_data_structure_names();
 	init_symbols();
@@ -45,6 +69,7 @@ int main(int argc, char** argv) {
 	init_higher_order_procedures();
 	init_stream_procedures();
 	init_string_procedures();
+	init_file_procedures();
 	init_integer_procedures();
 	init_fraction_procedures();
 	init_complex_procedures();

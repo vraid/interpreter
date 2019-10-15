@@ -203,6 +203,13 @@ object* init_file_port(object* obj, FILE* file) {
 	return obj;
 }
 
+object* init_string_port(object* obj, object* string) {
+	init_object(location_stack, type_string_port, obj);
+	obj->data.string_port.string = string;
+	obj->data.string_port.position = 0;
+	return obj;
+}
+
 object* init_delay(object* obj, object* value) {
 	init_object(location_stack, type_delay, obj);
 	obj->data.delay.value = value;

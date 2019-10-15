@@ -2,6 +2,8 @@
 
 #include "data-structures.h"
 
-char get_input(object* obj);
+int get_input(object* obj);
 void unget_input(object* obj);
-char peek(object* obj);
+int peek(object* obj);
+
+long port_position(object* obj);

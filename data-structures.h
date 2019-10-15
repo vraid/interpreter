@@ -25,6 +25,7 @@ typedef enum {
 	type_continuation,
 	type_binding,
 	type_file_port,
+	type_string_port,
 	type_reader_entry,
 	type_memory_reference,
 	type_syntax_object,
@@ -176,8 +177,12 @@ typedef struct object {
 		struct {
 			FILE* file;
 			int position;
-			char last_read_char;
+			int last_read_char;
 		} file_port;
+		struct {
+			struct object* string;
+			int position;
+		} string_port;
 		struct {
 			read_type read_type;
 			struct object* proc;
@@ -230,6 +235,7 @@ char is_primitive_procedure(object* obj);
 char is_binding(object* obj);
 char is_delay(object* obj);
 char is_file_port(object* obj);
+char is_string_port(object* obj);
 char is_reader_entry(object* obj);
 char is_memory_reference(object* obj);
 char is_call(object* obj);
@@ -247,7 +253,10 @@ char* string_value(object* obj);
 object* symbol_name(object* obj);
 FILE* file_port_file(object* obj);
 int file_port_position(object* obj);
-char file_port_last_read_char(object* obj);
+int file_port_last_read_char(object* obj);
+
+object* string_port_string(object* obj);
+int string_port_position(object* obj);
 
 read_type reader_entry_read_type(object* obj);
 object* reader_entry_proc(object* obj);

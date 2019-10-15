@@ -40,6 +40,7 @@ void init_type_names(void) {
 	type_names[type_continuation] = "continuation";
 	type_names[type_binding] = "binding";
 	type_names[type_file_port] = "file port";
+	type_names[type_string_port] = "string port";
 	type_names[type_syntax_object] = "syntax object";
 	type_names[type_internal_position] = "internal position";
 	type_names[type_internal_error] = "internal error";
@@ -146,6 +147,9 @@ char is_binding(object* obj) {
 char is_file_port(object* obj) {
 	return obj->type == type_file_port;
 }
+char is_string_port(object* obj) {
+	return obj->type == type_string_port;
+}
 char is_memory_reference(object* obj) {
 	return obj->type == type_memory_reference;
 }
@@ -198,9 +202,18 @@ int file_port_position(object* obj) {
 	check_type(type_file_port, obj);
 	return obj->data.file_port.position;
 }
-char file_port_last_read_char(object* obj) {
+int file_port_last_read_char(object* obj) {
 	check_type(type_file_port, obj);
 	return obj->data.file_port.last_read_char;
+}
+
+object* string_port_string(object* obj) {
+	check_type(type_string_port, obj);
+	return obj->data.string_port.string;
+}
+int string_port_position(object* obj) {
+	check_type(type_string_port, obj);
+	return obj->data.string_port.position;
 }
 
 read_type reader_entry_read_type(object* obj) {
