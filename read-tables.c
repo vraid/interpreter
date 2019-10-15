@@ -7,11 +7,25 @@
 #include "call.h"
 #include "read.h"
 
+typedef struct {
+	char* name;
+	read_type t;
+	object* proc;
+} read_entry;
+
 object* default_read_table(object* args, object* cont) {
 	object* table = empty_list();
-	object* t = alloc_list_2(alloc_string("t"), alloc_reader_entry(read_type_atom, &read_true_proc));
-	object* f = alloc_list_2(alloc_string("f"), alloc_reader_entry(read_type_atom, &read_false_proc));
-	table = alloc_list_2(t, f);
+	read_entry entries[] = {
+		{"t", read_type_atom, &read_true_proc},
+		{"f", read_type_atom, &read_false_proc}};
+
+	int length = sizeof(entries) / sizeof(entries[0]);
+	for (int n = 0; n < length; n++) {
+		read_entry entry = entries[n];
+		object* name = alloc_string(entry.name);
+		object* obj = alloc_reader_entry(entry.t, entry.proc);
+		table = alloc_list_cell(alloc_list_2(name, obj), table);
+	}
 	return call_cont(cont, table);
 }
 
