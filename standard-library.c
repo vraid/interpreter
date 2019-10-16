@@ -665,7 +665,7 @@ void bind_primitive(char* name, int arity, object* obj) {
 	init_function(function, empty_list(), par, body);
 	make_static(function);
 	
-	add_static_binding(function, name);
+	add_static_binding(name, function);
 	primitive_count++;
 }
 
@@ -731,7 +731,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("<", 2, &std_less, &std_less_proc);
 	init_and_bind_primitive("<=", 2, &std_less_or_equal, &std_less_or_equal_proc);
 	bind_primitive("identity", 1, &identity_proc);
-	add_static_binding(empty_stream(), "empty-stream");
+	add_static_binding("empty-stream", empty_stream());
 	bind_primitive("take", 2, &take_proc);
 	bind_primitive("drop", 2, &drop_proc);
 	bind_and_save_primitive("symbol->string", 1, &symbol_to_string_func, &symbol_to_string_proc);

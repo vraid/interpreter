@@ -12,7 +12,7 @@ object update_binding_proc;
 void init_environment_procedures(void);
 
 object* static_environment(void);
-object* add_static_binding(object* value, char* name);
+object* add_static_binding(char* name, object* value);
 
 object* extend_environment(object* args, object* cont);
 object* find_in_environment(object* env, object* symbol, char return_placeholders);

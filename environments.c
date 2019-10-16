@@ -18,7 +18,7 @@ object* static_environment(void) {
 	return _static_environment;
 }
 
-object* add_static_binding(object* value, char* name) {
+object* add_static_binding(char* name, object* value) {
 	if (!environment_init) {
 		fprintf(stderr, "environment not initialized\n");
 		exit(0);

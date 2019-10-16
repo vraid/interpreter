@@ -622,7 +622,7 @@ object syntax_procedure[syntax_count];
 void add_syntax(char* name, static_syntax_procedure syntax, primitive_proc* proc) {
 	init_syntax_procedure(&syntax_procedure[syntax], proc, syntax);
 	syntax_names[syntax] = name;
-	add_static_binding(&syntax_procedure[syntax], name);
+	add_static_binding(name, &syntax_procedure[syntax]);
 }
 
 object* syntax_procedure_obj(static_syntax_procedure type) {
