@@ -627,23 +627,14 @@ object* std_is_negative(object* args, object* cont) {
 	return call_cont(cont, boolean(-1 == real_sign(a)));
 }
 
-object std_display_proc;
+object std_print_newline_proc;
 
-object* std_display(object* args, object* cont) {
-	return print_value(args, cont);
-}
-
-object std_newline_proc;
-
-object* std_newline(object* args, object* cont) {
-	printf("\n");
-	return call_cont(cont, no_object());
-}
-
-object* std_display_newline(object* args, object* cont) {
-	object* call = alloc_call(&std_newline_proc, empty_list(), cont);
+object* std_print_newline(object* args, object* cont) {
+	object* return_call = alloc_call(&identity_proc, alloc_list_1(nothing()), cont);
+	object* call = alloc_call(&print_newline_proc, empty_list(), alloc_discarding_cont(return_call));
+	object* print_call = alloc_call(&print_value_proc, args, alloc_discarding_cont(call));
 	
-	return std_display(args, alloc_cont(call));
+	return perform_call(print_call);
 }
 
 #define primitive_max 1024
@@ -738,4 +729,5 @@ void init_standard_functions(void) {
 	bind_primitive("take", 2, &take_proc);
 	bind_primitive("drop", 2, &drop_proc);
 	bind_and_save_primitive("symbol->string", 1, &symbol_to_string_func, &symbol_to_string_proc);
+	init_and_bind_primitive("print", 1, &std_print_newline, &std_print_newline_proc);
 }

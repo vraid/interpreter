@@ -12,7 +12,6 @@
 #include "vectors.h"
 #include "integers.h"
 
-object print_proc;
 object print_sequence_element_proc;
 object print_first_sequence_element_proc;
 object print_sequence_proc;
@@ -32,7 +31,7 @@ object* print_sequence_element_base(char is_first, object* args, object* cont) {
 		object* next_call = alloc_call(&print_sequence_element_proc, next_args, cont);
 		object* next_cont = alloc_discarding_cont(next_call);
 		object* print_args = alloc_list_1(sequence_first(seq));
-		object* call = alloc_call(&print_proc, print_args, next_cont);
+		object* call = alloc_call(&print_value_proc, print_args, next_cont);
 		return perform_call(call);
 }
 
@@ -95,7 +94,7 @@ object* print_stream_element(object* args, object* cont) {
 		object* next_cont = alloc_discarding_cont(next_call);
 		
 		object* print_args = alloc_list_1(stream_first(stream));
-		object* call = alloc_call(&print_proc, print_args, next_cont);
+		object* call = alloc_call(&print_value_proc, print_args, next_cont);
 		return perform_call(call);
 }
 
@@ -414,7 +413,7 @@ object* print_entry(object* args, object* cont) {
 
 void init_print_procedures(void) {
 	init_primitive(&print_entry, &print_entry_proc);
-	init_primitive(&print_value, &print_proc);
+	init_primitive(&print_value, &print_value_proc);
 	init_primitive(&print_newline, &print_newline_proc);
 	init_primitive(&print_sequence_element, &print_sequence_element_proc);
 	init_primitive(&print_first_sequence_element, &print_first_sequence_element_proc);
