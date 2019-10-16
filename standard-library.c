@@ -680,6 +680,9 @@ void init_and_bind_primitive(char* name, int arity, primitive_proc* proc, object
 }
 
 void init_standard_functions(void) {
+	add_static_binding("true", true());
+	add_static_binding("false", false());
+	add_static_binding("nothing", nothing());
 	init_and_bind_primitive("boolean?", 1, &std_is_boolean, &std_is_boolean_proc);
 	init_and_bind_primitive("false?", 1, &std_is_false, &std_is_false_proc);
 	init_and_bind_primitive("true?", 1, &std_is_true, &std_is_true_proc);

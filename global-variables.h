@@ -17,6 +17,7 @@ char is_placeholder_value(object* obj);
 char is_empty_struct_definition(object* obj);
 char is_zero(object* obj);
 
+object* nothing(void);
 object* true(void);
 object* false(void);
 object* boolean(char b);

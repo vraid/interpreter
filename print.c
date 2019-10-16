@@ -325,6 +325,8 @@ object* print_value(object* args, object* cont) {
 	object* print_args = alloc_list_1(obj);
 	
 	switch (obj->type) {
+		case type_nothing:
+			break;
 		case type_string:
 			printf("\"%s\"", string_value(obj));
 			break;

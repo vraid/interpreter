@@ -7,6 +7,7 @@
 #include "object-init.h"
 
 char nullchar;
+object _nothing;
 object _false;
 object _true;
 object _no_object;
@@ -59,6 +60,8 @@ void init_static_fixnum(object* obj, long value) {
 }
 
 void init_global_variables(void) {
+	init_object(location_static, type_nothing, nothing());
+	
 	init_boolean(false(), 0);
 	init_boolean(true(), 1);
 	
@@ -132,6 +135,10 @@ void init_global_variables(void) {
 	init_primitive(&end, &end_proc);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
 	init_cont(end_cont(), &end_call);
+}
+
+object* nothing(void) {
+	return &_nothing;
 }
 
 object* true(void) {

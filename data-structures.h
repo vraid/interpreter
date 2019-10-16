@@ -4,6 +4,7 @@
 
 typedef enum {
 	type_none,
+	type_nothing,
 	type_boolean,
 	type_string,
 	type_symbol,
