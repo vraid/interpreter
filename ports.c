@@ -69,5 +69,6 @@ long port_position(object* obj) {
 			return string_port_position(obj);
 		default:
 			printf("error: not a port (%s)\n", object_type_name(obj));
+			return 0;
 	}
 }
