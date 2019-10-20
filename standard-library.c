@@ -15,6 +15,7 @@
 #include "complex.h"
 #include "numbers.h"
 #include "sequences.h"
+#include "equivalence.h"
 #include "environments.h"
 #include "global-variables.h"
 #include "symbols.h"
@@ -172,18 +173,6 @@ object* std_not_identical(object* args, object* cont) {
 	object* two;
 	delist_2(args, &one, &two);
 	object* result = boolean(one != two);
-	
-	return call_cont(cont, result);
-}
-
-object std_is_equivalent_proc;
-
-// the same as identical, for now
-object* std_is_equivalent(object* args, object* cont) {
-	object* one;
-	object* two;
-	delist_2(args, &one, &two);
-	object* result = boolean(one == two);
 	
 	return call_cont(cont, result);
 }
@@ -691,7 +680,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("vector?", 1, &std_is_vector, &std_is_vector_proc);
 	init_and_bind_primitive("function?", 1, &std_is_function, &std_is_function_proc);
 	init_and_bind_primitive("same?", 2, &std_is_identical, &std_is_identical_proc);
-	init_and_bind_primitive("eq?", 2, &std_is_equivalent, &std_is_equivalent_proc);
+	bind_primitive("eq?", 2, &is_equivalent_proc);
 	init_and_bind_primitive("not", 1, &std_not, &std_not_proc);
 	init_primitive(&std_not_identical, &std_not_identical_proc);
 	init_and_bind_primitive("link", 2, &std_cons, &std_cons_proc);

@@ -25,6 +25,7 @@
 #include "list-util.h"
 #include "vectors.h"
 #include "base-util.h"
+#include "equivalence.h"
 #include "memory-handling.h"
 #include "workspace.h"
 #include "syntax-base.h"
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
 	init_environment_procedures();
 	init_base_syntax_procedures();
 	init_sequence_syntax_procedures();
+	init_equivalence_procedures();
 	init_memory_handling();
 	init_memory_spaces(1024 * 1024 * 4);
 	init_workspace();
