@@ -11,6 +11,7 @@ char is_empty_stream(object* obj);
 char is_empty_sequence(object* obj);
 char is_false(object* obj);
 char is_true(object* obj);
+char is_no_symbol(object* obj);
 char is_no_object(object* obj);
 char is_no_binding(object* obj);
 char is_placeholder_value(object* obj);

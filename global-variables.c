@@ -173,6 +173,9 @@ char is_false(object* obj) {
 char is_true(object* obj) {
 	return obj == true();
 }
+char is_no_symbol(object* obj) {
+	return obj == no_symbol();
+}
 char is_no_object(object* obj) {
 	return obj == no_object();
 }
