@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 	}
 	
 	object* read_args = alloc_list_1(environment);
-	object* read_call = alloc_call(&repl_read_entry_proc, read_args, end_cont());
+	object* read_call = alloc_call(&repl_init_proc, read_args, end_cont());
 	object* read_table_call = alloc_call(&default_read_table_proc, empty_list(), alloc_cont(read_call));
 	top_call(read_table_call);
 	

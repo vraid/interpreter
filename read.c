@@ -15,6 +15,7 @@
 #include "symbols.h"
 #include "integers.h"
 #include "fractions.h"
+#include "syntax-base.h"
 
 object read_add_to_list_proc;
 object read_list_value_proc;
@@ -214,6 +215,42 @@ object* read_include(object* args, object* cont) {
 	return perform_call(read_call);
 }
 
+object* read_enter_scope(object* args, object* cont) {
+	object* ls;
+	object* read_table;
+	delist_desyntax_2(args, &ls, &read_table);
+	
+	object* key = no_symbol();
+	if (!is_empty_list(ls)) {
+		delist_desyntax_1(ls, &key);
+		if (!is_symbol(key)) {
+			return throw_error_string(cont, "enter-scope may only take symbol");
+		}
+	}
+	
+	object* stx = alloc_list_3(syntax_procedure_obj(syntax_enter_scope), key, read_table);
+	
+	return call_cont(cont, stx);
+}
+
+object* read_rewind_scope(object* args, object* cont) {
+	object* ls;
+	object* read_table;
+	delist_desyntax_2(args, &ls, &read_table);
+	
+	object* key = no_symbol();
+	if (!is_empty_list(ls)) {
+		delist_desyntax_1(ls, &key);
+		if (!is_symbol(key)) {
+			return throw_error_string(cont, "rewind-scope may only take symbol");
+		}
+	}
+	
+	object* stx = alloc_list_2(syntax_procedure_obj(syntax_rewind_scope), key);
+	
+	return call_cont(cont, stx);
+}
+
 object* string(char* cs, object* cont) {
 	char* str = alloc_copy_str(cs);
 	object* s = alloc_string(str);
@@ -343,9 +380,10 @@ object* read_hashed(object* args, object* cont) {
 	delist_4(args, &string, &trailing_parenthesis, &input_port, &read_table);
 	
 	char* sym = string_value(string)+1;
+	object* table = read_table;
 	
-	while (!is_empty_list(read_table)) {
-		object* a = list_first(read_table);
+	while (!is_empty_list(table)) {
+		object* a = list_first(table);
 		object* id;
 		object* entry;
 		delist_2(a, &id, &entry);
@@ -366,7 +404,7 @@ object* read_hashed(object* args, object* cont) {
 			object* call = alloc_call(proc, alloc_list_3(reader_entry_proc(entry), input_port, read_table), cont);
 			return perform_call(call);
 		}
-		read_table = list_rest(read_table);
+		table = list_rest(table);
 	}
 	object* str = alloc_string("unknown read syntax");
 	object* ls = alloc_list_2(str, string);
@@ -541,8 +579,6 @@ object* read_entry(object* args, object* cont) {
 	object* read_table;
 	delist_2(args, &input_port, &read_table);
 	
-	consume_whitespace(input_port);
-	
 	return read_value(args, cont);
 }
 
@@ -567,6 +603,8 @@ void init_read_procedures(void) {
 	init_primitive(&read_true, &read_true_proc);
 	init_primitive(&read_false, &read_false_proc);
 	init_primitive(&read_include, &read_include_proc);
+	init_primitive(&read_enter_scope, &read_enter_scope_proc);
+	init_primitive(&read_rewind_scope, &read_rewind_scope_proc);
 	init_primitive(&desyntax_included, &desyntax_included_proc);
 	init_primitive(&assert_read_empty, &assert_read_empty_proc);
 }

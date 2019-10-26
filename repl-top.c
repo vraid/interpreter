@@ -4,6 +4,7 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "memory-handling.h"
 #include "read.h"
 #include "eval.h"
 #include "print.h"
@@ -137,6 +138,17 @@ object* repl_print_entry(object* args, object* cont) {
 	return perform_call(call);
 }
 
+object* repl_init(object* args, object* cont) {
+	object* read_table;
+	object* environment;
+	delist_2(args, &read_table, &environment);
+	
+	object* call = alloc_call(&repl_read_entry_proc, alloc_list_2(read_table, environment), cont);
+	alloc_repl_scope_reference(alloc_list_2(no_symbol(), call));
+	
+	return perform_call(call);
+}
+
 void init_static_string(object* obj, char* str) {
 	init_string(obj, str);
 	make_static(obj);
@@ -148,6 +160,7 @@ void init_repl_procedures(void) {
 	init_primitive(&repl_eval_entry, &repl_eval_entry_proc);
 	init_primitive(&repl_print_or_read, &repl_print_or_read_proc);
 	init_primitive(&repl_print_entry, &repl_print_entry_proc);
+	init_primitive(&repl_init, &repl_init_proc);
 	
 	init_primitive(&repl_catch_error, &repl_catch_error_proc);
 	

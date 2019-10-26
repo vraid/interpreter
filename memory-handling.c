@@ -6,6 +6,7 @@
 #include "object-init.h"
 #include "global-variables.h"
 #include "symbols.h"
+#include "delist.h"
 
 object* mutation_references;
 
@@ -23,6 +24,27 @@ object* malloc_references;
 
 void add_malloc_reference(object* ls, object* obj, long size, char* reference) {
 	malloc_references = init_list_cell(ls, init_memory_reference(obj, size, reference), malloc_references);
+}
+
+object* repl_scope_references;
+
+void add_repl_scope_reference(object* ls, object* obj) {
+	repl_scope_references = init_list_cell(ls, obj, repl_scope_references);
+}
+
+object* rewound_repl_scope_reference(object* key) {
+	object* ls = list_rest(repl_scope_references);
+	object* k;
+	object* call;
+	while (!is_empty_list(ls)) {
+		delist_2(list_first(ls), &k, &call);
+		if (is_no_symbol(key) || (key == k)) {
+			repl_scope_references = ls;
+			return call;
+		}
+		ls = list_rest(ls);
+	}
+	return no_object();
 }
 
 typedef struct {
@@ -287,6 +309,7 @@ gc_result perform_gc_traversal(char is_major, long additional_data, object** roo
 	}
 	clear_garbage(&main_memory_space, &symbol_list, location, 1);
 	clear_garbage(&main_memory_space, root, location, 1);
+	clear_garbage(&main_memory_space, &repl_scope_references, location, 1);
 	mutation_references = empty_list();
 	object* ls = malloc_references;
 	while (!is_empty_list(ls)) {
@@ -322,6 +345,7 @@ void perform_gc(object** root) {
 void init_memory_handling() {
 	mutation_references = empty_list();
 	malloc_references = empty_list();
+	repl_scope_references = empty_list();
 	
 	object_type t;
 	for (t = type_none; t < type_count; t++) {

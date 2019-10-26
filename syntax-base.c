@@ -13,6 +13,40 @@
 #include "standard-library.h"
 #include "eval.h"
 #include "structs.h"
+#include "repl-top.h"
+#include "print.h"
+
+object* enter_scope(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	object* trace;
+	delist_3(args, &syntax, &environment, &trace);
+	
+	object* key;
+	object* read_table;
+	delist_2(syntax, &key, &read_table);
+	
+	object* call = alloc_call(&repl_read_entry_proc, alloc_list_2(read_table, environment), cont);
+	alloc_repl_scope_reference(alloc_list_2(key, call));
+	
+	return perform_call(call);
+}
+
+object* rewind_scope(object* args, object* cont) {
+	object* syntax;
+	object* environment;
+	object* trace;
+	delist_3(args, &syntax, &environment, &trace);
+	
+	object* key;
+	delist_1(syntax, &key);
+	
+	object* call = rewound_repl_scope_reference(key);
+	if (is_no_object(call)) {
+		return throw_error(cont, alloc_list_2(alloc_string("could not rewind scope to key"), key));
+	}
+	return perform_call(call);
+}
 
 object update_binding_proc;
 
@@ -629,7 +663,7 @@ object* syntax_procedure_obj(static_syntax_procedure type) {
 	return &syntax_procedure[type];
 }
 
-void init_base_syntax_procedures(void) {	
+void init_base_syntax_procedures(void) {
 	add_syntax("define", syntax_define, &define);
 	add_syntax("quote", syntax_quote, &quote);
 	add_syntax("delay", syntax_delay, &delay);
@@ -644,6 +678,9 @@ void init_base_syntax_procedures(void) {
 	add_syntax("and", syntax_and, &and);
 	add_syntax("or", syntax_or, &or);
 	add_syntax("struct", syntax_struct, &struct_func);
+	
+	init_syntax_procedure(&syntax_procedure[syntax_enter_scope], &enter_scope, syntax_enter_scope);
+	init_syntax_procedure(&syntax_procedure[syntax_rewind_scope], &rewind_scope, syntax_rewind_scope);
 	
 	init_primitive(&update_delay, &update_delay_proc);
 	init_primitive(&eval_force, &eval_force_proc);

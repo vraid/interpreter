@@ -55,6 +55,8 @@ typedef enum {
 
 typedef enum {
 	syntax_include,
+	syntax_enter_scope,
+	syntax_rewind_scope,
 	syntax_define,
 	syntax_quote,
 	syntax_delay,
