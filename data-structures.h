@@ -28,6 +28,7 @@ typedef enum {
 	type_file_port,
 	type_string_port,
 	type_reader_entry,
+	type_eval_context,
 	type_memory_reference,
 	type_syntax_object,
 	type_internal_position,
@@ -52,6 +53,16 @@ typedef enum {
 	cont_discarding, // discards argument
 	cont_catching // catches errors
 } cont_type;
+
+typedef enum {
+	context_none = 0,
+	context_value = 1,
+	context_scope = 2,
+	context_repl = 4,
+	context_count = 5
+} context_type;
+
+char* context_names[context_count];
 
 typedef enum {
 	syntax_include,
@@ -191,6 +202,9 @@ typedef struct object {
 			struct object* proc;
 		} reader_entry;
 		struct {
+			context_type value;
+		} eval_context;
+		struct {
 			long size;
 			char* value;
 		} memory_reference;
@@ -240,6 +254,7 @@ char is_delay(object* obj);
 char is_file_port(object* obj);
 char is_string_port(object* obj);
 char is_reader_entry(object* obj);
+char is_eval_context(object* obj);
 char is_memory_reference(object* obj);
 char is_call(object* obj);
 char is_nonempty_list(object* obj);
@@ -263,6 +278,8 @@ int string_port_position(object* obj);
 
 read_type reader_entry_read_type(object* obj);
 object* reader_entry_proc(object* obj);
+
+context_type eval_context_value(object* obj);
 
 long memory_reference_size(object* obj);
 char* memory_reference_value(object* obj);

@@ -24,7 +24,11 @@ object* identity(object* args, object* cont) {
 }
 
 object* discard(object* args, object* cont) {
+	suppress_warning(args);
 	return call_discarding_cont(cont);
+}
+
+void suppress_warning(void* unused) {
 }
 
 void init_base_util_procedures(void) {

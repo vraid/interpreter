@@ -7,6 +7,7 @@
 #include "global-variables.h"
 #include "call.h"
 #include "delist.h"
+#include "base-util.h"
 #include "list-util.h"
 #include "object-init.h"
 #include "vectors.h"
@@ -44,6 +45,7 @@ object* print_first_sequence_element(object* args, object* cont) {
 }
 
 object* print_sequence_end(object* args, object* cont) {
+	suppress_warning(args);
 	printf(")");
 	return call_discarding_cont(cont);
 }
@@ -312,6 +314,7 @@ object* print_internal_error(object* args, object* cont) {
 }
 
 object* print_newline(object* args, object* cont) {
+	suppress_warning(args);
 	printf("\n");
 	return call_discarding_cont(cont);
 }

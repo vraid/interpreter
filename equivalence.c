@@ -15,6 +15,7 @@ object* equivalence[type_count];
 object no_equivalence_proc;
 
 object* no_equivalence(object* args, object* cont) {
+	suppress_warning(args);
 	return call_cont(cont, false());
 }
 

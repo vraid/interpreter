@@ -4,6 +4,7 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "base-util.h"
 #include "call.h"
 #include "read.h"
 
@@ -14,6 +15,7 @@ typedef struct {
 } read_entry;
 
 object* default_read_table(object* args, object* cont) {
+	suppress_warning(args);
 	object* table = empty_list();
 	read_entry entries[] = {
 		{"t", read_type_atom, &read_true_proc},

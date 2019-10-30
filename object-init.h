@@ -86,6 +86,9 @@ object* init_internal_error(object* obj, object* trace, object* message);
 object* init_reader_entry(object* obj, read_type t, object* proc);
 #define alloc_reader_entry(a, b) init_reader_entry(alloc_obj(), a, b)
 
+object* init_eval_context(object* obj, context_type value);
+#define alloc_eval_context(a) init_eval_context(alloc_obj(), a)
+
 object* init_memory_reference(object* obj, long size, char* reference);
 
 object* init_file_port(object* obj, FILE* file);

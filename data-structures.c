@@ -150,6 +150,9 @@ char is_file_port(object* obj) {
 char is_string_port(object* obj) {
 	return obj->type == type_string_port;
 }
+char is_eval_context(object* obj) {
+	return obj->type == type_eval_context;
+}
 char is_memory_reference(object* obj) {
 	return obj->type == type_memory_reference;
 }
@@ -223,6 +226,11 @@ read_type reader_entry_read_type(object* obj) {
 object* reader_entry_proc(object* obj) {
 	check_type(type_reader_entry, obj);
 	return obj->data.reader_entry.proc;
+}
+
+context_type eval_context_value(object* obj) {
+	check_type(type_eval_context, obj);
+	return obj->data.eval_context.value;
 }
 
 long memory_reference_size(object* obj) {

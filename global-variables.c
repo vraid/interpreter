@@ -5,6 +5,7 @@
 #include "data-structures.h"
 #include "symbols.h"
 #include "object-init.h"
+#include "base-util.h"
 
 char nullchar;
 object _nothing;
@@ -36,6 +37,10 @@ object _integer_one;
 object _integer_ten_list;
 object _integer_ten;
 
+object _default_context;
+object _scope_context;
+object _repl_context;
+
 object _end_cont;
 object end_proc;
 object end_call;
@@ -45,6 +50,8 @@ object* end_cont(void) {
 }
 
 object* end(object* args, object* cont) {
+	suppress_warning(args);
+	suppress_warning(cont);
 	printf("end reached\n");
 	return no_object();
 }
@@ -57,6 +64,12 @@ void init_boolean(object* obj, char value) {
 void init_static_fixnum(object* obj, long value) {
 	init_fixnum(obj, value);
 	make_static(obj);
+}
+
+void init_eval_context_obj(object* obj, char* name, context_type type) {
+	init_eval_context(obj, type);
+	make_static(obj);
+	context_names[type] = name;
 }
 
 void init_global_variables(void) {
@@ -133,8 +146,20 @@ void init_global_variables(void) {
 	make_static(&_integer_ten);
 	
 	init_primitive(&end, &end_proc);
+	make_static(&end_proc);
 	init_call(&end_call, &end_proc, empty_list(), end_cont());
+	make_static(&end_call);
 	init_cont(end_cont(), &end_call);
+	make_static(&_end_cont);
+	
+	context_type t;
+	for (t = 0; t <= context_count; t++) {
+		context_names[t] = "";
+	}
+	
+	init_eval_context_obj(&_default_context, "default", context_value);
+	init_eval_context_obj(&_scope_context, "scope", context_value | context_scope);
+	init_eval_context_obj(&_repl_context, "repl", context_value | context_repl);
 }
 
 object* nothing(void) {
@@ -272,4 +297,14 @@ object* integer_ten_list(void) {
 }
 object* integer_ten(void) {
 	return &_integer_ten;
+}
+
+object* default_context(void) {
+	return &_default_context;
+}
+object* scope_context(void) {
+	return &_scope_context;
+}
+object* repl_context(void) {
+	return &_repl_context;
 }

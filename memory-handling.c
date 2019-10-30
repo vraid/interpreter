@@ -4,6 +4,7 @@
 #include "memory-handling.h"
 #include "data-structures.h"
 #include "object-init.h"
+#include "base-util.h"
 #include "global-variables.h"
 #include "symbols.h"
 #include "delist.h"
@@ -197,6 +198,9 @@ void traverse_delay(target_space* space, object* obj, object_location location) 
 }
 
 void traverse_nothing(target_space* space, object* obj, object_location location) {
+	suppress_warning(space);
+	suppress_warning(obj);
+	suppress_warning(&location);
 }
 
 typedef void (traversal_function)(target_space* space, object* obj, object_location location);
@@ -320,7 +324,7 @@ gc_result perform_gc_traversal(char is_major, long additional_data, object** roo
 	return res;
 }
 
-long living_stack_memory(object** root) {
+long living_stack_memory(void) {
 	long size = max_stack_data;
 	object* ls = malloc_references;
 	while (!is_empty_list(ls)) {
@@ -332,7 +336,7 @@ long living_stack_memory(object** root) {
 }
 	
 void perform_gc(object** root) {
-	long additional_data = living_stack_memory(root);
+	long additional_data = living_stack_memory();
 	char is_major = heap_full(&main_memory_space, additional_data);
 	gc_result res = perform_gc_traversal(is_major, additional_data, root);
 	free(res.old_memory);

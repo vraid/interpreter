@@ -50,3 +50,7 @@ object* integer_one_list(void);
 object* integer_one(void);
 object* integer_ten_list(void);
 object* integer_ten(void);
+
+object* default_context(void);
+object* scope_context(void);
+object* repl_context(void);

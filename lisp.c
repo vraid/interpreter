@@ -98,6 +98,7 @@ int main(int argc, char** argv) {
 	
 	if (argc == 2) {
 		char* filename = argv[1];
+		suppress_warning(filename);
 		// environment = read_file;
 	}
 	else {

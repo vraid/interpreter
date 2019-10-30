@@ -149,10 +149,12 @@ char* get_string(char string, object* obj) {
 }
 
 object* read_true(object* args, object* cont) {
+	suppress_warning(args);
 	return call_cont(cont, true());
 }
 
 object* read_false(object* args, object* cont) {
+	suppress_warning(args);
 	return call_cont(cont, false());
 }
 

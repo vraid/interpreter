@@ -94,7 +94,7 @@ object* repl_eval_entry(object* args, object* cont) {
 	object* error_call = alloc_call(&repl_catch_error_proc, error_args, alloc_cont(print_call));
 	object* error_cont = alloc_catching_cont(error_call);
 	
-	object* eval_args = alloc_list_3(value, environment, empty_list());
+	object* eval_args = alloc_list_4(value, environment, repl_context(), empty_list());
 	object* eval_call = alloc_call(&eval_proc, eval_args, error_cont);
 	
 	return perform_call(eval_call);

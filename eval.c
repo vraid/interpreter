@@ -9,6 +9,7 @@
 #include "call.h"
 #include "delist.h"
 #include "list-util.h"
+#include "syntax-base.h"
 
 object eval_identity_proc;
 object eval_symbol_proc;
@@ -18,8 +19,9 @@ object eval_list_rest_proc;
 object* eval_identity(object* args, object* cont) {
 	object* obj;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_3(args, &obj, &environment, &trace);
+	delist_4(args, &obj, &environment, &context, &trace);
 	
 	obj = desyntax(obj);
 	
@@ -32,8 +34,21 @@ object* eval_syntax(object* args, object* cont) {
 	object* syntax;
 	object* rest;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_4(args, &syntax, &rest, &environment, &trace);
+	delist_5(args, &syntax, &rest, &environment, &context, &trace);
+	
+	static_syntax_procedure syntax_id = syntax_procedure_id(syntax);
+	context_type required_context = syntax_procedure_context(syntax_id);
+	context_type current_context = eval_context_value(context);
+	
+	if (!(required_context & current_context)) {
+		object* e = alloc_list_3(
+			alloc_string(syntax_names[syntax_id]),
+			alloc_string("not applicable in context"),
+			alloc_string(context_names[current_context]));
+		return throw_error(cont, e);
+	}
 	
 	object* ls = alloc_list_3(rest, environment, trace);
 	object* call = alloc_call(syntax, ls, cont);
@@ -47,8 +62,9 @@ object* eval_primitive_procedure_call(object* args, object* cont) {
 	object* arguments;
 	object* proc;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_4(args, &arguments, &proc, &environment, &trace);
+	delist_5(args, &arguments, &proc, &environment, &context, &trace);
 	
 	object* call = alloc_call(proc, arguments, cont);
 	
@@ -61,13 +77,14 @@ object* eval_primitive_procedure(object* args, object* cont) {
 	object* proc;
 	object* arguments;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_4(args, &proc, &arguments, &environment, &trace);
+	delist_5(args, &proc, &arguments, &environment, &context, &trace);
 	
-	object* proc_ls = alloc_list_3(proc, environment, trace);
+	object* proc_ls = alloc_list_4(proc, environment, context, trace);
 	object* proc_call = alloc_call(&eval_primitive_procedure_call_proc, proc_ls, cont);
 	
-	object* ls = alloc_list_3(arguments, environment, trace);
+	object* ls = alloc_list_4(arguments, environment, default_context(), trace);
 	object* call = alloc_call(&eval_list_elements_proc, ls, alloc_cont(proc_call));
 	
 	return perform_call(call);
@@ -76,12 +93,13 @@ object* eval_primitive_procedure(object* args, object* cont) {
 object* eval_function_call(object* args, object* cont) {
 	object* arguments;
 	object* function;
+	object* context;
 	object* trace;
-	delist_3(args, &arguments, &function, &trace);
+	delist_4(args, &arguments, &function, &context, &trace);
 	
 	function = desyntax(function);
 	
-	object* eval_args = alloc_list_2(function_body(function), trace);
+	object* eval_args = alloc_list_3(function_body(function), default_context(), trace);
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	object* bind_args = alloc_list_3(arguments, function_parameters(function), function_environment(function));
@@ -96,13 +114,14 @@ object* eval_function(object* args, object* cont) {
 	object* function;
 	object* arguments;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_4(args, &function, &arguments, &environment, &trace);
+	delist_5(args, &function, &arguments, &environment, &context, &trace);
 	
-	object* call_args = alloc_list_2(function, trace);
+	object* call_args = alloc_list_3(function, context, trace);
 	object* call = alloc_call(&eval_function_call_proc, call_args, cont);
 	
-	object* eval_args = alloc_list_3(arguments, environment, trace);
+	object* eval_args = alloc_list_4(arguments, environment, default_context(), trace);
 	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, alloc_cont(call));
 	
 	return perform_call(eval_call);
@@ -114,20 +133,21 @@ object* eval_list_elements_rest(object* args, object* cont) {
 	object* last;
 	object* unevaled;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_4(args, &last, &unevaled, &environment, &trace);
+	delist_5(args, &last, &unevaled, &environment, &context, &trace);
 	
 	if (is_empty_list(unevaled)) {
 		return call_discarding_cont(cont);
 	}
 	else {
-		object* build_args = alloc_list_3(list_rest(unevaled), environment, trace);
+		object* build_args = alloc_list_4(list_rest(unevaled), environment, context, trace);
 		object* build_call = alloc_call(&eval_list_elements_rest_proc, build_args, cont);
 
 		object* add_args = alloc_list_1(last);
 		object* add_call = alloc_call(&add_to_list_proc, add_args, alloc_cont(build_call));
 		
-		object* eval_args = alloc_list_3(list_first(unevaled), environment, trace);
+		object* eval_args = alloc_list_4(list_first(unevaled), environment, context, trace);
 		object* eval_call = alloc_call(&eval_proc, eval_args, alloc_cont(add_call));
 		return perform_call(eval_call);
 	}
@@ -138,15 +158,16 @@ object eval_list_elements_first_proc;
 object* eval_list_elements_first(object* args, object* cont) {
 	object* elements;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_3(args, &elements, &environment, &trace);
+	delist_4(args, &elements, &environment, &context, &trace);
 	
-	object* rest_args = alloc_list_3(list_rest(elements), environment, trace);
+	object* rest_args = alloc_list_4(list_rest(elements), environment, context, trace);
 	
 	object* make_args = alloc_list_2(&eval_list_elements_rest_proc, rest_args);
 	object* make_call = alloc_call(&make_list_proc, make_args, cont);
 	
-	object* eval_args = alloc_list_3(list_first(elements), environment, trace);
+	object* eval_args = alloc_list_4(list_first(elements), environment, context, trace);
 	object* eval_call = alloc_call(&eval_proc, eval_args, alloc_cont(make_call));
 	
 	return perform_call(eval_call);
@@ -154,9 +175,10 @@ object* eval_list_elements_first(object* args, object* cont) {
 
 object* eval_list_elements(object* args, object* cont) {
 	object* elements;
-	object* environment;	
+	object* environment;
+	object* context;
 	object* trace;
-	delist_3(args, &elements, &environment, &trace);
+	delist_4(args, &elements, &environment, &context, &trace);
 	
 	elements = desyntax(elements);
 	
@@ -164,7 +186,7 @@ object* eval_list_elements(object* args, object* cont) {
 		return call_cont(cont, empty_list());
 	}
 	else {
-		object* call_args = alloc_list_3(elements, environment, trace);
+		object* call_args = alloc_list_4(elements, environment, context, trace);
 		object* call = alloc_call(&eval_list_elements_first_proc, call_args, cont);
 		
 		return perform_call(call);
@@ -175,8 +197,9 @@ object* eval_list_rest(object* args, object* cont) {
 	object* first;
 	object* rest;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_4(args, &first, &rest, &environment, &trace);
+	delist_5(args, &first, &rest, &environment, &context, &trace);
 	
 	object* proc;
 	
@@ -217,8 +240,9 @@ object* error_trace_or_continue(object* args, object* cont) {
 object* eval_list(object* args, object* cont) {
 	object* stx;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_3(args, &stx, &environment, &trace);
+	delist_4(args, &stx, &environment, &context, &trace);
 	
 	object* list = desyntax(stx);
 	
@@ -226,10 +250,10 @@ object* eval_list(object* args, object* cont) {
 		return throw_error_string(cont, "eval of empty list");
 	}
 	else {
-		object* next_args = alloc_list_3(list_rest(list), environment, trace);
+		object* next_args = alloc_list_4(list_rest(list), environment, context, trace);
 		object* next_call = alloc_call(&eval_list_rest_proc, next_args, cont);
 		
-		object* call_args = alloc_list_3(list_first(list), environment, trace);
+		object* call_args = alloc_list_4(list_first(list), environment, context, trace);
 		object* call = alloc_call(&eval_proc, call_args, alloc_cont(next_call));
 		
 		return perform_call(call);
@@ -239,8 +263,9 @@ object* eval_list(object* args, object* cont) {
 object* eval_symbol(object* args, object* cont) {
 	object* stx;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_3(args, &stx, &environment, &trace);
+	delist_4(args, &stx, &environment, &context, &trace);
 	
 	object* obj = desyntax(stx);
 	
@@ -263,10 +288,11 @@ object* eval_symbol(object* args, object* cont) {
 object* eval_with_environment(object* args, object* cont) {
 	object* environment;
 	object* body;
+	object* context;
 	object* trace;
-	delist_3(args, &environment, &body, &trace);
+	delist_4(args, &environment, &body, &context, &trace);
 	
-	object* ls = alloc_list_3(body, environment, trace);
+	object* ls = alloc_list_4(body, environment, context, trace);
 	object* call = alloc_call(&eval_proc, ls, cont);
 	
 	return perform_call(call);
@@ -275,8 +301,9 @@ object* eval_with_environment(object* args, object* cont) {
 object* eval(object* args, object* cont) {
 	object* stx;
 	object* environment;
+	object* context;
 	object* trace;
-	delist_3(args, &stx, &environment, &trace);
+	delist_4(args, &stx, &environment, &context, &trace);
 	
 	trace = alloc_trace_list(stx, trace);
 	
@@ -300,7 +327,7 @@ object* eval(object* args, object* cont) {
 			break;
 	}
 	
-	object* call_args = alloc_list_3(obj, environment, trace);
+	object* call_args = alloc_list_4(obj, environment, context, trace);
 	object* call = alloc_call(proc, call_args, trace_cont);
 	
 	return perform_call(call);

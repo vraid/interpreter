@@ -188,6 +188,12 @@ object* init_reader_entry(object* obj, read_type t, object* proc) {
 	return obj;
 }
 
+object* init_eval_context(object* obj, context_type value) {
+	init_object(location_stack, type_eval_context, obj);
+	obj->data.eval_context.value = value;
+	return obj;
+}
+
 object* init_memory_reference(object* obj, long size, char* reference) {
 	init_object(location_stack, type_memory_reference, obj);
 	obj->data.memory_reference.size = size;
