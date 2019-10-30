@@ -59,7 +59,7 @@ typedef enum {
 	context_value = 1,
 	context_scope = 2,
 	context_repl = 4,
-	context_count = 5
+	context_count = 8
 } context_type;
 
 char* context_names[context_count];
