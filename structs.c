@@ -117,7 +117,7 @@ object* define_struct_is_type(object* args, object* cont) {
 	object* bind_args = alloc_list_2(function, environment);
 	object* bind_call = alloc_call(&bind_struct_is_type_proc, bind_args, cont);
 	
-	object* is_name = alloc_append_string_2(symbol_name(name), question_mark_string());
+	object* is_name = alloc_string_append_2(symbol_name(name), question_mark_string());
 	object* symbol_args = alloc_list_1(is_name);
 	object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, alloc_cont(bind_call));
 	
@@ -307,7 +307,7 @@ object* struct_field_names(object* args, object* cont) {
 		object* link_args = alloc_list_1(result);
 		object* link_call = alloc_call(&link_list_proc, link_args, alloc_cont(next_call));
 		
-		object* fieldname = alloc_append_string_3(name, dash_string(), symbol_name(desyntax(list_first(fields))));
+		object* fieldname = alloc_string_append_3(name, dash_string(), symbol_name(desyntax(list_first(fields))));
 		object* symbol_args = alloc_list_1(fieldname);
 		object* symbol_call = alloc_call(&string_to_symbol_proc, symbol_args, alloc_cont(link_call));
 		

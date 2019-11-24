@@ -179,7 +179,7 @@ object* assert_read_empty(object* args, object* cont) {
 	
 	char c = peek(input_port);
 	if (!is_eof(c)) {
-		return throw_error(cont, alloc_list_2(alloc_string("expected single expression in file"), filename));
+		return throw_error(cont, alloc_string_append_2(alloc_string("expected single expression in file: "), filename));
 	}
 	
 	return call_cont(cont, result);
@@ -194,7 +194,7 @@ object* read_include(object* args, object* cont) {
 	
 	FILE* f = fopen(string_value(filename), "r");
 	if (f == NULL) {
-		return throw_error(cont, alloc_list_2(alloc_string("file not found"), filename));
+		return throw_error(cont, alloc_string_append_2(alloc_string("file not found: "), filename));
 	}
 	fseek(f, 0, SEEK_END);
 	long size = ftell(f);
@@ -326,9 +326,7 @@ object* read_number(object* args, object* cont) {
 		return perform_call(read_call);
 	}
 	else {
-		object* str = alloc_string("invalid number");
-		object* ls = alloc_list_2(str, string);
-		return throw_error(cont, ls);
+		return throw_error(cont, alloc_string_append_2(alloc_string("invalid number: "), string));
 	}
 }
 
@@ -351,9 +349,8 @@ object* assert_is_list(object* args, object* cont) {
 	delist_1(args, &value);
 	
 	if (!is_list(desyntax(value))) {
-		object* str = alloc_string("expected list");
-		object* ls = alloc_list_2(str, value);
-		return throw_error(cont, ls);
+		object* str = alloc_string_append_2(alloc_string("expected list, received "), alloc_string(object_type_name(value)));
+		return throw_error(cont, alloc_list_2(str, value));
 	}
 	else {
 		return call_cont(cont, value);

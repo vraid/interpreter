@@ -4,6 +4,7 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
+#include "string-util.h"
 #include "call.h"
 #include "delist.h"
 #include "memory-handling.h"
@@ -191,8 +192,8 @@ object* stream_filter(object* args, object* cont) {
 }
 
 object* throw_stream_rest_error(object* cont, object* rest) {
-	fprintf(stderr, "invalid stream rest type: %s\n", object_type_name(rest));
-	return throw_error_string(cont, "invalid stream rest type");
+	object* str = alloc_string_append_2(alloc_string("invalid stream rest type: "), alloc_string(object_type_name(rest)));
+	return throw_error(cont, str);
 }
 
 object* eval_stream_rest(object* args, object* cont) {

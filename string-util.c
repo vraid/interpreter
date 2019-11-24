@@ -31,12 +31,12 @@ object* append(object* obj, char* str, int count, object** arr) {
 	return init_string(obj, str);
 }
 
-object* append_string_2(object* obj, char* str, object* a, object* b) {
+object* string_append_2(object* obj, char* str, object* a, object* b) {
 	object* arr[2] = {a, b};
 	return append(obj, str, 2, arr);
 }
 
-object* append_string_3(object* obj, char* str, object* a, object* b, object* c) {
+object* string_append_3(object* obj, char* str, object* a, object* b, object* c) {
 	object* arr[3] = {a, b, c};
 	return append(obj, str, 3, arr);
 }
