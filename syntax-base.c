@@ -12,7 +12,6 @@
 #include "environments.h"
 #include "standard-library.h"
 #include "eval.h"
-#include "structs.h"
 #include "repl-top.h"
 #include "print.h"
 
@@ -64,40 +63,6 @@ object* update_binding(object* args, object* cont) {
 	alloc_mutation_reference(binding, value);
 	
 	return call_discarding_cont(cont);
-}
-
-object* define(object* args, object* cont) {
-	object* syntax;
-	object* environment;
-	object* trace;
-	delist_3(args, &syntax, &environment, &trace);
-	
-	object* signature;
-	object* body;
-	delist_2(syntax, &signature, &body);
-	
-	signature = desyntax(signature);
-	
-	// handles cases like (define ((f a) b) ..)
-	while (is_list(signature)) {
-		body = alloc_list_3(syntax_procedure_obj(syntax_lambda), list_rest(signature), body);
-		signature = desyntax(list_first(signature));
-	}
-	
-	object* binding = alloc_placeholder_binding(signature);
-	environment = alloc_list_cell(binding, environment);
-	
-	object* return_args = alloc_list_1(environment);
-	object* return_call = alloc_call(&identity_proc, return_args, cont);
-	object* return_cont = alloc_discarding_cont(return_call);
-	
-	object* update_args = alloc_list_1(binding);
-	object* update_call = alloc_call(&update_binding_proc, update_args, return_cont);
-	
-	object* eval_args = alloc_list_4(environment, body, default_context(), trace);
-	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, alloc_cont(update_call));
-	
-	return perform_call(eval_call);
 }
 
 object* quote(object* args, object* cont) {
@@ -645,12 +610,6 @@ object* or(object* args, object* cont) {
 	}
 }
 
-object* struct_func(object* args, object* cont) {	
-	object* call = alloc_call(&define_struct_proc, args, cont);
-	
-	return perform_call(call);
-}
-
 object syntax_procedure[syntax_count];
 context_type syntax_context[syntax_count];
 
@@ -674,8 +633,6 @@ object* syntax_procedure_obj(static_syntax_procedure type) {
 }
 
 void init_base_syntax_procedures(void) {
-	add_syntax("define", syntax_define, context_repl, &define);
-	add_syntax("struct", syntax_struct, context_repl, &struct_func);
 	add_syntax("quote", syntax_quote, context_value, &quote);
 	add_syntax("delay", syntax_delay, context_value, &delay);
 	add_syntax("force", syntax_force, context_value, &force);

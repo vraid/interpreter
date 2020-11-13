@@ -68,7 +68,6 @@ char list_has_width(int width, object* ls) {
 int syntax_length[syntax_count];
 
 void init_syntax_lengths() {
-	syntax_length[syntax_define] = 2;
 	syntax_length[syntax_quote] = 1;
 	syntax_length[syntax_delay] = 1;
 	syntax_length[syntax_force] = 1;
@@ -81,7 +80,6 @@ void init_syntax_lengths() {
 	syntax_length[syntax_if] = 3;
 	syntax_length[syntax_and] = 0;
 	syntax_length[syntax_or] = 0;
-	syntax_length[syntax_struct] = 0;
 	syntax_length[syntax_list] = 0;
 	syntax_length[syntax_stream] = 2;
 	syntax_length[syntax_vector] = 0;
@@ -470,13 +468,11 @@ void init_validate_procedures(void) {
 		init_primitive_procedure(&syntax_validate[i], &standard_validate);
 	}
 	
-	init_primitive_procedure(&syntax_validate[syntax_define], &validate_define);
 	init_primitive_procedure(&syntax_validate[syntax_quote], &no_validate);
 	init_primitive_procedure(&syntax_validate[syntax_lambda], &validate_lambda);
 	init_primitive_procedure(&syntax_validate[syntax_let], &validate_let);
 	init_primitive_procedure(&syntax_validate[syntax_letrec], &validate_letrec);
 	init_primitive_procedure(&syntax_validate[syntax_rec], &validate_rec);
-	init_primitive_procedure(&syntax_validate[syntax_struct], &validate_struct);
 	
 	init_primitive(&validate_let_bindings, &validate_let_bindings_proc);
 	init_primitive(&validate_letrec_two, &validate_letrec_two_proc);
