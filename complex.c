@@ -32,7 +32,7 @@ object* complex_add_sub(object* add_sub_proc, object* args, object* cont) {
 	object* imag_list = alloc_list_3(add_sub_proc, complex_imag_part(a), complex_imag_part(b));
 	object* complex_list = alloc_list_3(&make_complex_proc, real_list, imag_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), complex_list, false());
+	object* eval_args = alloc_list_4(empty_list(), complex_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -55,7 +55,7 @@ object* complex_negate(object* args, object* cont) {
 	
 	object* make_list = alloc_list_3(&make_complex_proc, real_list, imag_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), make_list, false());
+	object* eval_args = alloc_list_4(empty_list(), make_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -82,7 +82,7 @@ object* complex_multiply(object* args, object* cont) {
 	
 	object* complex_list = alloc_list_3(&make_complex_proc, real_list, imag_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), complex_list, false());
+	object* eval_args = alloc_list_4(empty_list(), complex_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -127,7 +127,7 @@ object* complex_divide_two(object* args, object* cont) {
 	
 	object* make_list = alloc_list_3(&make_complex_proc, real_list, imag_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), make_list, false());
+	object* eval_args = alloc_list_4(empty_list(), make_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -151,7 +151,7 @@ object* complex_divide(object* args, object* cont) {
 
 	object* next_list = alloc_list_3(&complex_divide_two_proc, divisor_list, dividend_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), next_list, false());
+	object* eval_args = alloc_list_4(empty_list(), next_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);

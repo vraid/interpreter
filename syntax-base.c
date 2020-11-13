@@ -510,7 +510,7 @@ object* if_func(object* args, object* cont) {
 	object* els;
 	delist_3(syntax, &condition, &then, &els);
 	
-	object* next_args = alloc_list_5(then, els, environment, default_context(), trace);
+	object* next_args = alloc_list_4(then, els, environment, trace);
 	object* next_call = alloc_call(&eval_if_proc, next_args, cont);
 	
 	object* call_args = alloc_list_4(condition, environment, default_context(), trace);
@@ -534,7 +534,7 @@ object* eval_and(object* args, object* cont) {
 		return call_cont(cont, value);
 	}
 	else {
-		object* and_args = alloc_list_4(list_rest(elements), environment, default_context(), trace);
+		object* and_args = alloc_list_3(list_rest(elements), environment, trace);
 		object* and_call = alloc_call(&eval_and_proc, and_args, cont);
 		
 		object* eval_args = alloc_list_4(list_first(elements), environment, default_context(), trace);
@@ -554,7 +554,7 @@ object* and(object* args, object* cont) {
 		return call_cont(cont, true());
 	}
 	else {
-		object* and_args = alloc_list_4(list_rest(elements), environment, default_context(), trace);
+		object* and_args = alloc_list_3(list_rest(elements), environment, trace);
 		object* and_call = alloc_call(&eval_and_proc, and_args, cont);
 		
 		object* eval_args = alloc_list_4(list_first(elements), environment, default_context(), trace);
@@ -580,7 +580,7 @@ object* eval_or(object* args, object* cont) {
 		return call_cont(cont, false());
 	}
 	else {
-		object* or_args = alloc_list_4(list_rest(elements), environment, default_context(), trace);
+		object* or_args = alloc_list_3(list_rest(elements), environment, trace);
 		object* or_call = alloc_call(&eval_or_proc, or_args, cont);
 		
 		object* eval_args = alloc_list_4(list_first(elements), environment, default_context(), trace);
@@ -600,7 +600,7 @@ object* or(object* args, object* cont) {
 		return call_cont(cont, false());
 	}
 	else {
-		object* or_args = alloc_list_4(list_rest(elements), environment, default_context(), trace);
+		object* or_args = alloc_list_3(list_rest(elements), environment, trace);
 		object* or_call = alloc_call(&eval_or_proc, or_args, cont);
 		
 		object* eval_args = alloc_list_4(list_first(elements), environment, default_context(), trace);

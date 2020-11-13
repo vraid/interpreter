@@ -54,7 +54,7 @@ object* fraction_reduce_two(object* args, object* cont) {
 	object* denom_list = alloc_list_3(&integer_quotient_proc, gcd, denominator);
 	object* make_list = alloc_list_3(&make_fraction_proc, num_list, denom_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), make_list, false());
+	object* eval_args = alloc_list_4(empty_list(), make_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -115,7 +115,7 @@ object* fraction_add(object* args, object* cont) {
 	object* denom_list = alloc_list_3(&integer_multiply_proc, a_denom, b_denom);
 	object* reduce_list = alloc_list_3(&fraction_make_and_reduce_proc, add_list, denom_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), reduce_list, false());
+	object* eval_args = alloc_list_4(empty_list(), reduce_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -137,7 +137,7 @@ object* fraction_subtract(object* args, object* cont) {
 	object* denom_list = alloc_list_3(&integer_multiply_proc, a_denom, b_denom);
 	object* reduce_list = alloc_list_3(&fraction_make_and_reduce_proc, subtract_list, denom_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), reduce_list, false());
+	object* eval_args = alloc_list_4(empty_list(), reduce_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -166,7 +166,7 @@ object* fraction_multiply(object* args, object* cont) {
 	object* denom_list = alloc_list_3(&integer_multiply_proc, a_denom, b_denom);
 	object* reduce_list = alloc_list_3(&fraction_make_and_reduce_proc, num_list, denom_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), reduce_list, false());
+	object* eval_args = alloc_list_4(empty_list(), reduce_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -186,7 +186,7 @@ object* fraction_divide(object* args, object* cont) {
 	object* denom_list = alloc_list_3(&integer_multiply_proc, b_denom, a_num);
 	object* reduce_list = alloc_list_3(&fraction_make_and_reduce_proc, num_list, denom_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), reduce_list, false());
+	object* eval_args = alloc_list_4(empty_list(), reduce_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
 	return perform_call(eval_call);
@@ -233,7 +233,7 @@ object* fraction_quotient_remainder_two(object* args, object* cont) {
 	object* b_list = alloc_list_3(&integer_multiply_proc, b_num, a_denom);
 	object* divide_list = alloc_list_3(&integer_divide_proc, a_list, b_list);
 	
-	object* eval_args = alloc_list_3(empty_list(), divide_list, false());
+	object* eval_args = alloc_list_4(empty_list(), divide_list, default_context(), false());
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, alloc_cont(next_call));
 	
 	return perform_call(eval_call);
@@ -313,7 +313,7 @@ object* fraction_compare(object* args, object* cont) {
 		object* b_list = alloc_list_3(&integer_multiply_proc, b_num, fraction_denominator(a));
 		object* compare_list = alloc_list_3(&integer_compare_proc, a_list, b_list);
 		
-		object* eval_args = alloc_list_3(empty_list(), compare_list, false());
+		object* eval_args = alloc_list_4(empty_list(), compare_list, default_context(), false());
 		object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 		
 		return perform_call(eval_call);
