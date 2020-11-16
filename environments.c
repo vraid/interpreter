@@ -8,14 +8,14 @@
 #include "delist.h"
 
 #define static_binding_max 1024
-object* _static_environment;
+object _static_environment;
 object static_bindings[static_binding_max];
 object static_binding_cell[static_binding_max];
 int static_binding_count = 0;
 char environment_init = 0;
 
 object* static_environment(void) {
-	return _static_environment;
+	return &_static_environment;
 }
 
 object* add_static_binding(char* name, object* value) {
@@ -32,9 +32,10 @@ object* add_static_binding(char* name, object* value) {
 	object* cell = &static_binding_cell[static_binding_count];
 	init_binding(binding, symbol, value);
 	make_static(binding);
-	init_list_cell(cell, binding, _static_environment);
+	init_list_cell(cell, binding, list_first(&_static_environment));
 	make_static(cell);
-	_static_environment = cell;
+	init_list_cell(&_static_environment, cell, list_rest(&_static_environment));
+	make_static(&_static_environment);
 	static_binding_count++;
 	return binding;
 }
@@ -44,20 +45,9 @@ object* extend_environment(object* args, object* cont) {
 	object* env;
 	delist_2(args, &binding, &env);
 
-	object* cell = alloc_list_cell(binding, env);
+	object* cell = alloc_list_cell(alloc_list_1(binding), env);
 	
 	return call_cont(cont, cell);
-}
-
-object make_binding_proc;
-
-object* make_binding(object* args, object* cont) {
-	object* value;
-	object* name;
-	delist_2(args, &value, &name);
-	
-	object* binding = alloc_binding(desyntax(name), desyntax(value));
-	return call_cont(cont, binding);
 }
 
 object* bind_and_extend_environment(object* args, object* cont) {
@@ -66,41 +56,10 @@ object* bind_and_extend_environment(object* args, object* cont) {
 	object* env;
 	delist_3(args, &value, &name, &env);
 	
-	object* bind_args = alloc_list_1(env);
-	object* bind_call = alloc_call(&extend_environment_proc, bind_args, cont);
+	object* binding = alloc_binding(desyntax(name), desyntax(value));
+	env = alloc_list_cell(alloc_list_1(binding), env);
 	
-	object* make_args = alloc_list_2(value, name);
-	object* make_call = alloc_call(&make_binding_proc, make_args, alloc_cont(bind_call));
-	
-	return perform_call(make_call);
-}
-
-object bind_single_value_proc;
-
-object* bind_single_value(object* args, object* cont) {
-	object* environment;
-	object* values;
-	object* names;
-	delist_3(args, &environment, &values, &names);
-	
-	if (is_empty_list(values)) {
-		return call_cont(cont, environment);
-	}
-	else if (is_empty_list(names)) {
-		return throw_error_string(cont, "arity mismatch, too many arguments");
-	}
-	else {
-		object* next_ls = alloc_list_2(list_rest(values), list_rest(names));
-		object* next_call = alloc_call(&bind_single_value_proc, next_ls, cont);
-		
-		object* bind_ls = alloc_list_1(environment);
-		object* bind_call = alloc_call(&extend_environment_proc, bind_ls, alloc_cont(next_call));
-		
-		object* make_binding_args = alloc_list_2(list_first(values), list_first(names));
-		object* make_binding_call = alloc_call(&make_binding_proc, make_binding_args, alloc_cont(bind_call));
-		
-		return perform_call(make_binding_call);
-	}
+	return call_cont(cont, env);
 }
 
 object* bind_values(object* args, object* cont) {
@@ -109,10 +68,22 @@ object* bind_values(object* args, object* cont) {
 	object* environment;
 	delist_3(args, &values, &names, &environment);
 	
-	object* ls = alloc_list_3(environment, values, names);
-	object* call = alloc_call(&bind_single_value_proc, ls, cont);
+	object* ls = empty_list();
 	
-	return perform_call(call);
+	while (!is_empty_list(values)) {
+		if (is_empty_list(names)) {
+			return throw_error_string(cont, "arity mismatch, too many arguments");
+		}
+		object* binding = alloc_binding(desyntax(list_first(names)), desyntax(list_first(values)));
+		ls = alloc_list_cell(binding, ls);
+		values = list_rest(values);
+		names = list_rest(names);
+	}
+	if (!is_empty_list(names)) {
+		return throw_error_string(cont, "arity mismatch, too few arguments");
+	}
+	
+	return call_cont(cont, alloc_list_cell(ls, environment));
 }
 
 object* environment_get(object* args, object* cont) {
@@ -129,25 +100,27 @@ object* environment_get(object* args, object* cont) {
 }
 
 object* find_in_environment(object* env, object* symbol, char return_placeholders) {
-	object* ls = env;
-	while (!is_empty_list(ls)) {
-		object* binding = list_first(ls);
-		if ((symbol == binding_name(binding)) && (return_placeholders || !is_placeholder_value(binding_value(binding)))) {
-			return binding;
+	while (!is_empty_list(env)) {
+		object* ls = list_first(env);
+		while (!is_empty_list(ls)) {
+			object* binding = list_first(ls);
+			if ((symbol == binding_name(binding)) && (return_placeholders || !is_placeholder_value(binding_value(binding)))) {
+				return binding;
+			}
+			ls = list_rest(ls);
 		}
-		ls = list_rest(ls);
+		env = list_rest(env);
 	}
 	return no_binding();
 }
 
 void init_environment_procedures(void) {
-	_static_environment = empty_list();
+	init_list_cell(&_static_environment, empty_list(), empty_list());
+	make_static(&_static_environment);
 	environment_init = 1;
 	
 	init_primitive(&extend_environment, &extend_environment_proc);
 	init_primitive(&bind_and_extend_environment, &bind_and_extend_environment_proc);
-	init_primitive(&make_binding, &make_binding_proc);
 	init_primitive(&bind_values, &bind_values_proc);
-	init_primitive(&bind_single_value, &bind_single_value_proc);
 	init_primitive(&environment_get, &environment_get_proc);
 }
