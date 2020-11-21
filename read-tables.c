@@ -21,8 +21,8 @@ object* default_read_table(object* args, object* cont) {
 		{"t", read_type_atom, &read_true_proc},
 		{"f", read_type_atom, &read_false_proc},
 		{"include", read_type_list, &read_include_proc},
-		{"enter-scope", read_type_list, &read_enter_scope_proc},
-		{"rewind-scope", read_type_list, &read_rewind_scope_proc}};
+		{"enter", read_type_list, &read_enter_scope_proc},
+		{"rewind", read_type_list, &read_rewind_scope_proc}};
 
 	int length = sizeof(entries) / sizeof(entries[0]);
 	for (int n = 0; n < length; n++) {
