@@ -38,6 +38,7 @@ object _integer_ten_list;
 object _integer_ten;
 
 object _default_context;
+object _module_context;
 object _scope_context;
 object _repl_context;
 
@@ -158,6 +159,7 @@ void init_global_variables(void) {
 	}
 	
 	init_eval_context_obj(&_default_context, "default", context_value);
+	init_eval_context_obj(&_module_context, "module", context_module);
 	init_eval_context_obj(&_scope_context, "scope", context_value | context_scope);
 	init_eval_context_obj(&_repl_context, "repl", context_value | context_repl);
 }
@@ -301,6 +303,9 @@ object* integer_ten(void) {
 
 object* default_context(void) {
 	return &_default_context;
+}
+object* module_context(void) {
+	return &_module_context;
 }
 object* scope_context(void) {
 	return &_scope_context;

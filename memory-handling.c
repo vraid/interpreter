@@ -159,6 +159,16 @@ void traverse_binding(target_space* space, object* obj, object_location location
 	move_if_necessary(space, &obj->data.binding.value, location);
 }
 
+void traverse_module(target_space* space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.module.bindings, location);
+}
+
+void traverse_module_interim(target_space* space, object* obj, object_location location) {
+	move_if_necessary(space, &obj->data.module_interim.bindings, location);
+	move_if_necessary(space, &obj->data.module_interim.call, location);
+	move_if_necessary(space, &obj->data.module_interim.cont, location);
+}
+
 void traverse_function(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.function.parameters, location);
 	move_if_necessary(space, &obj->data.function.environment, location);
@@ -367,6 +377,8 @@ void init_memory_handling() {
 	traversal[type_struct_instance] = &traverse_struct_instance;
 	traversal[type_function] = &traverse_function;
 	traversal[type_binding] = &traverse_binding;
+	traversal[type_module] = &traverse_module;
+	traversal[type_module_interim] = &traverse_module_interim;
 	traversal[type_call] = &traverse_call;
 	traversal[type_continuation] = &traverse_continuation;
 	traversal[type_reader_entry] = &traverse_reader_entry;

@@ -17,6 +17,8 @@ typedef enum {
 	type_vector,
 	type_vector_iterator,
 	type_delay,
+	type_module,
+	type_module_interim,
 	type_struct_definition,
 	type_struct_instance,
 	type_syntax_procedure,
@@ -57,9 +59,10 @@ typedef enum {
 typedef enum {
 	context_none = 0,
 	context_value = 1,
-	context_scope = 2,
-	context_repl = 4,
-	context_count = 8
+	context_module = 2,
+	context_scope = 4,
+	context_repl = 8,
+	context_count = 16
 } context_type;
 
 char* context_names[context_count];
@@ -86,6 +89,9 @@ typedef enum {
 	syntax_map,
 	syntax_fold,
 	syntax_filter,
+	syntax_module,
+	syntax_using,
+	syntax_define,
 	syntax_count} static_syntax_procedure;
 
 char* syntax_names[syntax_count];
@@ -187,6 +193,14 @@ typedef struct object {
 			char evaluated;
 		} delay;
 		struct {
+			struct object* bindings;
+		} module;
+		struct {
+			struct object* bindings;
+			struct object* call;
+			struct object* cont;
+		} module_interim;
+		struct {
 			FILE* file;
 			int position;
 			int last_read_char;
@@ -242,6 +256,8 @@ char is_stream(object* obj);
 char is_sequence(object* obj);
 char is_vector(object* obj);
 char is_vector_iterator(object* obj);
+char is_module(object* obj);
+char is_module_interim(object* obj);
 char is_struct_definition(object* obj);
 char is_struct_instance(object* obj);
 char is_syntax_procedure(object* obj);
@@ -304,6 +320,12 @@ int vector_iterator_length(object* obj);
 
 object* delay_value(object* obj);
 char delay_evaluated(object* obj);
+
+object* module_bindings(object* obj);
+
+object* module_interim_bindings(object* obj);
+object* module_interim_call(object* obj);
+object* module_interim_cont(object* obj);
 
 object* struct_definition_name(object* obj);
 object* struct_definition_fields(object* obj);

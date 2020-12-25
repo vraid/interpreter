@@ -27,6 +27,8 @@ void init_type_names(void) {
 	type_names[type_integer] = "integer";
 	type_names[type_fraction] = "fraction";
 	type_names[type_complex] = "complex";
+	type_names[type_module] = "module";
+	type_names[type_module_interim] = "module interim";
 	type_names[type_struct_definition] = "struct definition";
 	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
@@ -125,6 +127,12 @@ char is_vector(object* obj) {
 }
 char is_vector_iterator(object* obj) {
 	return is_type(type_vector_iterator, obj);
+}
+char is_module(object* obj) {
+	return is_type(type_module, obj);
+}
+char is_module_interim(object* obj) {
+	return is_type(type_module_interim, obj);
 }
 char is_struct_definition(object* obj) {
 	return is_type(type_struct_definition, obj);
@@ -337,6 +345,24 @@ object* delay_value(object* obj) {
 char delay_evaluated(object* obj) {
 	check_type(type_delay, obj);
 	return obj->data.delay.evaluated;
+}
+
+object* module_bindings(object* obj) {
+	check_type(type_module, obj);
+	return obj->data.module.bindings;
+}
+
+object* module_interim_bindings(object* obj) {
+	check_type(type_module_interim, obj);
+	return obj->data.module_interim.bindings;
+}
+object* module_interim_call(object* obj) {
+	check_type(type_module_interim, obj);
+	return obj->data.module_interim.call;
+}
+object* module_interim_cont(object* obj) {
+	check_type(type_module_interim, obj);
+	return obj->data.module_interim.cont;
 }
 
 object* struct_definition_name(object* obj) {

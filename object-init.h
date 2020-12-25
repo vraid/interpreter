@@ -51,6 +51,12 @@ object* init_vector(object* obj, int length, object** data);
 object* init_vector_iterator(object* obj, int n, object* vector);
 #define alloc_vector_iterator(a, b) init_vector_iterator(alloc_obj(), a, b)
 
+object* init_module(object* obj, object* bindings);
+#define alloc_module(a) init_module(alloc_obj(), a)
+
+object* init_module_interim(object* obj, object* bindings, object* call, object* cont);
+#define alloc_module_interim(a, b, c) init_module_interim(alloc_obj(), a, b, c);
+
 object* init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent);
 #define alloc_struct_definition(a, b, c, d) init_struct_definition(alloc_obj(), a, b, c, d)
 

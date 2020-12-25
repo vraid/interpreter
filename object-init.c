@@ -100,6 +100,20 @@ object* init_vector_iterator(object* obj, int n, object* vector) {
 	return obj;
 }
 
+object* init_module(object* obj, object* bindings) {
+	init_object(location_stack, type_module, obj);
+	obj->data.module.bindings = bindings;
+	return obj;
+}
+
+object* init_module_interim(object* obj, object* bindings, object* call, object* cont) {
+	init_object(location_stack, type_module_interim, obj);
+	obj->data.module_interim.bindings = bindings;
+	obj->data.module_interim.call = call;
+	obj->data.module_interim.cont = cont;
+	return obj;
+}
+
 object* init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent) {
 	init_object(location_stack, type_struct_definition, obj);
 	obj->data.struct_definition.name = name;

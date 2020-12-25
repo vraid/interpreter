@@ -52,5 +52,6 @@ object* integer_ten_list(void);
 object* integer_ten(void);
 
 object* default_context(void);
+object* module_context(void);
 object* scope_context(void);
 object* repl_context(void);

@@ -29,6 +29,7 @@
 #include "workspace.h"
 #include "syntax-base.h"
 #include "syntax-sequence.h"
+#include "modules.h"
 #include "syntax-validate.h"
 #include "read.h"
 #include "read-tables.h"
@@ -84,6 +85,7 @@ int main(int argc, char** argv) {
 	init_environment_procedures();
 	init_base_syntax_procedures();
 	init_sequence_syntax_procedures();
+	init_module_procedures();
 	init_equivalence_procedures();
 	init_memory_handling();
 	init_memory_spaces(1024 * 1024 * 4);
