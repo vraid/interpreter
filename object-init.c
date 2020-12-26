@@ -114,22 +114,6 @@ object* init_module_interim(object* obj, object* bindings, object* call, object*
 	return obj;
 }
 
-object* init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent) {
-	init_object(location_stack, type_struct_definition, obj);
-	obj->data.struct_definition.name = name;
-	obj->data.struct_definition.fields = fields;
-	obj->data.struct_definition.constructor = constructor;
-	obj->data.struct_definition.parent = parent;
-	return obj;
-}
-
-object* init_struct_instance(object* obj, object* type, object* data) {
-	init_object(location_stack, type_struct_instance, obj);
-	obj->data.struct_instance.type = type;
-	obj->data.struct_instance.data = data;
-	return obj;
-}
-
 object* init_syntax_procedure(object* obj, primitive_proc* proc, static_syntax_procedure id) {
 	init_object(location_static, type_syntax_procedure, obj);
 	obj->data.syntax_procedure.proc = proc;

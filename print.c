@@ -138,22 +138,6 @@ object* print_stream(object* args, object* cont) {
 	return perform_call(first_call);
 }
 
-object print_struct_proc;
-
-object* print_struct(object* args, object* cont) {
-	object* st;
-	delist_1(args, &st);
-	object* type = struct_instance_type(st);
-	printf("(struct:%s", string_value(symbol_name(struct_definition_name(type))));
-	
-	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
-	object* end_cont = alloc_discarding_cont(end_call);
-	
-	object* print_args = alloc_list_1(struct_instance_data(st));
-	object* call = alloc_call(&print_sequence_element_proc, print_args, end_cont);
-	return perform_call(call);
-}
-
 object print_integer_digits_proc;
 
 object* print_integer_digits(object* args, object* cont) {
@@ -359,9 +343,6 @@ object* print_value(object* args, object* cont) {
 		case type_complex:
 			return print_complex(print_args, cont);
 			break;
-		case type_struct_instance:
-			return print_struct(print_args, cont);
-			break;
 		case type_list:
 			return print_sequence(print_args, cont);
 			break;
@@ -426,7 +407,6 @@ void init_print_procedures(void) {
 	init_primitive(&print_stream_element, &print_stream_element_proc);
 	init_primitive(&print_stream_rest, &print_stream_rest_proc);
 	
-	init_primitive(&print_struct, &print_struct_proc);
 	init_primitive(&print_integer, &print_integer_proc);
 	init_primitive(&print_integer_digits, &print_integer_digits_proc);
 	

@@ -29,8 +29,6 @@ void init_type_names(void) {
 	type_names[type_complex] = "complex";
 	type_names[type_module] = "module";
 	type_names[type_module_interim] = "module interim";
-	type_names[type_struct_definition] = "struct definition";
-	type_names[type_struct_instance] = "struct instance";
 	type_names[type_list] = "list";
 	type_names[type_stream] = "stream";
 	type_names[type_vector] = "vector";
@@ -133,12 +131,6 @@ char is_module(object* obj) {
 }
 char is_module_interim(object* obj) {
 	return is_type(type_module_interim, obj);
-}
-char is_struct_definition(object* obj) {
-	return is_type(type_struct_definition, obj);
-}
-char is_struct_instance(object* obj) {
-	return is_type(type_struct_instance, obj);
 }
 char is_syntax_procedure(object* obj) {
 	return is_type(type_syntax_procedure, obj);
@@ -363,31 +355,6 @@ object* module_interim_call(object* obj) {
 object* module_interim_cont(object* obj) {
 	check_type(type_module_interim, obj);
 	return obj->data.module_interim.cont;
-}
-
-object* struct_definition_name(object* obj) {
-	check_type(type_struct_definition, obj);
-	return obj->data.struct_definition.name;
-}
-object* struct_definition_fields(object* obj) {
-	check_type(type_struct_definition, obj);
-	return obj->data.struct_definition.fields;
-}
-object* struct_definition_constructor(object* obj) {
-	check_type(type_struct_definition, obj);
-	return obj->data.struct_definition.constructor;
-}
-object* struct_definition_parent(object* obj) {
-	check_type(type_struct_definition, obj);
-	return obj->data.struct_definition.parent;
-}
-object* struct_instance_type(object* obj) {
-	check_type(type_struct_instance, obj);
-	return obj->data.struct_instance.type;
-}
-object* struct_instance_data(object* obj) {
-	check_type(type_struct_instance, obj);
-	return obj->data.struct_instance.data;
 }
 
 object* function_parameters(object* obj) {

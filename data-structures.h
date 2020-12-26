@@ -19,8 +19,6 @@ typedef enum {
 	type_delay,
 	type_module,
 	type_module_interim,
-	type_struct_definition,
-	type_struct_instance,
 	type_syntax_procedure,
 	type_primitive_procedure,
 	type_function,
@@ -154,16 +152,6 @@ typedef struct object {
 			int n;
 		} vector_iterator;
 		struct {
-			struct object* name;
-			struct object* fields;
-			struct object* constructor;
-			struct object* parent;
-		} struct_definition;
-		struct {
-			struct object* type;
-			struct object* data;
-		} struct_instance;
-		struct {
 			primitive_proc* proc;
 			static_syntax_procedure id;
 		} syntax_procedure;
@@ -258,8 +246,6 @@ char is_vector(object* obj);
 char is_vector_iterator(object* obj);
 char is_module(object* obj);
 char is_module_interim(object* obj);
-char is_struct_definition(object* obj);
-char is_struct_instance(object* obj);
 char is_syntax_procedure(object* obj);
 char is_function(object* obj);
 char is_primitive_procedure(object* obj);
@@ -326,13 +312,6 @@ object* module_bindings(object* obj);
 object* module_interim_bindings(object* obj);
 object* module_interim_call(object* obj);
 object* module_interim_cont(object* obj);
-
-object* struct_definition_name(object* obj);
-object* struct_definition_fields(object* obj);
-object* struct_definition_constructor(object* obj);
-object* struct_definition_parent(object* obj);
-object* struct_instance_type(object* obj);
-object* struct_instance_data(object* obj);
 
 object* function_parameters(object* obj);
 object* function_environment(object* obj);

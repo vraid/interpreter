@@ -302,52 +302,6 @@ object* validate_rec(object* args, object* cont) {
 	return perform_call(binding_call);
 }
 
-object* validate_struct(object* args, object* cont) {
-	object* stx;
-	object* env;
-	object* trace;
-	delist_3(args, &stx, &env, &trace);
-	
-	int n = list_length(stx)-1;
-	if (n < 2 || n > 3) {
-		return throw_length_error(cont);
-	}
-	
-	object* name;
-	object* parent = no_symbol();
-	object* fields;
-	
-	if (n == 3) {
-		delist_desyntax_3(list_rest(stx), &name, &parent, &fields);
-	}
-	else {
-		delist_desyntax_2(list_rest(stx), &name, &fields);
-	}
-	
-	if (!is_symbol(name)) {
-		object* str = alloc_string("invalid struct name");
-		object* ls = alloc_list_3(str, name, stx);
-		return throw_error(cont, ls);
-	}
-	if (!is_symbol(parent)) {
-		object* str = alloc_string("invalid struct parent");
-		object* ls = alloc_list_3(str, parent, stx);
-		return throw_error(cont, ls);
-	}
-	if (!is_symbol_list(fields)) {
-		object* str = alloc_string("invalid struct fields");
-		object* ls = alloc_list_2(str, stx);
-		return throw_error(cont, ls);
-	}
-	object* dup = find_duplicate(fields);
-	if (dup != false()) {
-		object* str = alloc_string("duplicate struct field");
-		object* ls = alloc_list_3(str, dup, stx);
-		return throw_error(cont, ls);
-	}
-	return call_cont(cont, stx);
-}
-
 object syntax_validate[syntax_count];
 
 object validate_list_element_proc;

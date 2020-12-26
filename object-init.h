@@ -57,12 +57,6 @@ object* init_module(object* obj, object* bindings);
 object* init_module_interim(object* obj, object* bindings, object* call, object* cont);
 #define alloc_module_interim(a, b, c) init_module_interim(alloc_obj(), a, b, c);
 
-object* init_struct_definition(object* obj, object* name, object* fields, object* constructor, object* parent);
-#define alloc_struct_definition(a, b, c, d) init_struct_definition(alloc_obj(), a, b, c, d)
-
-object* init_struct_instance(object* obj, object* type, object* data);
-#define alloc_struct_instance(a, b) init_struct_instance(alloc_obj(), a, b)
-
 object* init_syntax_procedure(object* obj, primitive_proc* proc, static_syntax_procedure id);
 
 object* init_function(object* obj, object* environment, object* parameters, object* body);

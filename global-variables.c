@@ -21,7 +21,6 @@ object _empty_vector;
 object _end_vector_iterator;
 object _empty_string;
 object _empty_environment;
-object _empty_struct_definition;
 object* _define_symbol;
 object* _quote_symbol;
 object _dash_string;
@@ -109,11 +108,6 @@ void init_global_variables(void) {
 	init_object(location_static, type_string, empty_string());
 	_empty_string.data.string.value = &nullchar;
 	_empty_string.data.string.length = 0;
-	
-	init_object(location_static, type_struct_definition, &_empty_struct_definition);
-	_empty_struct_definition.data.struct_definition.name = no_symbol();
-	_empty_struct_definition.data.struct_definition.fields = empty_list();
-	_empty_struct_definition.data.struct_definition.parent = no_object();
 	
 	_define_symbol = make_static_symbol("define");
 	_quote_symbol = make_static_symbol("quote");
@@ -212,9 +206,6 @@ char is_no_binding(object* obj) {
 char is_placeholder_value(object* obj) {
 	return obj == placeholder_value();
 }
-char is_empty_struct_definition(object* obj) {
-	return obj == empty_struct_definition();
-}
 char is_zero(object* obj) {
 	return obj == zero();
 }
@@ -241,9 +232,6 @@ object* no_binding(void) {
 }
 object* placeholder_value(void) {
 	return &_placeholder_value;
-}
-object* empty_struct_definition(void) {
-	return &_empty_struct_definition;
 }
 object* define_symbol(void) {
 	return _define_symbol;

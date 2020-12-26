@@ -15,7 +15,6 @@ char is_no_symbol(object* obj);
 char is_no_object(object* obj);
 char is_no_binding(object* obj);
 char is_placeholder_value(object* obj);
-char is_empty_struct_definition(object* obj);
 char is_zero(object* obj);
 
 object* nothing(void);
@@ -30,7 +29,6 @@ object* no_object(void);
 object* no_symbol(void);
 object* no_binding(void);
 object* placeholder_value(void);
-object* empty_struct_definition(void);
 
 object* define_symbol(void);
 object* quote_symbol(void);

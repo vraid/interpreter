@@ -208,23 +208,6 @@ object* complex_equivalence(object* args, object* cont) {
 	return perform_call(call);
 }
 
-object struct_instance_equivalence_proc;
-
-object* struct_instance_equivalence(object* args, object* cont) {
-	object* a;
-	object* b;
-	delist_2(args, &a, &b);
-	
-	if (struct_instance_type(a) != struct_instance_type(b)) {
-		return call_cont(cont, false());
-	}
-	else {
-		object* call_args = alloc_list_2(struct_instance_data(a), struct_instance_data(b));
-		object* call = alloc_call(&is_equivalent_proc, call_args, cont);
-		return perform_call(call);
-	}
-}
-
 object forced_delay_equivalence_proc;
 
 object* forced_delay_equivalence(object* args, object* cont) {
@@ -281,7 +264,6 @@ void init_equivalence_procedures(void) {
 	init_primitive(&integer_equivalence, &integer_equivalence_proc);
 	init_primitive(&fraction_equivalence, &fraction_equivalence_proc);
 	init_primitive(&complex_equivalence, &complex_equivalence_proc);
-	init_primitive(&struct_instance_equivalence, &struct_instance_equivalence_proc);
 	init_primitive(&forced_delay_equivalence, &forced_delay_equivalence_proc);
 	init_primitive(&delay_equivalence, &delay_equivalence_proc);
 	init_primitive(&is_equivalent, &is_equivalent_proc);
@@ -299,6 +281,5 @@ void init_equivalence_procedures(void) {
 	equivalence[type_integer] = &integer_equivalence_proc;
 	equivalence[type_fraction] = &fraction_equivalence_proc;
 	equivalence[type_complex] = &complex_equivalence_proc;
-	equivalence[type_struct_instance] = &struct_instance_equivalence_proc;
 	equivalence[type_delay] = &delay_equivalence_proc;
 }

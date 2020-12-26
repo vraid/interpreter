@@ -278,9 +278,6 @@ object* eval_symbol(object* args, object* cont) {
 	}
 	else {
 		object* value = binding_value(binding);
-		if (is_struct_definition(value)) {
-			value = struct_definition_constructor(value);
-		}
 		return call_cont(cont, value);
 	}
 }

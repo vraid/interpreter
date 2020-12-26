@@ -144,16 +144,6 @@ void traverse_vector_iterator(target_space* space, object* obj, object_location 
 	move_if_necessary(space, &obj->data.vector_iterator.vector, location);
 }
 
-void traverse_struct_definition(target_space* space, object* obj, object_location location) {
-	move_if_necessary(space, &obj->data.struct_definition.name, location);
-	move_if_necessary(space, &obj->data.struct_definition.fields, location);
-}
-
-void traverse_struct_instance(target_space* space, object* obj, object_location location) {
-	move_if_necessary(space, &obj->data.struct_instance.type, location);
-	move_if_necessary(space, &obj->data.struct_instance.data, location);
-}
-
 void traverse_binding(target_space* space, object* obj, object_location location) {
 	move_if_necessary(space, &obj->data.binding.name, location);
 	move_if_necessary(space, &obj->data.binding.value, location);
@@ -373,8 +363,6 @@ void init_memory_handling() {
 	traversal[type_stream] = &traverse_stream;
 	traversal[type_vector] = &traverse_vector;
 	traversal[type_vector_iterator] = &traverse_vector_iterator;
-	traversal[type_struct_definition] = &traverse_struct_definition;
-	traversal[type_struct_instance] = &traverse_struct_instance;
 	traversal[type_function] = &traverse_function;
 	traversal[type_binding] = &traverse_binding;
 	traversal[type_module] = &traverse_module;
