@@ -7,6 +7,7 @@
 #include "global-variables.h"
 #include "object-init.h"
 #include "base-util.h"
+#include "list-util.h"
 #include "string-util.h"
 #include "util.h"
 #include "memory-handling.h"
@@ -17,13 +18,7 @@
 #include "fractions.h"
 #include "syntax-base.h"
 
-object read_add_to_list_proc;
-object read_list_value_proc;
 object read_list_proc;
-object start_list_proc;
-object read_finish_list_proc;
-object read_list_start_proc;
-
 object read_value_proc;
 object read_string_proc;
 object read_nonstring_proc;
@@ -445,7 +440,7 @@ object* read_value(object* args, object* cont) {
 	}
 	else if (is_list_start_delimiter(c)) {
 		get_input(input_port);
-		object* call = alloc_call(&read_list_start_proc, args, syntax_cont);
+		object* call = alloc_call(&read_list_proc, alloc_list_cell(empty_list(), args), syntax_cont);
 		return perform_call(call);
 	}
 	else if (is_quote_char(c)) {
@@ -479,35 +474,6 @@ object* read_value(object* args, object* cont) {
 	}
 }
 
-object* read_add_to_list(object* args, object* cont) {
-	object* value;
-	object* last;
-	object* input;
-	object* read_table;
-	delist_4(args, &value, &last, &input, &read_table);
-	
-	object* next = alloc_list_cell(value, empty_list());
-	last->data.list.rest = next;
-	alloc_mutation_reference(last, next);
-	
-	object* ls = alloc_list_3(next, input, read_table);
-	object* call = alloc_call(&read_list_proc, ls, cont);
-	
-	return perform_call(call);
-}
-
-object* read_list_value(object* args, object* cont) {
-	object* last;
-	object* input;
-	object* read_table;
-	delist_3(args, &last, &input, &read_table);
-	
-	object* next_call = alloc_call(&read_add_to_list_proc, args, cont);
-	object* call = alloc_call(&read_value_proc, list_rest(args), alloc_cont(next_call));
-	
-	return perform_call(call);
-}
-
 object* read_list(object* args, object* cont) {
 	object* last;
 	object* input;
@@ -517,58 +483,13 @@ object* read_list(object* args, object* cont) {
 	consume_whitespace(input);
 	if (is_list_end_delimiter(peek(input))) {
 		get_input(input);
-		return call_discarding_cont(cont);
-	}
-	else {
-		object* call = alloc_call(&read_list_value_proc, args, cont);
+		object* call = alloc_call(&reverse_list_proc, alloc_list_1(last), cont);
 		return perform_call(call);
 	}
-}
-
-object* start_list(object* args, object* cont) {
-	object* value;
-	object* input;
-	object* read_table;
-	delist_3(args, &value, &input, &read_table);
-	
-	object* first = alloc_list_cell(value, empty_list());
-	
-	object* finish_args = alloc_list_1(first);
-	
-	// after the list is finished, pass it on to the cont
-	object* finish_call = alloc_call(&read_finish_list_proc, finish_args, cont);
-	object* finish_cont = alloc_discarding_cont(finish_call);
-	
-	object* read_args = alloc_list_3(first, input, read_table);
-	
-	// keep on building the list
-	object* call = alloc_call(&read_list_proc, read_args, finish_cont);
-	
-	return perform_call(call);
-}
-
-object* read_finish_list(object* args, object* cont) {
-	object* first;
-	delist_1(args, &first);
-	
-	return call_cont(cont, first);
-}
-
-object* read_list_start(object* args, object* cont) {
-	object* input;
-	object* read_table;
-	delist_2(args, &input, &read_table);
-	
-	consume_whitespace(input);
-	
-	if (is_list_end_delimiter(peek(input))) {
-		get_input(input);
-		return call_cont(cont, empty_list());
-	}
 	else {
-		object* next_call = alloc_call(&start_list_proc, args, cont);
-		object* call = alloc_call(&read_value_proc, args, alloc_cont(next_call));
-		
+		object* next_call = alloc_call(&read_list_proc, list_rest(args), cont);
+		object* link_call = alloc_call(&link_list_proc, alloc_list_1(last), alloc_cont(next_call));
+		object* call = alloc_call(&read_value_proc, list_rest(args), alloc_cont(link_call));
 		return perform_call(call);
 	}
 }
@@ -585,12 +506,7 @@ void init_read_procedures(void) {
 	init_primitive(&read_entry, &read_entry_proc);
 	init_primitive(&read_value, &read_value_proc);
 	init_primitive(&make_syntax, &make_syntax_proc);
-	init_primitive(&read_add_to_list, &read_add_to_list_proc);
-	init_primitive(&read_list_value, &read_list_value_proc);
 	init_primitive(&read_list, &read_list_proc);
-	init_primitive(&start_list, &start_list_proc);
-	init_primitive(&read_finish_list, &read_finish_list_proc);
-	init_primitive(&read_list_start, &read_list_start_proc);
 	init_primitive(&read_string, &read_string_proc);
 	init_primitive(&read_nonstring, &read_nonstring_proc);
 	init_primitive(&read_number, &read_number_proc);
