@@ -319,6 +319,8 @@ object* eval(object* args, object* cont) {
 		case type_list:
 			proc = &eval_list_proc;
 			break;
+		case type_binding:
+			return throw_error_string(cont, "binding in eval context");
 		default:
 			proc = &eval_identity_proc;
 			break;

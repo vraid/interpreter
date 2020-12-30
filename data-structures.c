@@ -5,9 +5,6 @@
 #include "data-structures.h"
 #include "global-variables.h"
 
-char list_start_delimiter[bracket_type_count] = {'(', '[', '{', '(', 0};
-char list_end_delimiter[bracket_type_count] = {')', ']', '}', ')', 0};
-
 char* type_names[type_count];
 
 char* type_name(object_type type) {
@@ -297,10 +294,6 @@ object* list_rest(object* ls) {
 object* list_rest_or_empty(object* ls) {
 	check_type(type_list, ls);
 	return is_empty_list(ls) ? empty_list() : list_rest(ls);
-}
-bracket_type list_type(object* obj) {
-	check_type(type_list, obj);
-	return obj->data.list.type;
 }
 object* stream_first(object* obj) {
 	check_type(type_stream, obj);

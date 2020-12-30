@@ -170,9 +170,8 @@ object* let(object* args, object* cont) {
 	// allocate placeholders
 	while (!is_empty_list(bindings)) {
 		object* first = desyntax(list_first(bindings));
-		object* name;
-		object* value;
-		delist_desyntax_2(first, &name, &value);
+		object* name = desyntax(binding_name(first));
+		object* value = desyntax(binding_value(first));
 		
 		if (!is_symbol(name)) {
 			object* str = alloc_string("not a valid identifier");
@@ -237,9 +236,8 @@ object* letrec(object* args, object* cont) {
 	// allocate placeholders
 	while (!is_empty_list(bindings)) {
 		object* first = desyntax(list_first(bindings));
-		object* name;
-		object* value;
-		delist_desyntax_2(first, &name, &value);
+		object* name = desyntax(binding_name(first));
+		object* value = desyntax(binding_value(first));
 		
 		if (!is_symbol(name)) {
 			object* str = alloc_string("not a valid identifier");
@@ -306,9 +304,9 @@ object* rec(object* args, object* cont) {
 	object* arguments = empty_list();
 	
 	while (!is_empty_list(rev_bindings)) {
-		object* par;
-		object* arg;
-		delist_desyntax_2(desyntax(list_first(rev_bindings)), &par, &arg);
+		object* first = desyntax(list_first(rev_bindings));
+		object* par = desyntax(binding_name(first));
+		object* arg = desyntax(binding_value(first));
 		
 		parameters = alloc_list_cell(par, parameters);
 		arguments = alloc_list_cell(arg, arguments);

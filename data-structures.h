@@ -46,8 +46,6 @@ typedef enum {
 
 char* location_name[location_count];
 
-typedef enum {round, square, curly, shapeless, file_bracket, bracket_type_count} bracket_type;
-
 typedef enum {
 	cont_normal,
 	cont_discarding, // discards argument
@@ -137,7 +135,6 @@ typedef struct object {
 		struct {
 			struct object* first;
 			struct object* rest;
-			bracket_type type;
 		} list;
 		struct {
 			struct object* first;
@@ -224,9 +221,6 @@ typedef struct object {
 
 void init_data_structure_names(void);
 
-char list_start_delimiter[bracket_type_count];
-char list_end_delimiter[bracket_type_count];
-
 char* type_name(object_type type);
 char* object_type_name(object* obj);
 void check_type(object_type type, object* obj);
@@ -295,7 +289,6 @@ object* complex_imag_part(object* obj);
 object* list_first(object* ls);
 object* list_rest(object* ls);
 object* list_rest_or_empty(object* ls);
-bracket_type list_type(object* obj);
 object* stream_first(object* obj);
 object* stream_rest(object* obj);
 int vector_length(object* obj);

@@ -54,10 +54,10 @@ object* invalid_function_signature(object* ls) {
 	return is_symbol(a) ? false() : true();
 }
 
-char list_has_width(int width, object* ls) {
+char is_symbol_binding_list(object* ls) {
 	while (!is_empty_list(ls)) {
 		object* a = desyntax(list_first(ls));
-		if (!(is_list(a) && list_length(a) == width)) {
+		if (!is_binding(a) || !is_symbol(desyntax(binding_name(a)))) {
 			return 0;
 		}
 		ls = list_rest(ls);
@@ -161,6 +161,24 @@ object* validate_lambda(object* args, object* cont) {
 	return perform_call(call);
 }
 
+object binding_names_proc;
+
+object* binding_names(object* args, object* cont) {
+	object* bindings;
+	delist_1(args, &bindings);
+	
+	object* names = empty_list();
+	while (!is_empty_list(bindings)) {
+		object* first = desyntax(list_first(bindings));
+		names = alloc_list_cell(desyntax(binding_name(first)), names);
+		
+		bindings = list_rest(bindings);
+	}
+	
+	object* reverse_call = alloc_call(&reverse_list_proc, alloc_list_1(names), cont);
+	return perform_call(reverse_call);
+}
+
 object validate_let_bindings_proc;
 
 object* validate_let_bindings(object* args, object* cont) {
@@ -176,7 +194,7 @@ object* validate_let_bindings(object* args, object* cont) {
 	object* first = desyntax(list_first(bindings));
 	object* rest = list_rest(bindings);
 	
-	object* value = desyntax(list_ref(1, first));
+	object* value = desyntax(binding_value(first));
 	
 	object* next_args = alloc_list_3(rest, env, trace);
 	object* next_call = alloc_call(&validate_let_bindings_proc, next_args, cont);
@@ -197,7 +215,7 @@ object* validate_let(object* args, object* cont) {
 	object* body;
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
-	if (!(is_list(bindings) && list_has_width(2, bindings))) {
+	if (!(is_list(bindings) && is_symbol_binding_list(bindings))) {
 		object* str = alloc_string("malformed let bindings");
 		object* ls = alloc_list_2(str, bindings);
 		return throw_error(cont, ls);
@@ -216,15 +234,11 @@ object* validate_let(object* args, object* cont) {
 object validate_letrec_two_proc;
 
 object* validate_letrec_two(object* args, object* cont) {
-	object* names_values;
+	object* names;
 	object* stx;
 	object* env;
 	object* trace;
-	delist_4(args, &names_values, &stx, &env, &trace);
-	
-	object* names;
-	object* values;
-	delist_2(names_values, &names, &values);
+	delist_4(args, &names, &stx, &env, &trace);
 	
 	object* dup = find_duplicate(names);
 	if (dup != false()) {
@@ -257,17 +271,16 @@ object* validate_letrec(object* args, object* cont) {
 	object* body;
 	delist_desyntax_2(list_rest(stx), &bindings, &body);
 	
-	if (!(is_list(bindings) && list_has_width(2, bindings))) {
+	if (!(is_list(bindings) && is_symbol_binding_list(bindings))) {
 		object* str = alloc_string("malformed letrec bindings");
 		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
 	
 	object* next_call = alloc_call(&validate_letrec_two_proc, args, cont);
-	object* unzip_args = alloc_list_1(bindings);
-	object* unzip_call = alloc_call(&unzip_2_proc, unzip_args, alloc_cont(next_call));
+	object* names_call = alloc_call(&binding_names_proc, alloc_list_1(bindings), alloc_cont(next_call));
 	
-	return perform_call(unzip_call);
+	return perform_call(names_call);
 }
 
 object* validate_rec(object* args, object* cont) {
@@ -286,7 +299,7 @@ object* validate_rec(object* args, object* cont) {
 		object* ls = alloc_list_2(str, stx);
 		return throw_error(cont, ls);
 	}
-	if (!(is_list(bindings) && list_has_width(2, bindings))) {
+	if (!(is_list(bindings) && is_symbol_binding_list(bindings))) {
 		object* str = alloc_string("malformed rec bindings");
 		object* ls = alloc_list_2(str, bindings);
 		return throw_error(cont, ls);
@@ -428,6 +441,7 @@ void init_validate_procedures(void) {
 	init_primitive_procedure(&syntax_validate[syntax_letrec], &validate_letrec);
 	init_primitive_procedure(&syntax_validate[syntax_rec], &validate_rec);
 	
+	init_primitive(&binding_names, &binding_names_proc);
 	init_primitive(&validate_let_bindings, &validate_let_bindings_proc);
 	init_primitive(&validate_letrec_two, &validate_letrec_two_proc);
 	init_primitive(&validate_expression, &validate_expression_proc);

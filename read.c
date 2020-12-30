@@ -25,38 +25,58 @@ object read_nonstring_proc;
 object read_number_proc;
 object read_hashed_proc;
 
-char in_bracket_list(char* ls, int c) {
-	int i;
-	for (i = 0; i < bracket_type_count; i++) {
-		if (c == ls[i]) {
-			return 1;
-		}
-	}
-	return 0;
+object* _round_closing_bracket;
+object* _square_closing_bracket;
+
+object* round_closing_bracket(void) {
+	return _round_closing_bracket;
 }
 
-char is_list_start_delimiter(int c) {
-	return in_bracket_list(list_start_delimiter, c);
+object* square_closing_bracket(void) {
+	return _square_closing_bracket;
 }
 
-char is_list_end_delimiter(int c) {
-	return in_bracket_list(list_end_delimiter, c);
-}
-
-char is_list_delimiter(int c) {
-	return is_list_start_delimiter(c) || is_list_end_delimiter(c);
-}
-
-bracket_type list_delimiter_type(int c) {
+object* closing_bracket_object(int c) {
 	switch (c) {
 		case '(':
-		case ')': return round;
+		case ')': return round_closing_bracket();
 		case '[':
-		case ']': return square;
-		case '{':
-		case '}': return curly;
-		default: return bracket_type_count;
+		case ']': return square_closing_bracket();
+		default: return no_object();
 	}
+}
+
+typedef enum {
+	bracket_none = 0,
+	bracket_round = 1,
+	bracket_square = 2,
+	bracket_opening = 4,
+	bracket_closing = 8,
+	bracket_count = 16
+} bracket_type;
+
+bracket_type bracket_position(int c) {
+	switch (c) {
+		case '(':
+		case '[': return bracket_opening;
+		case ')':
+		case ']': return bracket_closing;
+		default: return bracket_none;
+	}
+}
+
+bracket_type bracket_shape(int c) {
+	switch (c) {
+		case '(':
+		case ')': return bracket_round;
+		case '[':
+		case ']': return bracket_square;
+		default: return bracket_none;
+	}
+}
+
+bracket_type list_bracket_type(int c) {
+	return bracket_shape(c) | bracket_position(c);
 }
 
 char is_eof(int c) {
@@ -69,7 +89,7 @@ char is_whitespace(int c) {
 
 char is_delimiter(int c) {
 	return is_whitespace(c) ||
-		is_list_delimiter(c) ||
+		bracket_shape(c) ||
 		c == '"';
 }
 
@@ -160,6 +180,23 @@ object* desyntax_included(object* args, object* cont) {
 	delist_1(args, &stx);
 	
 	return call_cont(cont, desyntax(stx));
+}
+
+object list_to_binding_proc;
+
+object* list_to_binding(object* args, object* cont) {
+	object* ls;
+	delist_1(args, &ls);
+	
+	if (list_length(ls) != 2) {
+		return throw_error_string(cont, "bracket syntax requires 2 elements");
+	}
+	object* name;
+	object* value;
+	delist_2(ls, &name, &value);
+	
+	object* binding = alloc_binding(name, value);
+	return call_cont(cont, binding);
 }
 
 object assert_read_empty_proc;
@@ -424,6 +461,7 @@ object* read_value(object* args, object* cont) {
 	consume_whitespace(input_port);
 	
 	char c = peek(input_port);
+	bracket_type bracket = list_bracket_type(c);
 	
 	object* current_pos = alloc_internal_position(port_position(input_port));
 	
@@ -434,13 +472,20 @@ object* read_value(object* args, object* cont) {
 	if (is_eof(c)) {
 		return throw_error_string(cont, "unexpected end of file");
 	}
-	else if (is_list_end_delimiter(c)) {
+	else if (bracket & bracket_closing) {
 		get_input(input_port);
 		return throw_error_string(cont, "unexpected parenthesis");
 	}
-	else if (is_list_start_delimiter(c)) {
+	else if (bracket & bracket_opening) {
 		get_input(input_port);
-		object* call = alloc_call(&read_list_proc, alloc_list_cell(empty_list(), args), syntax_cont);
+		object* closing_object = closing_bracket_object(c);
+		char is_square = closing_object == square_closing_bracket();
+		// create binding if square brackets, otherwise plain list
+		object* to_binding_call = alloc_call(&list_to_binding_proc, empty_list(), syntax_cont);
+		object* next_cont = (is_square ? alloc_cont(to_binding_call) : syntax_cont);
+		
+		object* call_args = alloc_list_4(empty_list(), closing_bracket_object(c), input_port, read_table);
+		object* call = alloc_call(&read_list_proc, call_args, next_cont);
 		return perform_call(call);
 	}
 	else if (is_quote_char(c)) {
@@ -476,12 +521,17 @@ object* read_value(object* args, object* cont) {
 
 object* read_list(object* args, object* cont) {
 	object* last;
+	object* closing_bracket;
 	object* input;
 	object* read_table;
-	delist_3(args, &last, &input, &read_table);
+	delist_4(args, &last, &closing_bracket, &input, &read_table);
 	
 	consume_whitespace(input);
-	if (is_list_end_delimiter(peek(input))) {
+	char c = peek(input);
+	if (bracket_position(c) == bracket_closing) {
+		if (closing_bracket_object(c) != closing_bracket) {
+			return throw_error_string(cont, "mismatching parentheses");
+		}
 		get_input(input);
 		object* call = alloc_call(&reverse_list_proc, alloc_list_1(last), cont);
 		return perform_call(call);
@@ -489,7 +539,7 @@ object* read_list(object* args, object* cont) {
 	else {
 		object* next_call = alloc_call(&read_list_proc, list_rest(args), cont);
 		object* link_call = alloc_call(&link_list_proc, alloc_list_1(last), alloc_cont(next_call));
-		object* call = alloc_call(&read_value_proc, list_rest(args), alloc_cont(link_call));
+		object* call = alloc_call(&read_value_proc, alloc_list_2(input, read_table), alloc_cont(link_call));
 		return perform_call(call);
 	}
 }
@@ -515,6 +565,7 @@ void init_read_procedures(void) {
 	init_primitive(&read_atom_type, &read_atom_type_proc);
 	init_primitive(&read_list_type, &read_list_type_proc);
 	init_primitive(&assert_is_list, &assert_is_list_proc);
+	init_primitive(&list_to_binding, &list_to_binding_proc);
 	init_primitive(&read_true, &read_true_proc);
 	init_primitive(&read_false, &read_false_proc);
 	init_primitive(&read_include, &read_include_proc);
@@ -522,4 +573,7 @@ void init_read_procedures(void) {
 	init_primitive(&read_rewind_scope, &read_rewind_scope_proc);
 	init_primitive(&desyntax_included, &desyntax_included_proc);
 	init_primitive(&assert_read_empty, &assert_read_empty_proc);
+	
+	_round_closing_bracket = make_static_symbol(")");
+	_square_closing_bracket = make_static_symbol("]");
 }
