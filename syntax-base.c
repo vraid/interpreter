@@ -428,10 +428,16 @@ object* start_apply(object* args, object* cont) {
 	
 	object* parameters = function_parameters(function);
 	
-	//pick off the parameters left for the body lambda
 	object* vs = values;
-	object* ps = parameters;
+	object* vals = empty_list();
+	
+	object* ps = parameters;	
+	object* pars = empty_list();
 	while (!is_empty_list(vs)) {
+		// alloc values / names to bind
+		vals = alloc_list_cell(list_first(vs), vals);
+		pars = alloc_list_cell(list_first(ps), pars);
+		// pick off the parameters left for the body lambda
 		vs = list_rest(vs);
 		ps = list_rest(ps);
 	}
@@ -440,7 +446,7 @@ object* start_apply(object* args, object* cont) {
 	object* eval_args = alloc_list_3(body, default_context(), trace);
 	object* eval_call = alloc_call(&eval_with_environment_proc, eval_args, cont);
 	
-	object* bind_args = alloc_list_3(values, parameters, environment);
+	object* bind_args = alloc_list_3(vals, pars, environment);
 	object* bind_call = alloc_call(&bind_values_proc, bind_args, alloc_cont(eval_call));
 	
 	return perform_call(bind_call);
@@ -455,7 +461,8 @@ object* apply(object* args, object* cont) {
 	object* apply_args = alloc_list_2(environment, trace);
 	object* apply_call = alloc_call(&start_apply_proc, apply_args, cont);
 	
-	object* eval_call = alloc_call(&eval_list_elements_proc, args, alloc_cont(apply_call));
+	object* eval_args = alloc_list_4(syntax, environment, default_context(), trace);
+	object* eval_call = alloc_call(&eval_list_elements_proc, eval_args, alloc_cont(apply_call));
 	
 	return perform_call(eval_call);
 }

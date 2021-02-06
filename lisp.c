@@ -13,6 +13,7 @@
 #include "call.h"
 #include "object-init.h"
 #include "sequences.h"
+#include "lists.h"
 #include "higher-order.h"
 #include "streams.h"
 #include "strings.h"
@@ -28,7 +29,6 @@
 #include "memory-handling.h"
 #include "workspace.h"
 #include "syntax-base.h"
-#include "syntax-sequence.h"
 #include "modules.h"
 #include "syntax-validate.h"
 #include "read.h"
@@ -65,8 +65,11 @@ int main(int argc, char** argv) {
 	init_data_structure_names();
 	init_symbols();
 	init_global_variables();
+	init_environment_procedures();
+	init_base_syntax_procedures();
 	init_sequence_procedures();
 	init_higher_order_procedures();
+	init_list_procedures();
 	init_stream_procedures();
 	init_string_procedures();
 	init_file_procedures();
@@ -82,9 +85,6 @@ int main(int argc, char** argv) {
 	init_print_procedures();
 	init_eval_procedures();
 	init_repl_procedures();
-	init_environment_procedures();
-	init_base_syntax_procedures();
-	init_sequence_syntax_procedures();
 	init_module_procedures();
 	init_equivalence_procedures();
 	init_memory_handling();

@@ -70,6 +70,12 @@ object* std_is_symbol(object* args, object* cont) {
 	return is_of_type(type_symbol, args, cont);
 }
 
+object std_is_string_proc;
+
+object* std_is_string(object* args, object* cont) {
+	return is_of_type(type_string, args, cont);
+}
+
 object std_is_integer_proc;
 
 object* std_is_integer(object* args, object* cont) {
@@ -668,6 +674,7 @@ void init_standard_functions(void) {
 	init_and_bind_primitive("true?", 1, &std_is_true, &std_is_true_proc);
 	init_and_bind_primitive("is?", 1, &std_is, &std_is_proc);
 	init_and_bind_primitive("symbol?", 1, &std_is_symbol, &std_is_symbol_proc);
+	init_and_bind_primitive("string?", 1, &std_is_string, &std_is_string_proc);
 	init_and_bind_primitive("integer?", 1, &std_is_integer, &std_is_integer_proc);
 	init_and_bind_primitive("fraction?", 1, &std_is_fraction, &std_is_fraction_proc);
 	init_and_bind_primitive("true-fraction?", 1, &std_is_true_fraction, &std_is_true_fraction_proc);

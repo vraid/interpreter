@@ -27,12 +27,9 @@ object* print_sequence_element_base(char is_first, object* args, object* cont) {
 	}
 	else
 		if (!is_first) printf(" ");
-		object* next_iter = alloc_next_iterator(seq);
-		object* next_args = alloc_list_1(next_iter);
-		object* next_call = alloc_call(&print_sequence_element_proc, next_args, cont);
-		object* next_cont = alloc_discarding_cont(next_call);
-		object* print_args = alloc_list_1(sequence_first(seq));
-		object* call = alloc_call(&print_value_proc, print_args, next_cont);
+		object* next_call = alloc_call(&print_sequence_element_proc, empty_list(), cont);
+		object* rest_call = alloc_call(&rest_proc, alloc_list_1(seq), alloc_cont(next_call));
+		object* call = alloc_call(&print_value_proc, alloc_list_1(sequence_first(seq)), alloc_discarding_cont(rest_call));
 		return perform_call(call);
 }
 
