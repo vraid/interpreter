@@ -29,6 +29,11 @@
 #include "memory-handling.h"
 #include "workspace.h"
 #include "syntax-base.h"
+#include "logic-syntax.h"
+#include "function-syntax.h"
+#include "let-syntax.h"
+#include "delay-syntax.h"
+#include "repl-syntax.h"
 #include "modules.h"
 #include "syntax-validate.h"
 #include "read.h"
@@ -67,6 +72,11 @@ int main(int argc, char** argv) {
 	init_global_variables();
 	init_environment_procedures();
 	init_base_syntax_procedures();
+	init_logic_syntax_procedures();
+	init_function_syntax_procedures();
+	init_let_syntax_procedures();
+	init_delay_syntax_procedures();
+	init_repl_syntax_procedures();
 	init_sequence_procedures();
 	init_higher_order_procedures();
 	init_list_procedures();
