@@ -13,7 +13,6 @@
 #include "standard-library.h"
 #include "eval.h"
 #include "repl-top.h"
-#include "print.h"
 
 object* enter_scope(object* args, object* cont) {
 	object* syntax;

@@ -9,7 +9,6 @@
 #include "call.h"
 #include "environments.h"
 #include "higher-order.h"
-#include "generic-arguments.h"
 #include "base-util.h"
 #include "print.h"
 
