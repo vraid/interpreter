@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "data-structures.h"
 #include "object-init.h"
-#include "memory-handling.h"
+#include "heap-memory.h"
 #include "call.h"
 #include "delist.h"
 
@@ -20,12 +20,10 @@ object* read_file(object* args, object* cont) {
 	}
 	fseek(f, 0, SEEK_END);
 	size_t size = ftell(f);
-	char* file_buffer = malloc(size+1);
+	char* file_buffer = alloc_heap_memory(size+1);
 	fseek(f, 0, SEEK_SET);
 	fread(file_buffer, size, 1, f);
 	fclose(f);
-	
-	alloc_malloc_reference(size+1, file_buffer);
 
 	object* obj = alloc_obj();
 	init_object(location_stack, type_string, obj);

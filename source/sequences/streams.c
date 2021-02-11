@@ -8,7 +8,6 @@
 #include "string-util.h"
 #include "call.h"
 #include "delist.h"
-#include "memory-handling.h"
 #include "eval.h"
 #include "lists.h"
 #include "sequences.h"

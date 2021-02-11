@@ -6,7 +6,7 @@
 #include "object-init.h"
 #include "delist.h"
 #include "list-util.h"
-#include "memory-handling.h"
+#include "mutation.h"
 #include "syntax-base.h"
 #include "environments.h"
 #include "call.h"

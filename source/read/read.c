@@ -10,7 +10,7 @@
 #include "list-util.h"
 #include "string-util.h"
 #include "util.h"
-#include "memory-handling.h"
+#include "heap-memory.h"
 #include "delist.h"
 #include "call.h"
 #include "symbols.h"
@@ -232,11 +232,10 @@ object* read_include(object* args, object* cont) {
 	long size = ftell(f);
 	fseek(f, 0, SEEK_SET);
 	
-	char* mem = malloc(size+1);
+	char* mem = alloc_heap_memory(size+1);
 	fread(mem, size, 1, f);
 	fclose(f);
 	
-	alloc_malloc_reference(size+1, mem);
 	object* str = alloc_string(mem);
 	
 	object* input_port = alloc_string_port(str);

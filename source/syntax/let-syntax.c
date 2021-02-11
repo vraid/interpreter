@@ -7,7 +7,7 @@
 #include "delist.h"
 #include "list-util.h"
 #include "syntax-base.h"
-#include "memory-handling.h"
+#include "mutation.h"
 #include "environments.h"
 #include "call.h"
 #include "eval.h"

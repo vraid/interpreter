@@ -7,7 +7,7 @@
 #include "delist.h"
 #include "base-util.h"
 #include "list-util.h"
-#include "memory-handling.h"
+#include "repl-scopes.h"
 #include "syntax-base.h"
 #include "call.h"
 #include "repl-top.h"

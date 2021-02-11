@@ -7,7 +7,7 @@
 #include "call.h"
 #include "delist.h"
 #include "base-util.h"
-#include "memory-handling.h"
+#include "mutation.h"
 
 int list_length(object* ls) {
 	int n = 0;

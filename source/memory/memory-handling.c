@@ -7,46 +7,9 @@
 #include "base-util.h"
 #include "global-variables.h"
 #include "symbols.h"
-#include "delist.h"
-
-object* mutation_references;
-
-void add_mutation_reference(object* ls, object* obj, object* reference) {
-	if (obj->location > location_heap) {
-		fprintf(stderr, "stack reference at %s\n", location_name[obj->location]);
-		exit(0);
-	}
-	else if ((obj->location == location_heap) && (reference->location == location_stack)) {
-		mutation_references = init_list_cell(ls, obj, mutation_references);
-	}
-}
-
-object* malloc_references;
-
-void add_malloc_reference(object* ls, object* obj, long size, char* reference) {
-	malloc_references = init_list_cell(ls, init_memory_reference(obj, size, reference), malloc_references);
-}
-
-object* repl_scope_references;
-
-void add_repl_scope_reference(object* ls, object* obj) {
-	repl_scope_references = init_list_cell(ls, obj, repl_scope_references);
-}
-
-object* rewound_repl_scope_reference(object* key) {
-	object* ls = list_rest(repl_scope_references);
-	object* k;
-	object* call;
-	while (!is_empty_list(ls)) {
-		delist_2(list_first(ls), &k, &call);
-		if (is_no_symbol(key) || (key == k)) {
-			repl_scope_references = ls;
-			return call;
-		}
-		ls = list_rest(ls);
-	}
-	return no_object();
-}
+#include "mutation.h"
+#include "heap-memory.h"
+#include "repl-scopes.h"
 
 typedef struct {
 	int direction;
@@ -304,7 +267,7 @@ gc_result perform_gc_traversal(char is_major, long additional_data, object** roo
 	}
 	else {
 		location = location_stack;
-		object* ls = mutation_references;
+		object* ls = mutation_references();
 		while (!is_empty_list(ls)) {
 			// move all stack objects referenced by the heap
 			clear_garbage(&main_memory_space, &(ls->data.list.first), location, 0);
@@ -313,20 +276,15 @@ gc_result perform_gc_traversal(char is_major, long additional_data, object** roo
 	}
 	clear_garbage(&main_memory_space, &symbol_list, location, 1);
 	clear_garbage(&main_memory_space, root, location, 1);
-	clear_garbage(&main_memory_space, &repl_scope_references, location, 1);
-	mutation_references = empty_list();
-	object* ls = malloc_references;
-	while (!is_empty_list(ls)) {
-		free(memory_reference_value(list_first(ls)));
-		ls = list_rest(ls);
-	}
-	malloc_references = empty_list();
+	clear_garbage(&main_memory_space, repl_scope_references(), location, 1);
+	reset_mutation_references();
+	free_heap_references();
 	return res;
 }
 
 long living_stack_memory(void) {
 	long size = max_stack_data;
-	object* ls = malloc_references;
+	object* ls = heap_references();
 	while (!is_empty_list(ls)) {
 		// move all stack objects referenced by the heap
 		size += memory_reference_size(list_first(ls));
@@ -347,9 +305,9 @@ void perform_gc(object** root) {
 }
 
 void init_memory_handling() {
-	mutation_references = empty_list();
-	malloc_references = empty_list();
-	repl_scope_references = empty_list();
+	reset_mutation_references();
+	reset_heap_references();
+	reset_repl_scope_references();
 	
 	object_type t;
 	for (t = type_none; t < type_count; t++) {

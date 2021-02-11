@@ -4,7 +4,7 @@
 #include "data-structures.h"
 #include "global-variables.h"
 #include "object-init.h"
-#include "memory-handling.h"
+#include "repl-scopes.h"
 #include "read.h"
 #include "eval.h"
 #include "print.h"
