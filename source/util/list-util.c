@@ -7,7 +7,6 @@
 #include "call.h"
 #include "delist.h"
 #include "base-util.h"
-#include "mutation.h"
 
 int list_length(object* ls) {
 	int n = 0;
@@ -80,18 +79,6 @@ object* link_list(object* args, object* cont) {
 	delist_2(args, &value, &list);
 	
 	object* cell = alloc_list_cell(value, list);
-	
-	return call_cont(cont, cell);
-}
-
-object* add_to_list(object* args, object* cont) {
-	object* value;
-	object* last;
-	delist_2(args, &value, &last);
-	
-	object* cell = alloc_list_1(value);
-	last->data.list.rest = cell;
-	alloc_mutation_reference(last, cell);
 	
 	return call_cont(cont, cell);
 }
@@ -240,7 +227,6 @@ object* list_append_first_reversed(object* args, object* cont) {
 void init_list_util_procedures(void) {
 	init_primitive(&make_list, &make_list_proc);
 	init_primitive(&link_list, &link_list_proc);
-	init_primitive(&add_to_list, &add_to_list_proc);
 	init_primitive(&reverse_list, &reverse_list_proc);
 	init_primitive(&list_append, &list_append_proc);
 	init_primitive(&list_append_first_reversed, &list_append_first_reversed_proc);
