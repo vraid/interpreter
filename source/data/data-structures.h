@@ -235,7 +235,6 @@ char is_fraction(object* obj);
 char is_complex(object* obj);
 char is_list(object* obj);
 char is_stream(object* obj);
-char is_sequence(object* obj);
 char is_vector(object* obj);
 char is_vector_iterator(object* obj);
 char is_module(object* obj);

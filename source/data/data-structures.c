@@ -109,14 +109,6 @@ char is_nonempty_list(object* obj) {
 char is_stream(object* obj) {
 	return is_type(type_stream, obj);
 }
-char is_sequence(object* obj) {
-	switch(obj->type) {
-		case type_list:
-		case type_stream:
-		case type_vector_iterator: return 1;
-		default: return 0;
-	}
-}
 char is_vector(object* obj) {
 	return is_type(type_vector, obj);
 }
