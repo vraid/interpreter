@@ -43,12 +43,6 @@ void init_type_names(void) {
 	type_names[type_internal_error] = "internal error";
 }
 
-void init_syntax_names(void) {
-	for (static_syntax_procedure i = 0; i < syntax_count; i++) {
-		syntax_names[i] = "";
-	}
-}
-
 void init_location_names(void) {
 	location_name[location_none] = "no location";
 	location_name[location_stack] = "stack";
@@ -60,7 +54,6 @@ void init_location_names(void) {
 
 void init_data_structure_names(void) {
 	init_type_names();
-	init_syntax_names();
 	init_location_names();
 }
 

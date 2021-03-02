@@ -12,6 +12,8 @@
 #include "eval.h"
 #include "print.h"
 
+char* syntax_names[syntax_count];
+
 object eval_syntax_proc;
 
 object* eval_syntax(object* args, object* cont) {
@@ -90,6 +92,10 @@ object* syntax_procedure_obj(static_syntax_procedure type) {
 }
 
 void init_base_syntax_procedures(void) {
+	for (static_syntax_procedure i = 0; i < syntax_count; i++) {
+		syntax_names[i] = "";
+	}
+	
 	add_syntax("quote", syntax_quote, context_value, &quote);
 	
 	init_primitive(&eval_syntax, &eval_syntax_proc);

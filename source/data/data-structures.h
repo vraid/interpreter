@@ -90,8 +90,6 @@ typedef enum {
 	syntax_define,
 	syntax_count} static_syntax_procedure;
 
-char* syntax_names[syntax_count];
-
 typedef enum {
 	read_type_atom,
 	read_type_list} read_type;
