@@ -8,6 +8,7 @@
 #include "delist.h"
 #include "list-util.h"
 #include "eval.h"
+#include "print.h"
 #include "integers.h"
 
 int fraction_sign(object* obj) {
@@ -320,6 +321,42 @@ object* fraction_compare(object* args, object* cont) {
 	}
 }
 
+object print_fraction_denominator_proc;
+
+object* print_fraction_denominator(object* args, object* cont) {
+	object* denom;
+	delist_1(args, &denom);
+	
+	if (integer_is_one(denom)) {
+		return call_discarding_cont(cont);
+	}
+	else {
+		printf("/");
+		object* print_call = alloc_call(&print_integer_proc, args, cont);
+		
+		return perform_call(print_call);
+	}
+}
+
+object print_fraction_proc;
+
+object* print_fraction(object* args, object* cont) {
+	object* fraction;
+	delist_1(args, &fraction);
+	
+	object* num = fraction_numerator(fraction);
+	object* denom = fraction_denominator(fraction);
+	
+	object* denom_args = alloc_list_1(denom);
+	object* denom_call = alloc_call(&print_fraction_denominator_proc, denom_args, cont);
+	object* denom_cont = alloc_discarding_cont(denom_call);
+	
+	object* num_args = alloc_list_1(num);
+	object* num_call = alloc_call(&print_integer_proc, num_args, denom_cont);
+	
+	return perform_call(num_call);
+}
+
 void init_fraction_procedures(void) {
 	init_primitive(&make_fraction, &make_fraction_proc);
 	init_primitive(&make_integral_fraction, &make_integral_fraction_proc);
@@ -344,4 +381,8 @@ void init_fraction_procedures(void) {
 	init_primitive(&fraction_remainder_continued, &fraction_remainder_continued_proc);
 	
 	init_primitive(&fraction_compare, &fraction_compare_proc);
+	
+	init_primitive(&print_fraction, &print_fraction_proc);
+	init_primitive(&print_fraction_denominator, &print_fraction_denominator_proc);
+	add_print_procedure(type_fraction, &print_fraction_proc);
 }

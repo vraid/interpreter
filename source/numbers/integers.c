@@ -8,6 +8,7 @@
 #include "delist.h"
 #include "list-util.h"
 #include "workspace.h"
+#include "print.h"
 
 object* first_or_zero(object* ls) {
 	return is_empty_list(ls) ? zero() : list_first(ls);
@@ -964,6 +965,8 @@ object* decimal_to_string(object* args, object* cont) {
 	return call_cont(cont, string);
 }
 
+object integer_to_string_proc;
+
 object* integer_to_string(object* args, object* cont) {
 	object* number;
 	delist_1(args, &number);
@@ -976,6 +979,36 @@ object* integer_to_string(object* args, object* cont) {
 	object* decimal_call = alloc_call(&integer_to_new_base_proc, args, alloc_cont(string_call));
 	
 	return perform_call(decimal_call);
+}
+
+object print_integer_digits_proc;
+
+object* print_integer_digits(object* args, object* cont) {
+	object* num;
+	delist_1(args, &num);
+	
+	object* digits = integer_digits(num);
+	
+	while (!is_empty_list(digits)) {
+		printf("%lld", fixnum_value(list_first(digits)));
+		digits = list_rest(digits);
+	}
+	
+	return call_discarding_cont(cont);
+}
+
+object* print_integer(object* args, object* cont) {
+	object* num;
+	delist_1(args, &num);
+	
+	if (integer_sign(num) == -1) {
+		printf("-");
+	}
+	
+	object* print_call = alloc_call(&print_integer_digits_proc, empty_list(), cont);
+	object* call = alloc_call(&integer_to_decimal_proc, args, alloc_cont(print_call));
+	
+	return perform_call(call);
 }
 
 void init_integer_procedures(void) {
@@ -1016,4 +1049,8 @@ void init_integer_procedures(void) {
 	init_primitive(&integer_to_decimal, &integer_to_decimal_proc);
 	init_primitive(&decimal_to_string, &decimal_to_string_proc);
 	init_primitive(&integer_to_string, &integer_to_string_proc);
+	
+	init_primitive(&print_integer, &print_integer_proc);
+	init_primitive(&print_integer_digits, &print_integer_digits_proc);
+	add_print_procedure(type_integer, &print_integer_proc);
 }

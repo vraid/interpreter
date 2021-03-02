@@ -10,6 +10,7 @@
 #include "environments.h"
 #include "call.h"
 #include "eval.h"
+#include "print.h"
 
 object eval_syntax_proc;
 
@@ -37,6 +38,17 @@ object* eval_syntax(object* args, object* cont) {
 	object* call = alloc_call(syntax, ls, cont);
 	
 	return perform_call(call);
+}
+
+object print_syntax_procedure_proc;
+
+object* print_syntax_procedure(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	printf("syntax:%s", syntax_names[syntax_procedure_id(obj)]);
+	
+	return call_discarding_cont(cont);
 }
 
 object* quote(object* args, object* cont) {
@@ -82,4 +94,7 @@ void init_base_syntax_procedures(void) {
 	
 	init_primitive(&eval_syntax, &eval_syntax_proc);
 	add_list_application_procedure(type_syntax_procedure, &eval_syntax_proc);
+	
+	init_primitive(&print_syntax_procedure, &print_syntax_procedure_proc);
+	add_print_procedure(type_syntax_procedure, &print_syntax_procedure_proc);
 }

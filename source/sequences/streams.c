@@ -9,6 +9,7 @@
 #include "call.h"
 #include "delist.h"
 #include "eval.h"
+#include "print.h"
 #include "lists.h"
 #include "sequences.h"
 #include "higher-order.h"
@@ -255,6 +256,68 @@ object* throw_stream_rest_error(object* cont, object* rest) {
 	return throw_error(cont, str);
 }
 
+object print_stream_element_proc;
+object print_stream_rest_proc;
+
+object* print_stream_element(object* args, object* cont) {
+	object* stream;
+	delist_1(args, &stream);
+	
+	if (is_empty_stream(stream)) {
+		return call_discarding_cont(cont);
+	}
+	else
+		printf(" ");
+		
+		object* next_args = alloc_list_1(stream);
+		object* next_call = alloc_call(&print_stream_rest_proc, next_args, cont);
+		object* next_cont = alloc_discarding_cont(next_call);
+		
+		object* print_args = alloc_list_1(stream_first(stream));
+		object* call = alloc_call(&print_value_proc, print_args, next_cont);
+		return perform_call(call);
+}
+
+object* print_stream_rest(object* args, object* cont) {
+	object* stream;
+	delist_1(args, &stream);
+	
+	object* delay = stream_rest(stream);
+	
+	if (!delay_evaluated(delay)) {
+		printf(" ..");
+		return call_discarding_cont(cont);
+	}
+	else {
+		object* rest = delay_value(delay);
+		if (is_empty_stream(rest)) {
+			return call_discarding_cont(cont);
+		}
+		else {
+			object* print_args = alloc_list_1(rest);
+			object* call = alloc_call(&print_stream_element_proc, print_args, cont);
+			
+			return perform_call(call);
+		}
+	}
+}
+
+object print_stream_proc;
+
+object* print_stream(object* args, object* cont) {
+	object* stream;
+	delist_1(args, &stream);
+	printf("(stream");
+	
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
+	
+	object* first_args = alloc_list_1(stream);
+	object* first_call = alloc_call(&print_stream_element_proc, first_args, end_cont);
+	
+	return perform_call(first_call);
+}
+
 void init_stream_procedures(void) {
 	add_syntax("stream", syntax_stream, context_value, &stream);
 	init_primitive(&make_stream, &make_stream_proc);
@@ -279,4 +342,9 @@ void init_stream_procedures(void) {
 	add_fold_procedure(type_stream, &stream_fold_proc);
 	
 	init_primitive(&eval_stream_rest, &eval_stream_rest_proc);
+	
+	init_primitive(&print_stream_element, &print_stream_element_proc);
+	init_primitive(&print_stream_rest, &print_stream_rest_proc);
+	init_primitive(&print_stream, &print_stream_proc);
+	add_print_procedure(type_stream, &print_stream_proc);
 }

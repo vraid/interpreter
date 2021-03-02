@@ -10,19 +10,12 @@
 #include "base-util.h"
 #include "list-util.h"
 #include "object-init.h"
-#include "vectors.h"
-#include "integers.h"
 
 object* print_procedure[type_count];
 
 void add_print_procedure(object_type type, object* proc) {
 	print_procedure[type] = proc;
 }
-
-object print_sequence_element_proc;
-object print_first_sequence_element_proc;
-object print_sequence_proc;
-object print_sequence_end_proc;
 
 object* print_sequence_element_base(char is_first, object* args, object* cont) {
 	object* seq;
@@ -68,166 +61,6 @@ object* print_sequence(object* args, object* cont) {
 		object* call = alloc_call(&print_first_sequence_element_proc, args, end_cont);
 		return perform_call(call);
 	}	
-}
-
-object print_vector_proc;
-
-object* print_vector(object* args, object* cont) {	
-	printf("(vector");
-
-	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
-	object* end_cont = alloc_discarding_cont(end_call);
-
-	object* print_call = alloc_call(&print_sequence_element_proc, args, end_cont);
-	
-	return perform_call(print_call);
-}
-
-object print_stream_element_proc;
-object print_stream_rest_proc;
-
-object* print_stream_element(object* args, object* cont) {
-	object* stream;
-	delist_1(args, &stream);
-	
-	if (is_empty_stream(stream)) {
-		return call_discarding_cont(cont);
-	}
-	else
-		printf(" ");
-		
-		object* next_args = alloc_list_1(stream);
-		object* next_call = alloc_call(&print_stream_rest_proc, next_args, cont);
-		object* next_cont = alloc_discarding_cont(next_call);
-		
-		object* print_args = alloc_list_1(stream_first(stream));
-		object* call = alloc_call(&print_value_proc, print_args, next_cont);
-		return perform_call(call);
-}
-
-object* print_stream_rest(object* args, object* cont) {
-	object* stream;
-	delist_1(args, &stream);
-	
-	object* delay = stream_rest(stream);
-	
-	if (!delay_evaluated(delay)) {
-		printf(" ..");
-		return call_discarding_cont(cont);
-	}
-	else {
-		object* rest = delay_value(delay);
-		if (is_empty_stream(rest)) {
-			return call_discarding_cont(cont);
-		}
-		else {
-			object* print_args = alloc_list_1(rest);
-			object* call = alloc_call(&print_stream_element_proc, print_args, cont);
-			
-			return perform_call(call);
-		}
-	}
-}
-
-object print_stream_proc;
-
-object* print_stream(object* args, object* cont) {
-	object* stream;
-	delist_1(args, &stream);
-	printf("(stream");
-	
-	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
-	object* end_cont = alloc_discarding_cont(end_call);
-	
-	object* first_args = alloc_list_1(stream);
-	object* first_call = alloc_call(&print_stream_element_proc, first_args, end_cont);
-	
-	return perform_call(first_call);
-}
-
-object print_integer_digits_proc;
-
-object* print_integer_digits(object* args, object* cont) {
-	object* num;
-	delist_1(args, &num);
-	
-	object* digits = integer_digits(num);
-	
-	while (!is_empty_list(digits)) {
-		printf("%lld", fixnum_value(list_first(digits)));
-		digits = list_rest(digits);
-	}
-	
-	return call_discarding_cont(cont);
-}
-
-object print_integer_proc;
-
-object* print_integer(object* args, object* cont) {
-	object* num;
-	delist_1(args, &num);
-	
-	if (integer_sign(num) == -1) {
-		printf("-");
-	}
-	
-	object* print_call = alloc_call(&print_integer_digits_proc, empty_list(), cont);
-	object* call = alloc_call(&integer_to_decimal_proc, args, alloc_cont(print_call));
-	
-	return perform_call(call);
-}
-
-object print_fraction_denominator_proc;
-
-object* print_fraction_denominator(object* args, object* cont) {
-	object* denom;
-	delist_1(args, &denom);
-	
-	if (integer_is_one(denom)) {
-		return call_discarding_cont(cont);
-	}
-	else {
-		printf("/");
-		object* print_call = alloc_call(&print_integer_proc, args, cont);
-		
-		return perform_call(print_call);
-	}
-}
-
-object print_fraction_proc;
-
-object* print_fraction(object* args, object* cont) {
-	object* fraction;
-	delist_1(args, &fraction);
-	
-	object* num = fraction_numerator(fraction);
-	object* denom = fraction_denominator(fraction);
-	
-	object* denom_args = alloc_list_1(denom);
-	object* denom_call = alloc_call(&print_fraction_denominator_proc, denom_args, cont);
-	object* denom_cont = alloc_discarding_cont(denom_call);
-	
-	object* num_args = alloc_list_1(num);
-	object* num_call = alloc_call(&print_integer_proc, num_args, denom_cont);
-	
-	return perform_call(num_call);
-}
-
-object print_complex_proc;
-
-object* print_complex(object* args, object* cont) {
-	object* complex;
-	delist_1(args, &complex);
-	
-	printf("(complex ");
-	
-	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
-	object* end_cont = alloc_discarding_cont(end_call);
-	
-	object* ls = alloc_list_2(complex_real_part(complex), complex_imag_part(complex));
-	object* print_args = alloc_list_1(ls);
-	object* call = alloc_call(&print_first_sequence_element_proc, print_args, end_cont);
-	return perform_call(call);
 }
 
 object trace_to_origin_proc;
@@ -371,16 +204,6 @@ object* print_fixnum(object* args, object* cont) {
 	return call_discarding_cont(cont);
 }
 
-object print_delay_proc;
-
-object* print_delay(object* args, object* cont) {
-	suppress_warning(args);
-	
-	printf("(delay:)");
-	
-	return call_discarding_cont(cont);
-}
-
 object print_function_proc;
 
 object* print_function(object* args, object* cont) {
@@ -390,17 +213,6 @@ object* print_function(object* args, object* cont) {
 	printf("function ");
 	object* ls = alloc_list_1(function_parameters(obj));
 	return print_sequence(ls, cont);
-}
-
-object print_syntax_procedure_proc;
-
-object* print_syntax_procedure(object* args, object* cont) {
-	object* obj;
-	delist_1(args, &obj);
-	
-	printf("syntax:%s", syntax_names[syntax_procedure_id(obj)]);
-	
-	return call_discarding_cont(cont);
 }
 
 object* print_value(object* args, object* cont) {
@@ -448,21 +260,7 @@ void init_print_procedures(void) {
 	init_primitive(&print_boolean, &print_boolean_proc);
 	init_primitive(&print_fixnum, &print_fixnum_proc);
 	init_primitive(&print_function, &print_function_proc);
-	init_primitive(&print_syntax_procedure, &print_syntax_procedure_proc);
-	
-	init_primitive(&print_stream_element, &print_stream_element_proc);
-	init_primitive(&print_stream_rest, &print_stream_rest_proc);
-	init_primitive(&print_stream, &print_stream_proc);
-	
-	init_primitive(&print_vector, &print_vector_proc);
-	
-	init_primitive(&print_integer, &print_integer_proc);
-	init_primitive(&print_integer_digits, &print_integer_digits_proc);
-	
-	init_primitive(&print_fraction, &print_fraction_proc);
-	init_primitive(&print_fraction_denominator, &print_fraction_denominator_proc);
 
-	init_primitive(&print_complex, &print_complex_proc);
 	init_primitive(&trace_to_origin, &trace_to_origin_proc);
 	init_primitive(&print_internal_position, &print_internal_position_proc);
 	init_primitive(&print_internal_error, &print_internal_error_proc);
@@ -475,14 +273,8 @@ void init_print_procedures(void) {
 	add_print_procedure(type_symbol, &print_symbol_proc);
 	add_print_procedure(type_boolean, &print_boolean_proc);
 	add_print_procedure(type_fixnum, &print_fixnum_proc);
-	add_print_procedure(type_integer, &print_integer_proc);
-	add_print_procedure(type_fraction, &print_fraction_proc);
-	add_print_procedure(type_complex, &print_complex_proc);
 	add_print_procedure(type_list, &print_sequence_proc);
-	add_print_procedure(type_stream, &print_stream_proc);
-	add_print_procedure(type_vector_iterator, &print_vector_proc);
 	add_print_procedure(type_function, &print_function_proc);
-	add_print_procedure(type_syntax_procedure, &print_syntax_procedure_proc);
 	add_print_procedure(type_internal_position, &print_internal_position_proc);
 	add_print_procedure(type_internal_error, &print_internal_error_proc);
 }

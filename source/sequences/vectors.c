@@ -12,6 +12,7 @@
 #include "sequences.h"
 #include "higher-order.h"
 #include "syntax-base.h"
+#include "print.h"
 
 object* vector(object* args, object* cont) {
 	object* vector_call = alloc_call(&list_to_vector_proc, empty_list(), cont);	
@@ -188,6 +189,19 @@ object* vector_fold(object* args, object* cont) {
 	return perform_call(list_call);
 }
 
+object print_vector_proc;
+
+object* print_vector(object* args, object* cont) {	
+	printf("(vector");
+
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
+
+	object* print_call = alloc_call(&print_sequence_element_proc, args, end_cont);
+	
+	return perform_call(print_call);
+}
+
 void init_vector_procedures(void) {
 	add_syntax("vector", syntax_vector, context_value, &vector);
 	init_primitive(&vector_to_list, &vector_to_list_proc);
@@ -207,4 +221,7 @@ void init_vector_procedures(void) {
 	
 	init_primitive(&vector_fold, &vector_fold_proc);
 	add_fold_procedure(type_vector_iterator, &vector_fold_proc);
+		
+	init_primitive(&print_vector, &print_vector_proc);
+	add_print_procedure(type_vector_iterator, &print_vector_proc);
 }

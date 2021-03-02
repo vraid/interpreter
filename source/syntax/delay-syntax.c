@@ -5,12 +5,14 @@
 #include "global-variables.h"
 #include "object-init.h"
 #include "delist.h"
+#include "base-util.h"
 #include "list-util.h"
 #include "mutation.h"
 #include "syntax-base.h"
 #include "environments.h"
 #include "call.h"
 #include "eval.h"
+#include "print.h"
 
 object* delay(object* args, object* cont) {
 	object* syntax;
@@ -79,10 +81,23 @@ object* force(object* args, object* cont) {
 	return perform_call(eval_call);
 }
 
+object print_delay_proc;
+
+object* print_delay(object* args, object* cont) {
+	suppress_warning(args);
+	
+	printf("(delay:)");
+	
+	return call_discarding_cont(cont);
+}
+
 void init_delay_syntax_procedures(void) {
 	add_syntax("delay", syntax_delay, context_value, &delay);
 	add_syntax("force", syntax_force, context_value, &force);
 	
 	init_primitive(&update_delay, &update_delay_proc);
 	init_primitive(&eval_force, &eval_force_proc);
+	
+	init_primitive(&print_delay, &print_delay_proc);
+	add_print_procedure(type_delay, &print_delay_proc);
 }

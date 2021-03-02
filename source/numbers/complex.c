@@ -7,6 +7,7 @@
 #include "delist.h"
 #include "call.h"
 #include "eval.h"
+#include "print.h"
 #include "numbers.h"
 
 object* make_complex(object* args, object* cont) {
@@ -157,6 +158,23 @@ object* complex_divide(object* args, object* cont) {
 	return perform_call(eval_call);
 }
 
+object print_complex_proc;
+
+object* print_complex(object* args, object* cont) {
+	object* complex;
+	delist_1(args, &complex);
+	
+	printf("(complex ");
+	
+	object* end_call = alloc_call(&print_sequence_end_proc, empty_list(), cont);
+	object* end_cont = alloc_discarding_cont(end_call);
+	
+	object* ls = alloc_list_2(complex_real_part(complex), complex_imag_part(complex));
+	object* print_args = alloc_list_1(ls);
+	object* call = alloc_call(&print_first_sequence_element_proc, print_args, end_cont);
+	return perform_call(call);
+}
+
 void init_complex_procedures(void) {
 	init_primitive(&make_complex, &make_complex_proc);
 	init_primitive(&complex_add, &complex_add_proc);
@@ -167,4 +185,7 @@ void init_complex_procedures(void) {
 	init_primitive(&complex_divide_two, &complex_divide_two_proc);
 	init_primitive(&complex_conjugate, &complex_conjugate_proc);
 	init_primitive(&complex_conjugate_two, &complex_conjugate_two_proc);
+	
+	init_primitive(&print_complex, &print_complex_proc);
+	add_print_procedure(type_complex, &print_complex_proc);
 }
