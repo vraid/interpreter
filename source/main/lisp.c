@@ -39,6 +39,7 @@
 #include "read.h"
 #include "read-tables.h"
 #include "eval.h"
+#include "function-eval.h"
 #include "print.h"
 #include "repl-top.h"
 
@@ -71,6 +72,10 @@ int main(int argc, char** argv) {
 	init_symbols();
 	init_global_variables();
 	init_environment_procedures();
+	init_print_procedures();
+	init_eval_procedures();
+	init_function_eval_procedures();
+	init_repl_procedures();
 	init_base_syntax_procedures();
 	init_logic_syntax_procedures();
 	init_function_syntax_procedures();
@@ -92,9 +97,6 @@ int main(int argc, char** argv) {
 	init_base_util_procedures();
 	init_read_procedures();
 	init_read_table_procedures();
-	init_print_procedures();
-	init_eval_procedures();
-	init_repl_procedures();
 	init_module_procedures();
 	init_equivalence_procedures();
 	init_memory_handling();

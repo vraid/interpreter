@@ -9,6 +9,35 @@
 #include "list-util.h"
 #include "environments.h"
 #include "call.h"
+#include "eval.h"
+
+object eval_syntax_proc;
+
+object* eval_syntax(object* args, object* cont) {
+	object* syntax;
+	object* rest;
+	object* environment;
+	object* context;
+	object* trace;
+	delist_5(args, &syntax, &rest, &environment, &context, &trace);
+	
+	static_syntax_procedure syntax_id = syntax_procedure_id(syntax);
+	context_type required_context = syntax_procedure_context(syntax_id);
+	context_type current_context = eval_context_value(context);
+	
+	if (!(required_context & current_context)) {
+		object* e = alloc_list_3(
+			alloc_string(syntax_names[syntax_id]),
+			alloc_string("not applicable in context"),
+			alloc_string(context_names[current_context]));
+		return throw_error(cont, e);
+	}
+	
+	object* ls = alloc_list_3(rest, environment, trace);
+	object* call = alloc_call(syntax, ls, cont);
+	
+	return perform_call(call);
+}
 
 object* quote(object* args, object* cont) {
 	object* syntax;
@@ -50,4 +79,7 @@ object* syntax_procedure_obj(static_syntax_procedure type) {
 
 void init_base_syntax_procedures(void) {
 	add_syntax("quote", syntax_quote, context_value, &quote);
+	
+	init_primitive(&eval_syntax, &eval_syntax_proc);
+	add_list_application_procedure(type_syntax_procedure, &eval_syntax_proc);
 }
