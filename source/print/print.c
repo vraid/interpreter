@@ -13,6 +13,12 @@
 #include "vectors.h"
 #include "integers.h"
 
+object* print_procedure[type_count];
+
+void add_print_procedure(object_type type, object* proc) {
+	print_procedure[type] = proc;
+}
+
 object print_sequence_element_proc;
 object print_first_sequence_element_proc;
 object print_sequence_proc;
@@ -63,6 +69,8 @@ object* print_sequence(object* args, object* cont) {
 		return perform_call(call);
 	}	
 }
+
+object print_vector_proc;
 
 object* print_vector(object* args, object* cont) {	
 	printf("(vector");
@@ -120,6 +128,8 @@ object* print_stream_rest(object* args, object* cont) {
 		}
 	}
 }
+
+object print_stream_proc;
 
 object* print_stream(object* args, object* cont) {
 	object* stream;
@@ -300,77 +310,108 @@ object* print_newline(object* args, object* cont) {
 	return call_discarding_cont(cont);
 }
 
+object print_nothing_proc;
+
+object* print_nothing(object* args, object* cont) {
+	suppress_warning(args);
+	
+	return call_discarding_cont(cont);
+}
+
+object print_string_proc;
+
+object* print_string(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	printf("\"%s\"", string_value(obj));
+	
+	return call_discarding_cont(cont);
+}
+
+object print_symbol_proc;
+
+object* print_symbol(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	printf("%s", string_value(symbol_name(obj)));
+	
+	return call_discarding_cont(cont);
+}
+
+object print_boolean_proc;
+
+object* print_boolean(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	if (is_false(obj)) {
+		printf("#f");
+	}
+	else if (is_true(obj)) {
+		printf("#t");
+	}
+	else {
+		printf("error\n");
+		fprintf(stderr, "erroneous boolean");
+	}
+	
+	return call_discarding_cont(cont);
+}
+
+object print_fixnum_proc;
+
+object* print_fixnum(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	printf("%lld", fixnum_value(obj));
+	
+	return call_discarding_cont(cont);
+}
+
+object print_delay_proc;
+
+object* print_delay(object* args, object* cont) {
+	suppress_warning(args);
+	
+	printf("(delay:)");
+	
+	return call_discarding_cont(cont);
+}
+
+object print_function_proc;
+
+object* print_function(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	printf("function ");
+	object* ls = alloc_list_1(function_parameters(obj));
+	return print_sequence(ls, cont);
+}
+
+object print_syntax_procedure_proc;
+
+object* print_syntax_procedure(object* args, object* cont) {
+	object* obj;
+	delist_1(args, &obj);
+	
+	printf("syntax:%s", syntax_names[syntax_procedure_id(obj)]);
+	
+	return call_discarding_cont(cont);
+}
+
 object* print_value(object* args, object* cont) {
 	object* obj;
 	delist_1(args, &obj);
 	
 	obj = desyntax(obj);
-	object* print_args = alloc_list_1(obj);
 	
-	switch (obj->type) {
-		case type_nothing:
-			break;
-		case type_string:
-			printf("\"%s\"", string_value(obj));
-			break;
-		case type_symbol:
-			printf("%s", string_value(symbol_name(obj)));
-			break;
-		case type_boolean:
-			if (is_false(obj)) {
-				printf("#f");
-			}
-			else if (is_true(obj)) {
-				printf("#t");
-			}
-			else {
-				printf("error\n");
-				fprintf(stderr, "erroneous boolean");
-			}
-			break;
-		case type_fixnum:
-			printf("%lld", fixnum_value(obj));
-			break;
-		case type_integer:
-			return print_integer(print_args, cont);
-			break;
-		case type_fraction:
-			return print_fraction(print_args, cont);
-			break;
-		case type_complex:
-			return print_complex(print_args, cont);
-			break;
-		case type_list:
-			return print_sequence(print_args, cont);
-			break;
-		case type_stream:
-			return print_stream(print_args, cont);
-			break;
-		case type_vector_iterator:
-			return print_vector(print_args, cont);
-			break;
-		case type_delay:
-			printf("(delay:)");
-			break;
-		case type_function:
-			printf("function ");
-			object* ls = alloc_list_1(function_parameters(obj));
-			return print_sequence(ls, cont);
-			break;
-		case type_syntax_procedure:
-			printf("syntax:%s", syntax_names[syntax_procedure_id(obj)]);
-			break;
-		case type_internal_position:
-			return print_internal_position(print_args, cont);
-			break;
-		case type_internal_error:
-			return print_internal_error(print_args, cont);
-			break;
-		default:
-			fprintf(stderr, "%s", object_type_name(obj));
-	}
-	
-	return call_discarding_cont(cont);
+	object* proc = print_procedure[obj->type];
+	object* call = alloc_call(proc, alloc_list_1(obj), cont);
+	return perform_call(call);
 }
 
 object* print_entry(object* args, object* cont) {
@@ -401,8 +442,19 @@ void init_print_procedures(void) {
 	init_primitive(&print_sequence, &print_sequence_proc);
 	init_primitive(&print_sequence_end, &print_sequence_end_proc);
 	
+	init_primitive(&print_nothing, &print_nothing_proc);
+	init_primitive(&print_string, &print_string_proc);
+	init_primitive(&print_symbol, &print_symbol_proc);
+	init_primitive(&print_boolean, &print_boolean_proc);
+	init_primitive(&print_fixnum, &print_fixnum_proc);
+	init_primitive(&print_function, &print_function_proc);
+	init_primitive(&print_syntax_procedure, &print_syntax_procedure_proc);
+	
 	init_primitive(&print_stream_element, &print_stream_element_proc);
 	init_primitive(&print_stream_rest, &print_stream_rest_proc);
+	init_primitive(&print_stream, &print_stream_proc);
+	
+	init_primitive(&print_vector, &print_vector_proc);
 	
 	init_primitive(&print_integer, &print_integer_proc);
 	init_primitive(&print_integer_digits, &print_integer_digits_proc);
@@ -415,4 +467,22 @@ void init_print_procedures(void) {
 	init_primitive(&print_internal_position, &print_internal_position_proc);
 	init_primitive(&print_internal_error, &print_internal_error_proc);
 	init_primitive(&print_error_trace, &print_error_trace_proc);
+	
+	for (object_type k = type_none; k < type_count; k++) {
+		add_print_procedure(k, &print_nothing_proc);
+	}
+	add_print_procedure(type_string, &print_string_proc);
+	add_print_procedure(type_symbol, &print_symbol_proc);
+	add_print_procedure(type_boolean, &print_boolean_proc);
+	add_print_procedure(type_fixnum, &print_fixnum_proc);
+	add_print_procedure(type_integer, &print_integer_proc);
+	add_print_procedure(type_fraction, &print_fraction_proc);
+	add_print_procedure(type_complex, &print_complex_proc);
+	add_print_procedure(type_list, &print_sequence_proc);
+	add_print_procedure(type_stream, &print_stream_proc);
+	add_print_procedure(type_vector_iterator, &print_vector_proc);
+	add_print_procedure(type_function, &print_function_proc);
+	add_print_procedure(type_syntax_procedure, &print_syntax_procedure_proc);
+	add_print_procedure(type_internal_position, &print_internal_position_proc);
+	add_print_procedure(type_internal_error, &print_internal_error_proc);
 }
