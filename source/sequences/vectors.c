@@ -43,6 +43,15 @@ object* vector_first(object* vec) {
 	return vector_ref(vec, 0);
 }
 
+int vector_find(object* vec, object* a) {
+	for (int n = 0; n < vector_iterator_length(vec); n++) {
+		if (vector_ref(vec, n) == a) {
+			return n;
+		}
+	}
+	return -1;
+}
+
 object vector_rest_proc;
 
 object* vector_rest(object* args, object* cont) {

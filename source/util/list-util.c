@@ -25,6 +25,18 @@ object* list_ref(int n, object* ls) {
 	return list_first(ls);
 }
 
+int list_find(object* a, object* ls) {
+	int n = 0;
+	while (!is_empty_list(ls)) {
+		if (a == list_first(ls)) {
+			return n;
+		}
+		ls = list_rest(ls);
+		n++;
+	}
+	return -1;
+}
+
 object* find_duplicate(object* a) {
 	while (!is_empty_list(a)) {
 		object* obj = list_first(a);
